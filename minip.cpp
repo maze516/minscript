@@ -8,9 +8,12 @@
  *
  *  $Source: /Users/min/Documents/home/cvsroot/minscript/minip.cpp,v $
  *
- *  $Revision: 1.1.1.1 $
+ *  $Revision: 1.2 $
  *
  *	$Log: not supported by cvs2svn $
+ *	Revision 1.1.1.1  2003/06/22 09:31:21  min
+ *	Initial checkin
+ *	
  *
  ***************************************************************************/
 /***************************************************************************
@@ -29,7 +32,7 @@
  * conform with the GPL please contact the author.                         *
  *                                                                         *
  *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html      *
+ *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
  *                                                                         *
  ***************************************************************************/
 
@@ -286,7 +289,7 @@ bool minScriptInterpreter::RunPreProcessor( bool bOnlyPreproc, const string & sS
 
 bool minScriptInterpreter::LoadModule( const string & sDllNameIn, long * phDll )
 {
-	typedef bool (*minRegisterNativeFunctionsT)( minInterpreterEnvironment & aEnvironment );
+	typedef bool (*minRegisterNativeFunctionsT)( minInterpreterEnvironmentInterface * aEnvironment );
 	
 	// DLL laden und Funktion minRegisterNativeFunctions ausfuehren, falls vorhanden
 
@@ -301,7 +304,7 @@ bool minScriptInterpreter::LoadModule( const string & sDllNameIn, long * phDll )
 		minRegisterNativeFunctionsT pInitFcn = (minRegisterNativeFunctionsT)minGetProcAddress( hDLL, "minRegisterNativeFunctions" );
 		if( pInitFcn )
 		{
-			(*pInitFcn)( m_aEnvironment );
+			(*pInitFcn)( &m_aEnvironment );
 			return true;
 		}
 		else
@@ -518,6 +521,16 @@ int ErrorPrintLnFcn( const char * sText )
 	return 0;
 }
 
+string string_read()
+{
+	const int MAX = 1024;
+	char sBuffer[MAX];
+
+	cin.getline(sBuffer,MAX);
+
+	return sBuffer;
+}
+
 int string_npos()
 {
 	return string::npos;
@@ -602,6 +615,101 @@ string my_getenv( const char * s )
 	return sRet;
 }
 
+#ifdef __linux__
+
+static char _GetDirectorySeparator()
+{
+#ifdef __linux__
+	return '/';
+#else
+	return '\\';
+#endif
+}
+
+// Hilfsfunktion fuer SplitPath()
+static void _InsertChar( char * sBuffer, char ch )
+{
+	int nLen = strlen( sBuffer );
+	sBuffer[ nLen ] = ch;
+	sBuffer[ nLen+1 ] = 0;
+}
+
+// Hilfsfunktion fuer SplitPath()
+// Transformation durchfuehren "abc" --> "cba"
+static void _RotateString( char * sBuffer )
+{
+	char sBuf[512];
+	int nLen = strlen( sBuffer );
+	for( int i=0; i<nLen; i++ )
+	{
+		sBuf[ nLen-i-1 ] = sBuffer[i];
+	}
+	sBuf[ nLen ] = 0;
+	strcpy( sBuffer, sBuf );
+}
+
+#endif
+
+bool SplitPath( const char * sPath, string & sDrive, string & sDir, string & sFileName, string & sExt )
+{
+	char sDriveBuf[512];
+	char sDirBuf[512];
+	char sNameBuf[512];
+	char sExtBuf[512];
+#ifndef __linux__
+	_splitpath( /*(CHAR_CAST)*/sPath, sDriveBuf, sDirBuf, sNameBuf, sExtBuf );
+#else
+	// Simuliere _splitpath fuer Linux...
+	strcpy( sDriveBuf, "" );
+	strcpy( sDirBuf, "" );
+	strcpy( sNameBuf, "" );
+	strcpy( sExtBuf, "" );
+	// Pfad von hinten analysieren
+	char sBuffer[512];
+	strcpy( sBuffer, "" );
+	bool bFoundExt = false;
+	bool bFoundFile = false;
+	for( int i=strlen( sPath )-1; i>=0; i-- )
+	{
+		if( !bFoundExt && sPath[i]=='.' )
+		{
+			bFoundExt = true;
+			_InsertChar( sBuffer, sPath[i] );
+			_RotateString( sBuffer );
+			strcpy( sExtBuf, sBuffer );
+			strcpy( sBuffer, "" );
+		}
+		else if( !bFoundFile && sPath[i]==/*FileUtilityObj::*/_GetDirectorySeparator() )
+		{
+			bFoundFile = true;
+			_RotateString( sBuffer );
+			strcpy( sNameBuf, sBuffer );
+			strcpy( sBuffer, "" );
+			_InsertChar( sBuffer, sPath[i] );
+		}
+		else
+		{
+			_InsertChar( sBuffer, sPath[i] );
+		}
+	}
+	_RotateString( sBuffer );
+	if( bFoundFile )
+	{
+		strcpy( sDirBuf, sBuffer );
+	}
+	else
+	{
+		strcpy( sNameBuf, sBuffer );
+	}
+#endif
+	sDrive = sDriveBuf;
+	sDir = sDirBuf;
+	sFileName = sNameBuf;
+	sExt = sExtBuf;
+	//cout << "SPLIT: " << sDirBuf << " *** " << sNameBuf << " *** " << sExtBuf << endl;
+	return true;
+}
+
 /*
 int my_ref_test( int & iInOut )
 {
@@ -672,69 +780,15 @@ private:
 	Siehe auch Klasse: minNativeFunctionDeclarationNode
 */
 
-//*************************************************************************
-
-// Hilfsklasse zum Parsen von Funktions-Prototypen beim Registrieren von native Funktionen
-class minPrivateParser
-{
-public:
-	minPrivateParser()
-		: m_aTokenizer(), m_aParser( &m_aTokenizer )
-	{
-		InitDefaultTokenizer( m_aTokenizer );
-
-#ifndef _slow_search_
-		m_aTokenizer.SortTokenContainer();
-#endif
-	}
-
-	minFunctionDeclarationNode * ParseFunction( const string & sScript )
-	{
-		//m_aTokenizer.SetText( "{ "+sScript+" }" );	// ein Script muss immer in einem Block stehen !
-		m_aTokenizer.SetText( sScript );
-		if( m_aParser.ParseFunction() )
-		{
-			minInterpreterNode * pNode = m_aParser.GetProgramNode();
-			return (minFunctionDeclarationNode *)pNode;
-		}
-		return 0;
-	}
-
-private:
-	minTokenizer				m_aTokenizer;
-	minParser					m_aParser;
-};
-
-//*************************************************************************
-
-NativeFcnWrapperBase::NativeFcnWrapperBase( const string & sPrototype )
-	: m_aReturnType( Unknown )
-{
-	// aus dem Prototyp den Namen, return-Wert und Parameter parsen
-	minPrivateParser aPrivParser;
-	minFunctionDeclarationNode * pFcn = aPrivParser.ParseFunction( sPrototype );
-	if( pFcn )
-	{
-		m_aReturnType = pFcn->GetReturnType();
-		m_aVarList = pFcn->GetArgumentsList();
-		m_sFcnName = pFcn->GetName();
-	}
-}
-
-NativeFcnWrapperBase::~NativeFcnWrapperBase()
-{
-	m_aVarList.erase( m_aVarList.begin(), m_aVarList.end() );
-}
-
 //#########################################################################
 //#########################################################################
 //#########################################################################
-
-bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnInterface * pNewNativeFcn )
+/*
+bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnWrapperBaseAdapter * pNewNativeFcn )
 {
 	return m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pNewNativeFcn ) ) );
 }
-
+*/
 /* Verfuegbare Funktionen:
 
 	double fabs( double d )
@@ -761,6 +815,7 @@ bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnInterface * pNewNative
 	int fputs( string sText, int hFile );
 	int fgets( string & sText, int hFile );
 
+	int string_read()
 	int string_npos()
 	int string_length( string s )
 	char string_at( string s, int iPos )
@@ -785,130 +840,134 @@ bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnInterface * pNewNative
 
 void minScriptInterpreter::InitRuntimeEnvironment()
 {
-	minNativeFcnInterface * pFcn = 0;
+	NativeFcnWrapperBase * pFcn = 0;
 
-	// math.h functions
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)fabs, "double fabs( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)sin, "double sin( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)asin, "double asin( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)sinh, "double sinh( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)cos, "double cos( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)acos, "double acos( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)cosh, "double cosh( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)tan, "double tan( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)atan, "double atan( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper2<double,double,double>( (NativeFcnWrapper2<double,double,double>::MyFcnType2)atan2, "double atan2( double d1, double d2 );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)tanh, "double tanh( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)sqrt, "double sqrt( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)exp, "double exp( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)log, "double log( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<double,double>( (NativeFcnWrapper1<double,double>::MyFcnType1)log10, "double log10( double d );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper2<double,double,double>( (NativeFcnWrapper2<double,double,double>::MyFcnType2)pow, "double pow( double d1, double d2 );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 	// string.h functions
+	pFcn = new NativeFcnWrapper0<string>( string_read, "string string_read();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper0<int>( string_npos, "int string_npos();" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int, const char *>( string_length, "int string_length( string s );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper2<char, const char *, int>( string_at, "char string_at( string s, int iPos );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper3<string, const char *, int, char>( string_setchar, "string string_setchar( string s, int iPos, char ch );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper2<int, const char *, const char *>( string_find, "int string_find( string s, string sSearch );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper3<string, const char *, int, int>( string_substr, "string string_substr( string s, int iStartPos, int iLength );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper3<string, const char *, int, const char *>( string_insert, "string string_insert( string s, int iPos, string sInsert );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper3<string, const char *, int, int>( string_erase, "string string_erase( string s, int iPos, int iLength );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper4<string, const char *, int, int, const char *>( string_replace, "string string_replace( string s, int iPos, int iLength, string sReplace );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 	// file-io functions
 	pFcn = new NativeFcnWrapper2<int, const char *, const char *>( (NativeFcnWrapper2<int, const char *, const char *>::MyFcnType2)fopen, "int fopen( string sFileName, string sMode );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int, int>( (NativeFcnWrapper1<int, int>::MyFcnType1)fclose, "int fclose( int hFile );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int, int>( (NativeFcnWrapper1<int, int>::MyFcnType1)feof, "int feof( int hFile );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int, int>( (NativeFcnWrapper1<int, int>::MyFcnType1)ferror, "int ferror( int hFile );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper2<int, const char *, int>( (NativeFcnWrapper2<int, const char *, int>::MyFcnType2)fputs, "int fputs( string sFileName, int hFile );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new RefNativeFcnWrapper2<int, _Ref<string>, _Val<int> >( (RefNativeFcnWrapper2<int, _Ref<string>, _Val<int> >::MyFcnType2)my_fgets, "int fgets( string & sText, int hFile );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 	// stdlib.h
 	pFcn = new NativeFcnWrapper1<string, const char *>( (NativeFcnWrapper1<string, const char *>::MyFcnType1)my_getenv, "string getenv( string sName );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)putenv, "int putenv( string sNameValue );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeVoidFcnWrapper1<int>( (NativeVoidFcnWrapper1<int>::MyFcnType1)exit, "void exit( int iValue );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 	pFcn = new NativeFcnWrapper1<int,const char *>( MySystem, "int system( string s );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
+
+	pFcn = new RefNativeFcnWrapper5<bool,_Val<const char *>,_Ref<string>,_Ref<string>,_Ref<string>,_Ref<string> >( (RefNativeFcnWrapper5<bool,_Val<const char *>,_Ref<string>,_Ref<string>,_Ref<string>,_Ref<string> >::MyFcnType5)SplitPath, "bool splitpath( string sPath, string & sDrive, string & sDir, string & sFileName, string & sExt );" );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 	// buildin functions
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int PrintLn( string s );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	//pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int println( string s );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintFcn, "int __print( string s );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int __println( string s );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( ErrorPrintLnFcn, "int __errorln( string s );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	//pFcn = new NativeFcnWrapper2<int, const char *, int>( PrintLnFcn2, "void PrintLn( string s, int i );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 
 	pFcn = new NativeFcnWrapper1<int,int>( WaitFcn, "void __sleep( int iDelay );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 	// laden von Modulen
 	pFcn = new NativeFcnWrapper1<int,const char *>( LoadInterpreterModule, "int __loaddll( string s );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,int>( UnLoadInterpreterModule, "int __unloaddll( int hDll );" );
-	m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 
 	// test
 	//pFcn = new RefNativeFcnWrapper1<int, _Ref<int> >( (RefNativeFcnWrapper1<int, _Ref<int> >::MyFcnType1)my_ref_test, "int my_ref_test( int & iInOut );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 	//pFcn = new RefNativeFcnWrapper1<string, _Ref<string> >( (RefNativeFcnWrapper1<string, _Ref<string> >::MyFcnType1)my_ref_test_string, "string my_ref_test_string( string & sInOut );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 
     // container operations (for stl-container)
 	//pFcn = new NativeFcnWrapper1<int, minInterpreterValue>( container_push_back, "int container_push_back( object aObj );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 
 	// Beispiel fuer void-Funktion
 	//pFcn = new NativeVoidFcnWrapper1<int &>( MyVoidGulp, "void voidgulp( int & i );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 
 	// hier Problem bei C++-Code-Erzeugung, da Funktionsprototypen fehlen und Name ggf. unterschiedlich sein kann !!!
 	//pFcn = new NativeFcnWrapper1<int,int>( MyGulp2, "int mygulp( int i );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 	//pFcn = new NativeFcnWrapper1<int,int>( WaitFcn, "void Wait( int iDelay );" );
-	//m_aEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
+	//m_aEnvironment.AddNativeFunction( pFcn );
 }
 
 void minScriptInterpreter::InitTokenizer()
