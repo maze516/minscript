@@ -8,9 +8,12 @@
  *
  *  $Source: /Users/min/Documents/home/cvsroot/minscript/minipenv.h,v $
  *
- *  $Revision: 1.1.1.1 $
+ *  $Revision: 1.2 $
  *
  *	$Log: not supported by cvs2svn $
+ *	Revision 1.1.1.1  2003/06/22 09:31:21  min
+ *	Initial checkin
+ *	
  *
  ***************************************************************************/
 /***************************************************************************
@@ -29,7 +32,7 @@
  * conform with the GPL please contact the author.                         *
  *                                                                         *
  *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html      *
+ *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
  *                                                                         *
  ***************************************************************************/
 
@@ -51,6 +54,8 @@ class minBlockNode;
 class minFunctionDeclarationNode;
 class minClassDeclarationNode;
 class minCreatorInterface;
+class minNativeFcnWrapperBaseAdapter;
+class NativeFcnWrapperBase;
 
 //*************************************************************************
 
@@ -228,7 +233,7 @@ class MINDLLEXPORT minInterpreterValue
 	friend class minCallStackItem;
 
 	// zum Erzeugen einer zweiten Verpackung fuer ein Objekt (CallStackItem) !
-	minInterpreterValue( minHandle<minCallStackItem>	* phCallStackItem, minInterpreterType aType );
+	minInterpreterValue( minHandle<minCallStackItem> * phCallStackItem, minInterpreterType aType );
 
 public:
 	minInterpreterValue();
@@ -488,8 +493,15 @@ private:
 };
 
 //*************************************************************************
+class minInterpreterEnvironmentInterface
+{
+public:
+	virtual bool AddNativeFunction( NativeFcnWrapperBase * pNativeFunc ) = 0;
+};
+
+//*************************************************************************
 // enthaelt z.B. lokale Variablen, Funktionen etc.
-class MINDLLEXPORT minInterpreterEnvironment
+class MINDLLEXPORT minInterpreterEnvironment : public minInterpreterEnvironmentInterface
 {
 	typedef list< minHandle<minCallStackItem> >				CallStackContainerT;				
 	typedef list< minHandle<minFunctionDeclarationNode> >	FunctionContainerT;	
@@ -581,6 +593,9 @@ public:
 	void	ProcessError();
 
 	string GetInfoString() const;
+
+	// ´*** implement the interfaces ***
+	virtual bool AddNativeFunction( NativeFcnWrapperBase * pNativeFunc );
 
 	// zum Testen
 	void Dump() const;

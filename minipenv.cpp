@@ -8,9 +8,12 @@
  *
  *  $Source: /Users/min/Documents/home/cvsroot/minscript/minipenv.cpp,v $
  *
- *  $Revision: 1.1.1.1 $
+ *  $Revision: 1.2 $
  *
  *	$Log: not supported by cvs2svn $
+ *	Revision 1.1.1.1  2003/06/22 09:31:21  min
+ *	Initial checkin
+ *	
  *
  ***************************************************************************/
 /***************************************************************************
@@ -29,7 +32,7 @@
  * conform with the GPL please contact the author.                         *
  *                                                                         *
  *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html      *
+ *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
  *                                                                         *
  ***************************************************************************/
 
@@ -1682,6 +1685,12 @@ bool minInterpreterEnvironment::AddFunction( minHandle<minFunctionDeclarationNod
 	m_aFunctionContainer.insert( aFound, hFunction );
 #endif
 	return true;
+}
+
+bool minInterpreterEnvironment::AddNativeFunction( NativeFcnWrapperBase * pNativeFunc )
+{
+	minNativeFcnWrapperBaseAdapter * pFcn = new minNativeFcnWrapperBaseAdapter( pNativeFunc );
+	return AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );
 }
 
 bool minInterpreterEnvironment::RemoveFunction( minHandle<minFunctionDeclarationNode> hFunction )
