@@ -1,0 +1,17 @@
+change history of minscript
+===========================
+
+------------------------------------------------------------------------------
+ 4. 1.2004  Version 1.2.2
+
+            new features and improvements:
+               * new buildin functions: string_read(), splitpath()
+               * better modul handling, demomodule project included
+			   * new option --makemakefile
+               * some small bugfixes
+
+------------------------------------------------------------------------------
+17. 2.2003  Version 1.2.1
+
+            first public release of minscript
+
