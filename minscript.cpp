@@ -8,9 +8,12 @@
  *
  *  $Source: /Users/min/Documents/home/cvsroot/minscript/minscript.cpp,v $
  *
- *  $Revision: 1.1.1.1 $
+ *  $Revision: 1.2 $
  *
  *	$Log: not supported by cvs2svn $
+ *	Revision 1.1.1.1  2003/06/22 09:31:22  min
+ *	Initial checkin
+ *	
  *
  ***************************************************************************/
 /***************************************************************************
@@ -29,7 +32,7 @@
  * conform with the GPL please contact the author.                         *
  *                                                                         *
  *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html      *
+ *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
  *                                                                         *
  ***************************************************************************/
 
@@ -46,7 +49,7 @@
 
 #include <stdio.h>			// fuer: sprintf()
 
-#define _MINSCRIPT_VERSION	"1.2.1"
+#define _MINSCRIPT_VERSION	"1.2.2"
 
 #define _REGISTER_FCN_NAME	"minRegisterNativeFunctions"
 
@@ -74,6 +77,7 @@ struct minArgumentsHelper
 		m_bRunCodegen = false;
 		m_bMakeStubs = false;
 		m_bMakeWrapper = false;
+		m_bMakeMakefile = false;
 		m_bMakeDll = false;
 	}
 
@@ -101,6 +105,7 @@ struct minArgumentsHelper
 	bool				m_bRunCodegen;
 	bool				m_bMakeStubs;
 	bool				m_bMakeWrapper;
+	bool				m_bMakeMakefile;
 	bool				m_bMakeDll;
 };
 
@@ -147,6 +152,11 @@ static bool minParseArgs( int argc, char * argv[], minArgumentsHelper & aArgs )
 		else if( sActArg=="--makewrappers" )
 		{
 			aArgs.m_bMakeWrapper = true;
+			aArgs.m_bRunScript = false;
+		}
+		else if( sActArg=="--makemakefile" )
+		{
+			aArgs.m_bMakeMakefile = true;
 			aArgs.m_bRunScript = false;
 		}
 		else if( sActArg=="--makedll" )
@@ -265,6 +275,7 @@ static void ShowArgumentHelp( ostream & aStream )
 	//aStream << "  --dll dllname                   : load dll-module with name dllname" << endl;
 	SMALL( aStream << "  --makestubs                     : generate stubfile for headerfile" << endl; )
 	SMALL( aStream << "  --makewrappers                  : generate wrapper classes for headerfile" << endl; )
+	SMALL( aStream << "  --makemakefile                  : generate a makefile to build a module" << endl; )
 	SMALL( aStream << "  --makedll                       : show compiler options to compile stubfiles" << endl; )
 	SMALL( aStream << "  --codegen                       : generate c++ code for script" << endl; )
 	aStream << "  --nopreproc                     : do not run preprocessor" << endl;
@@ -281,7 +292,7 @@ static void ShowLicense( ostream & aStream )
 {
 	aStream << endl << "License for minscript: free for non-commercial use." << endl;
 	aStream << "Contact the author if you want to use minscript commercially." << endl << endl;
-	aStream << "Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html" << endl;
+	aStream << "Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html" << endl;
 	aStream << "Author:   michael.neuroth@freenet.de" << endl << endl;
 }
 
@@ -306,7 +317,7 @@ static void ShowCompileOptionsForDll( ostream & aStream )
 {
 #if defined( _MSC_VER )
 #ifdef _DEBUG
-	aStream << "cl -c -Zi -GX -GR -LD -MDd " << endl;
+	aStream << "cl -c -ZI -GX -GR -LD -MDd " << endl;
 #else
 	aStream << "cl -c -O2 -GX -GR -LD -MD " << endl;
 #endif
@@ -575,12 +586,23 @@ static bool MakeFunctionRegistration( string & sStubCode, minHandle<minInterpret
 	const minFunctionDeclarationNode * pFcnProto = (const minFunctionDeclarationNode *)hFcnProto.GetPtr();
 	const minVariableDeclarationList & aArgList	= pFcnProto->GetArgumentsList();
 	bool bIsVoidFcn = pFcnProto->GetReturnType()==Void;
+	bool bHasRefArgs = pFcnProto->HasReferenceArgs();
 
 	sStubCode += "\t";
-	if( bIsVoidFcn )
-		sStubCode += "pFcn = new NativeVoidFcnWrapper";
+	if( bHasRefArgs )
+	{
+		if( bIsVoidFcn )
+			sStubCode += "pFcn = new RefNativeVoidFcnWrapper";
+		else
+			sStubCode += "pFcn = new RefNativeFcnWrapper";
+	}
 	else
-		sStubCode += "pFcn = new NativeFcnWrapper";
+	{
+		if( bIsVoidFcn )
+			sStubCode += "pFcn = new NativeVoidFcnWrapper";
+		else
+			sStubCode += "pFcn = new NativeFcnWrapper";
+	}
 	sStubCode += minLTOA( aArgList.size() );
 
 	if( !(bIsVoidFcn && aArgList.size()==0) )
@@ -602,7 +624,14 @@ static bool MakeFunctionRegistration( string & sStubCode, minHandle<minInterpret
 	{
 		minHandle<minVariableDeclarationNode> hVarDecl = *aArgIter;
 
-		sStubCode += hVarDecl->GetType().GetTypeString();
+		if( hVarDecl->IsReference() && !hVarDecl->IsConst() )
+		{
+			sStubCode += "_Ref<"+hVarDecl->GetType().GetRealTypeString()+"> ";
+		}
+		else
+		{
+			sStubCode += hVarDecl->GetType().GetTypeString();
+		}
 
 		++aArgIter;
 
@@ -638,7 +667,7 @@ static bool MakeFunctionRegistration( string & sStubCode, minHandle<minInterpret
 	sStubCode += "\" );";
 	sStubCode += "\n";
 
-	sStubCode += "\taEnvironment.AddFunction( minHandle<minFunctionDeclarationNode>( new minNativeFunctionDeclarationNode( pFcn ) ) );\n";
+	sStubCode += "\tpEnvironment->AddNativeFunction( pFcn );\n";
 
 	return true;
 }
@@ -647,9 +676,9 @@ static bool MakeFunctionStubs( string & sStubCode, const minParserItemList & aIt
 {
 	sStubCode += "extern \"C\" bool CPPDLLEXPORT ";
 	sStubCode += _REGISTER_FCN_NAME;
-	sStubCode += "( minInterpreterEnvironment & aEnvironment )\n";
+	sStubCode += "( minInterpreterEnvironmentInterface * pEnvironment )\n";
 	sStubCode += "{\n";
-	sStubCode += "\tminNativeFcnInterface * pFcn;\n";
+	sStubCode += "\tNativeFcnWrapperBase * pFcn;\n";
 	sStubCode += "\n";
 
 	minParserItemList::const_iterator aIter = aItemList.begin();
@@ -861,10 +890,10 @@ static bool MakeStubFiles( const minArgumentsHelper & aArgs, const minParserItem
 	sStubCode += "#define _USE_DLL\n";
 	sStubCode += "#include \"platform.h\"\n";
 	sStubCode += "#include \"dllexport.h\"\n";
-	sStubCode += "#include \"minhandle.h\"\n";
+	//sStubCode += "#include \"minhandle.h\"\n";
 	sStubCode += "#include \"minscript_cpp.h\"\n";
 	sStubCode += "#include \"minnativehlp.h\"\n";
-	sStubCode += "#include \"minip.h\"\n";
+	//sStubCode += "#include \"minip.h\"\n";
 	//sStubCode += "#undef _USE_DLL\n";
 	sStubCode += "\n";
 
@@ -927,6 +956,79 @@ static bool MakeWrapperFiles( const minArgumentsHelper & aArgs, const minParserI
 	return true;
 }
 
+static bool MakeMakefile( const minArgumentsHelper & aArgs )
+{
+	string sMakefile;
+	string sModuleList;
+	string sModuleExt;
+	string sObjExt;
+	string sModuleName = "module";
+
+	sMakefile += "# ";
+	sMakefile += c_sWarning1;
+	sMakefile += "\"--makemakefile\".\n";;
+	sMakefile += "\n";
+
+#if defined( _WIN32 )
+	sMakefile += "CC = cl\n";
+	sMakefile += "CCFLAGS = -c -GX -GR -LD\n";					// -MDd -ZI
+	sMakefile += "LINKFLAGS = -MDd -LD minscriptdll.lib\n";		// ..\\minscriptdll\\release\\
+	sModuleExt = ".dll";
+	sObjExt = ".obj";
+#elif defined( __OS2__ )
+	sMakefile += "CC = icc\n";
+	sMakefile += "CCFLAGS = -c\n";
+	sMakefile += "LINKFLAGS = -LD\n";
+	sModuleExt = ".dll";
+	sObjExt = ".obj";
+#elif defined( __linux__ )
+	sMakefile += "CC = g++\n";
+	sMakefile += "CCFLAGS = -c\n";
+	sMakefile += "LINKFLAGS = -fPIC -shared\n";
+	sModuleExt = ".so";
+	sObjExt = ".o";
+#elif defined( __ZAURUS__ )
+#else
+#endif
+
+	sMakefile += "\n";
+	sMakefile += "all: "+sModuleName+sModuleExt;
+	sMakefile += "\n\n";
+
+	StringContainerT::const_iterator aNameIter = aArgs.m_aFileNameList.begin();
+	while( aNameIter != aArgs.m_aFileNameList.end() )
+	{
+		string s = *aNameIter;
+
+		string sDrive,sPath,sName,sExt;
+		SplitPath( s.c_str(), sDrive,sPath,sName,sExt );
+		//string sCppImplName = sName + ".cpp";
+
+		// dependency for the stub-files
+		sMakefile += s+sObjExt+": "+s+".cpp\n";
+		sMakefile += "\t$(CC) $(CCFLAGS) "+s+".cpp\n";
+		sMakefile += "\n";
+
+		// dependency for the c/c++ implementation of the module
+		sMakefile += sName+sObjExt+": "+sName+".cpp\n";
+		sMakefile += "\t$(CC) $(CCFLAGS) "+sName+".cpp\n";
+		sMakefile += "\n";
+
+		sModuleList += s+sObjExt+" ";
+		sModuleList += sName+sObjExt+" ";
+
+		++aNameIter;
+	}
+
+	sMakefile += sModuleName+sModuleExt+": "+sModuleList+"\n";
+	sMakefile += "\t$(CC) $(LINKFLAGS) "+sModuleList+" -o "+sModuleName+sModuleExt+"\n";
+	sMakefile += "\n";
+
+	cout << sMakefile.c_str() << endl;
+
+	return true;
+}
+
 #endif
 
 void RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptInterpreter & aIp, string & sScript, minTokenizer::TokenContainerT & aParsedTokens )
@@ -943,6 +1045,9 @@ void RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptI
 	sPredefinedSymbols += "#define __OS2__ 1\n";
 #elif defined( __linux__ )
 	sPredefinedSymbols += "#define __linux__ 1\n";
+#elif defined( __ZAURUS__ )
+	sPredefinedSymbols += "#define __linux__ 1\n";
+	sPredefinedSymbols += "#define __ZAURUS__ 1\n";
 #else
 	sPredefinedSymbols += "#define __UNKNOWN__ 1\n";
 #endif
@@ -965,7 +1070,6 @@ void RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptI
 			++aIter;
 		}
 	}
-
 	if( aArgs.m_bRunPreprocessor )
 	{
 		string sPreProcessedScript;
@@ -992,7 +1096,7 @@ void RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptI
 				}
 			}
 			// ansonsten falls nur Preprocessing erwuenscht auf die Standardausgabe ausgeben
-			else if( !aArgs.m_bParseOnly && !aArgs.m_bRunCodegen && !aArgs.m_bMakeStubs && !aArgs.m_bMakeWrapper && !aArgs.m_bMakeDll )
+			else if( !aArgs.m_bParseOnly && !aArgs.m_bRunCodegen && !aArgs.m_bMakeStubs && !aArgs.m_bMakeWrapper && !aArgs.m_bMakeDll && !aArgs.m_bMakeMakefile )
 			{
 				cout << sScript.c_str() << endl;
 			}
@@ -1039,7 +1143,7 @@ int main( int argc, char *argv[] )
 	if( aArgs.m_bShowVersion )
 	{
 		cout << "minscript, version " << _MINSCRIPT_VERSION << " from " << __DATE__ /*<< endl*/;
-		cout << ", (c) by Michael Neuroth, 1999-2003" << endl;
+		cout << ", (c) by Michael Neuroth, 1999-2004" << endl;
 		return 0;
 	}
 #ifdef USEBIG
@@ -1200,6 +1304,12 @@ int main( int argc, char *argv[] )
 		{
 			cerr << "error parsing script." << endl;
 		}
+#endif
+	}
+	else if( aArgs.m_bMakeMakefile )
+	{
+#ifdef USEBIG
+		MakeMakefile( aArgs );
 #endif
 	}
 	else if( aArgs.m_bRunScript )
