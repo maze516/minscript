@@ -1,0 +1,847 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-15">
+  <title>minscript</title>
+</head>
+<body>
+<h2 style="text-align: center; font-family: helvetica,arial,sans-serif;"><span
+ style="color: rgb(0, 0, 153);">minscript</span> - a simple Java/C++
+like script interpreter</h2>
+<span style="font-family: helvetica,arial,sans-serif;">Minscript
+&nbsp;is an object oriented scripting language. The scripting language
+is a small subset of the C++ language. It has even more in common with
+Java than with C++. The aim of &nbsp;the script language is not to
+execute all possible C++ programs, instead every valid minscript program
+should compile with a C++ compiler. Have a look at the <a
+ href="#Sample_scripts">sample script</a> to get an impression of the
+syntax of the scripting language.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">The main
+features of the minscript language are:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<ul style="font-family: helvetica,arial,sans-serif;">
+  <li>preprocessor (#define's and #ifdef's are possible!)</li>
+  <li>buildin types: bool, char, int, double, string</li>
+  <li>typedef<br>
+  </li>
+  <li>expressions</li>
+  <li>statements: if/else, for, while, do/while, switch</li>
+  <li>functions</li>
+  <li>function overloading<br>
+  </li>
+  <li>classes and structs</li>
+  <li>virtual methods</li>
+  <li>multiple inheritance</li>
+  <li>scope mechanism in blocks</li>
+  <li>template-classes<br>
+  </li>
+  <li>references and pointers (in a very simple way, no pointer
+arithmetic possible)</li>
+  <li>C/C++ API</li>
+  <li>multiplattform support, runs on: Windows, Linux, OS/2<br>
+  </li>
+  <li>a lot of <a href="#Buildin_functions">buildin functions</a></li>
+  <li>some <a href="#Language_extensions">language extensions</a><br>
+  </li>
+</ul>
+<span style="font-family: helvetica,arial,sans-serif;">Not supported
+features of the C++ language are:</span><br>
+<ul style="font-family: helvetica,arial,sans-serif;">
+  <li>no extern declarations of methods, all methods have to be
+declared inline !<br>
+  </li>
+  <li>no operator overloading</li>
+  <li>no template functions</li>
+  <li>no templates in typedefs, use #define's<br>
+  </li>
+  <li>no explicit casts (the buildin types are casted automatically)<br>
+  </li>
+  <li>no iostream's</li>
+  <li>no goto's<br>
+  </li>
+  <li>no default arguments in functions or methods (example: int f( int
+i = 0 ) {})</li>
+  <li>no multidimensional arrays (example: int aArray[4][4];)</li>
+  <li>no pointer arithmetic (example: int * p; ... p = p+1;)<br>
+  </li>
+</ul>
+<span style="font-family: helvetica,arial,sans-serif;">Features of the
+minscript program packag are:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<ul style="font-family: helvetica,arial,sans-serif;">
+  <li>preprocessor</li>
+  <li>external functions in <a href="#Module_interface_">loadable
+modules</a><br>
+  </li>
+  <li>stubcode-generator for automatic creation of stubcode needed for
+the registration of &nbsp;external functions in the interperter</li>
+  <li>wrappercode-generator for automatic creation of wrapper-classes</li>
+  <li>test scripts to validate the minscript-interpreter against a c++
+compiler (see: specs/auto_test.ic)<br>
+  </li>
+</ul>
+<span style="font-family: helvetica,arial,sans-serif;">Known bugs of
+&nbsp;minscript are:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<ul style="font-family: helvetica,arial,sans-serif;">
+  <li>#if defined( 1 ) is false<br>
+  </li>
+  <li>const modifier of methods is not verified</li>
+  <li>every virtual method has to be declared with the virtual keyword,
+even if the method is declared as virtual in the baseclass&nbsp;</li>
+  <li>for( int i=0; i&lt;10; i++ ) {} doesn't work, you can not declare
+variables in the for-statement</li>
+  <li>long, short, unsigned doesn't work, use long int, short int,
+unsigned int</li>
+  <li>case-labels don't have to be constant!<br>
+  </li>
+  <li>arrays can not created dynamically (example: int * pArray = new
+int [8];)</li>
+  <li>aObj.f() works even if the class of aObj has no method with name
+f() but a function with name f() exists</li>
+  <li>there are some problems with virtual destructors or references
+for objects with virtual methods, see test_classes.ic</li>
+  <li>access to private member variables of classes is possible<br>
+  </li>
+  <li>not all keywords have the same meaning as in C++: extern, static,
+const</li>
+  <li>you could write valid minscript programs which will not compile
+with a C++ compiler</li>
+  <li>not all templates features are supported<br>
+  </li>
+  <li>there are a lot of unknown bugs!</li>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h3><span style="font-family: helvetica,arial,sans-serif;"><a
+ name="Sample_scripts"></a>Sample script</span></h3>
+<span style="font-family: helvetica,arial,sans-serif;">Sample1.ic:<br>
+<br>
+</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 153);"></span>
+<pre><span style="color: rgb(0, 0, 153);">/* </span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    A simple sample script with some features</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">*/</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">#define MAX	512</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">const string c_sString = "C++ is nice.";</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">// a simple class to test the scope mechanismus </span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">class MyTestClass</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">{</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">public:</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    // allways inlining !</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    MyTestClass( int i )</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    {</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">        __println( "MyTestClass::MyTestClass(int) i="+i );</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">        m_i = i;</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    }</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    ~MyTestClass()</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    {</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">        __println( "MyTestClass::~MyTestClass(int) i="+m_i );</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    }</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">    int f()</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    {</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">        return m_i*m_i;</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    }</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">private:</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    int    m_i;</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">};</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">void TestFunction( string s, double d )</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">{</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    double dResult = d * d - 4.5;</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    string sTemp;</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">    /* create a result string */</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    sTemp = s + " Result="+dResult;</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">    // now print the string</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    __println( sTemp );</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">}</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">int main()</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">{</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    TestFunction( "Hello minscript world ! This is a function.", 9.123 );</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">    __println( "test scope..." );</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    {</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">        MyTestClass aObj( 7 );</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">        __println( "aObj.f() = " + aObj.f() );</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    }</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">    __println( "test scope done." );</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">    return 0;</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">}</span><br
+ style="color: rgb(0, 0, 153);"><br style="color: rgb(0, 0, 153);"><span
+ style="color: rgb(0, 0, 153);">#ifdef __MINSCRIPT__</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">main();</span><br
+ style="color: rgb(0, 0, 153);"><span style="color: rgb(0, 0, 153);">#endif</span><br></pre>
+<span style="font-family: helvetica,arial,sans-serif;"><br>
+The output of this script is (run: minscript Sample1.ic):<br>
+</span><br>
+<span
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">Hello
+minscript world ! This is a function. Result=78.729129</span><br
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">
+<span
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">test
+scope...</span><br
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">
+<span
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">MyTestClass::MyTestClass(int)
+i=7</span><br
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">
+<span
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">aObj.f()
+= 49</span><br
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">
+<span
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">MyTestClass::~MyTestClass(int)
+i=7</span><br
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">
+<span
+ style="font-family: courier new,courier,monospace; color: rgb(0, 102, 0);">test
+scope done.</span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><br>
+<hr
+ style="width: 100%; height: 2px; font-family: helvetica,arial,sans-serif;">
+<h3 style="font-family: helvetica,arial,sans-serif;"><a
+ name="Buildin_functions"></a>Buildin functions</h3>
+<table cellpadding="2" cellspacing="2" border="0"
+ style="width: 100%; text-align: left; font-family: helvetica,arial,sans-serif;">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; width: 35%; font-family: courier new,courier,monospace;"><font
+ size="-1">int __print( string s )<br>
+      </font> </td>
+      <td style="vertical-align: top;">prints a string to the standard
+output stream<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int __println( string s )<br>
+      </font> </td>
+      <td style="vertical-align: top;">prints a string to the standard
+output stream and appends a new line<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int __errorln( string s )<br>
+      </font> </td>
+      <td style="vertical-align: top;">prints a string to the error
+stream and appends a new line</td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">void __sleep( int iDelay )<br>
+      </font> </td>
+      <td style="vertical-align: top;">suspends the program execution
+for iDelay ms<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int __loaddll( string s )<br>
+      </font> </td>
+      <td style="vertical-align: top;">load the module with a given
+name, returns the handle for the module<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int __unloaddll( int hDll )<br>
+      </font> </td>
+      <td style="vertical-align: top;">frees the module<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int sizeof( expression )</font></td>
+      <td style="vertical-align: top;">returns the size of the
+expression type <br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1"><br>
+      </font> </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int fopen( string sFileName, string sMode )</font></td>
+      <td style="vertical-align: top;">opens a file in sMode (usual
+file-modes from &lt;stdio.h&gt;)<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int fclose( int hFile )</font></td>
+      <td style="vertical-align: top;">closes a file<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int feof( int hFile )</font></td>
+      <td style="vertical-align: top;">checks a file for end-of-file
+status<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int ferror( int hFile )</font></td>
+      <td style="vertical-align: top;">checks a file for error status<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int fputs( string sText, int hFile )</font></td>
+      <td style="vertical-align: top;">writes a string into a file<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int fgets( string &amp; sText, int hFile )</font></td>
+      <td style="vertical-align: top;">reads a string from a file<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1"><br>
+      </font> </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">string getenv( string sName )<br>
+      </font> </td>
+      <td style="vertical-align: top;">reads an environment variable<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int putenv( string sNameValue )<br>
+      </font> </td>
+      <td style="vertical-align: top;">writes an environment variable<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">void exit( int iValue )</font></td>
+      <td style="vertical-align: top;">exits the program imediately
+with the exit-code iValue</td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int system( string sCmd )<br>
+      </font> </td>
+      <td style="vertical-align: top;">system call, runs
+(synchroniously) the command in the string sCmd<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><small><span
+ style="font-family: courier new,courier,monospace;">bool splitpath(
+string sFullPath, string &amp; sDrive, string &amp; sPath, string &amp;
+sName, string &amp; sExt )</span></small><br>
+      </td>
+      <td style="vertical-align: top;">splits a given path in
+substrings for drive, path, name and extension</td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1"><br>
+      </font> </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int string_read()</font></td>
+      <td style="vertical-align: top;">reads a string from the standard
+input and returns the string</td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int string_npos()<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns a integer constant to
+show that the find-function was not successfull<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int string_length( string s )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the length of the string<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">char string_at( string s, int iPos )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the character in the
+string at the given position<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">string string_setchar( string s, int iPos, char ch )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns a string with the
+changed character at the given position <br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int string_find( string s, string sSearch )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the position of the
+sSerach-string in the string s, returns string_npos() if the search
+string was not found<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">string string_substr( string s, int iStartPos, int iLength )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns a substring of the given
+string<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">string string_insert( string s, int iPos, string sInsert )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns a string in which the
+sInsert string is inserted in the string s<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">string string_erase( string s, int iPos, int iLength )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns a string in which the
+given range is erased<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">string string_replace( string s, int iPos, int iLength,
+string sReplace )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns a string in which a part
+of the string is replaced by another string<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1"><br>
+      </font> </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;fabs( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns absolute value of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;sin( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the sinus of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;asin( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the arcus-sinus of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;sinh( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the sinus hyperbolicus
+of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;cos( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the cosinus of d </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;acos( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the arcus-cosinus of d </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;cosh( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the cosinus hyperbolicus
+of d </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;tan( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the tangens of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;atan( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the arcus-tangens of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;atan2( double d1, double d2 )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the arcus-tangens of d </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;tanh( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the tanges hyperbolicus
+of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;sqrt( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the squareroot of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;exp( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the e the power of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;log( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the logarithm of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;log10( double d )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the logarithm for base
+10 of d<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">double&nbsp;pow( double d1, double d2 )<br>
+      </font> </td>
+      <td style="vertical-align: top;">returns the power of d1 by d2<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br style="font-family: helvetica,arial,sans-serif;">
+<hr
+ style="width: 100%; height: 2px; font-family: helvetica,arial,sans-serif;">
+<h3 style="font-family: helvetica,arial,sans-serif;"><a
+ name="Language_extensions"></a>Language extensions</h3>
+<span style="font-family: helvetica,arial,sans-serif;"></span>
+<table cellpadding="2" cellspacing="2" border="0"
+ style="text-align: left; width: 100%;">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; width: 35%; font-family: courier new,courier,monospace;"><font
+ size="-1">__exists variablename &nbsp; &nbsp;<br>
+      </font> </td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">verifys
+if a variable with the given name exists<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">__dbghalt expression</font></td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">sets
+an user brakepoint, the execution of the script will be stoped when
+this statement will be reached.<br>
+Dumps all functions and methods if expression has the value "fcn".<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">typeof variablename<br>
+      </font> </td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">prints
+the type of the variable</td>
+    </tr>
+  </tbody>
+</table>
+<span style="font-family: helvetica,arial,sans-serif;"></span><br>
+<hr style="width: 100%; height: 2px;">
+<h3><span style="font-family: helvetica,arial,sans-serif;"><a
+ name="Module_interface"></a>Predefined symbols of the preprocessor</span></h3>
+<h3><span style="font-family: helvetica,arial,sans-serif;"></span></h3>
+<span style="font-family: helvetica,arial,sans-serif;"></span>
+<table cellpadding="2" cellspacing="2" border="0"
+ style="text-align: left; width: 100%;">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace; width: 35%;"><font
+ size="-1">__MINSCRIPT__&nbsp; &nbsp;<br>
+      </font> </td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">
+is defined if the script is executed by the minscript application<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">__STDC__</font></td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">is
+allways set<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">__cplusplus<br>
+      </font> </td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">is
+allways set<br>
+      </td>
+    </tr>
+    <tr style="font-family: helvetica,arial,sans-serif;">
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">_WIN32<br>
+      </font> </td>
+      <td style="vertical-align: top;">is defined if the script is
+executed on the windows plattform<br>
+      </td>
+    </tr>
+    <tr style="font-family: helvetica,arial,sans-serif;">
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">__OS2__<br>
+      </font> </td>
+      <td style="vertical-align: top;">is defined if the script is
+executed on the OS/2 plattform</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: courier new,courier,monospace;">__ZAURUS__</span><br>
+      </td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">is
+defined if the script is executed on the ZAURUS plattform</td>
+    </tr>
+    <tr style="font-family: helvetica,arial,sans-serif;">
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">__linux__<br>
+      </font> </td>
+      <td style="vertical-align: top;">is defined if the script is
+executed on the linux plattform</td>
+    </tr>
+    <tr style="font-family: helvetica,arial,sans-serif;">
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">__UNKNOWN__<br>
+      </font> </td>
+      <td style="vertical-align: top;">is defined if the script is
+executed on an unknown plattform</td>
+    </tr>
+    <tr style="font-family: helvetica,arial,sans-serif;">
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">_NDEBUG<br>
+      </font> </td>
+      <td style="vertical-align: top;">is defined if the script is
+executed without the --debug option</td>
+    </tr>
+    <tr style="font-family: helvetica,arial,sans-serif;">
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">_DEBUG<br>
+      </font> </td>
+      <td style="vertical-align: top;">is defined if the script is
+executed with the --debug option</td>
+    </tr>
+  </tbody>
+</table>
+<span style="font-family: helvetica,arial,sans-serif;"><br>
+</span>
+<hr style="width: 100%; height: 2px;">
+<h3><span style="font-family: helvetica,arial,sans-serif;"><a
+ name="Module_interface"></a>Commandline options</span></h3>
+<h3><span style="font-family: helvetica,arial,sans-serif;"></span></h3>
+<span style="font-family: helvetica,arial,sans-serif;">Start minscript
+with the option -? for a complete list of available options.<br>
+</span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span>
+<hr style="width: 100%; height: 2px;">
+<h3><a name="Module_interface_"></a><span
+ style="font-family: helvetica,arial,sans-serif;"><a
+ name="Module_interface"></a>Module interface</span></h3>
+<h3><span style="font-family: helvetica,arial,sans-serif;"></span></h3>
+<span style="font-family: helvetica,arial,sans-serif;">To generate a
+module see the demo module example.<br>
+<br>
+The folowing steps are necessary</span><br>
+<ul>
+  <li><span style="font-family: helvetica,arial,sans-serif;">write the
+C/C++ implementation of the module (example: <span
+ style="font-family: courier new,courier,monospace;">module_test.h,
+module_test.cpp</span>)</span><br>
+    <span style="font-family: helvetica,arial,sans-serif;"></span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">generate
+the stub files for your implementation files using the
+minscript-program (example: <span
+ style="font-family: courier new,courier,monospace;">minscript&nbsp;
+--mmakestubs &gt;module_test.h.cpp</span>)</span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">optional:
+if your implementation module uses classes, you have to generate
+wrapper-classes for the minscript&nbsp; interpreter: (example: <span
+ style="font-family: courier new,courier,monospace;">minscript
+--makewrappers module_test.h &gt;module_test.ic</span>). Use this
+wrapper files with an #include statement.<br>
+    </span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">generate
+the makefile to create the shared library (linux) or dll (windows).
+(example: <span style="font-family: courier new,courier,monospace;">minscript
+--makemakefile module_test.h</span>)<br>
+    </span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">generate
+the shared library (module.so) or dll (module.dll) with <span
+ style="font-family: courier new,courier,monospace;">make</span> or <span
+ style="font-family: courier new,courier,monospace;">nmake</span>.</span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">test the
+generated module (module.*) by loading the module with <span
+ style="font-family: courier new,courier,monospace;">__loaddll("module.so")</span>
+or <span style="font-family: courier new,courier,monospace;">__loaddll("module.dll")</span><br>
+    </span></li>
+</ul>
+<span style="font-family: helvetica,arial,sans-serif;">All these steps
+are done in the script buildmodule.ic (minscript buildmodule.ic -a
+module_test.h).</span><br>
+<span style="font-family: helvetica,arial,sans-serif;"> </span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<hr
+ style="width: 100%; height: 2px; font-family: helvetica,arial,sans-serif;">
+<h3 style="font-family: helvetica,arial,sans-serif;">License</h3>
+<span style="font-family: helvetica,arial,sans-serif;">The usage of
+minscript is free for non commercial use. <br>
+<br>
+Please contact the author if you want to use minscript commercially.<br>
+<br>
+<span style="font-weight: bold;"><span
+ style="text-decoration: underline;">Warning:</span> The minscript
+package comes without any warranty. Use it at your own risk.</span></span><br>
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span>
+<hr style="width: 100%; height: 2px;">
+<h3 style="font-family: helvetica,arial,sans-serif;">Contact</h3>
+<span style="font-family: helvetica,arial,sans-serif;">Author: <a
+ href="mailto:michael.neuroth@freenet.de">michael.neuroth@freenet.de<br>
+</a><br>
+Homepage: <a
+ href="http://people.freenet.de/mneuroth/zaurus/minscript.html"><span
+ style="font-family: helvetica,arial,sans-serif;"></span></a></span><a
+ href="http://www.mneuroth.de/privat/zaurus/minscript.html"><span
+ style="font-family: helvetica,arial,sans-serif;">http://www.mneuroth.de/privat/zaurus/minscript.html</span></a><br>
+<br style="font-family: helvetica,arial,sans-serif;">
+<hr style="width: 100%; height: 2px;">
+<h3 style="font-family: helvetica,arial,sans-serif;">Copyright</h3>
+<span style="font-family: helvetica,arial,sans-serif;">Minscript is
+written by Michae Neuroth, (c) 1999-2004.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br>
+</body>
+</html>
