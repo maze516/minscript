@@ -8,9 +8,12 @@
  *
  *  $Source: /Users/min/Documents/home/cvsroot/minscript/minip.h,v $
  *
- *  $Revision: 1.1.1.1 $
+ *  $Revision: 1.2 $
  *
  *	$Log: not supported by cvs2svn $
+ *	Revision 1.1.1.1  2003/06/22 09:31:21  min
+ *	Initial checkin
+ *	
  *
  ***************************************************************************/
 /***************************************************************************
@@ -29,7 +32,7 @@
  * conform with the GPL please contact the author.                         *
  *                                                                         *
  *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html      *
+ *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
  *                                                                         *
  ***************************************************************************/
 /*
@@ -232,7 +235,7 @@ public:
 
 	SMALL( bool DumpParser( ostream & aStream ); )
 
-	bool RegisterNativeFcn( minNativeFcnInterface * pNewNativeFcn );
+	//bool RegisterNativeFcn( minNativeFcnWrapperBaseAdapter * pNewNativeFcn );
 
 	//bool RegisterFunction();
 	//bool RegisterVariable();
@@ -267,6 +270,7 @@ private:
 //*************************************************************************
 MINDLLEXPORT bool ReadScript( const char * sFileName, string & sScriptOut, const StringListT & aIncludeDirList = StringListT() );
 MINDLLEXPORT bool WriteAsciiFile( const char * sFileName, const string & sTextIn );
+MINDLLEXPORT bool SplitPath( const char * sPath, string & sDrive, string & sDir, string & sFileName, string & sExt );
 
 void InitDefaultTokenizer( minTokenizer & m_aTokenizer );
 
