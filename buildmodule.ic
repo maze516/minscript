@@ -1,0 +1,46 @@
+
+void PrintUsage()
+{
+    __println("script to create a external module.");
+    __println("usage: minscript buildmodul.ic -a headerfile1 [-a headerfile2 ...]");
+}
+
+void ProcessDllBuild()
+{
+    string s;
+    string sTemp;
+    int i = 0;
+
+    for( i=0; i<argc; i++ )
+    {
+        // generate the cpp files
+        s = "minscript --makestubs "+argv[i]+" >"+argv[i]+".cpp";
+        sTemp = sTemp+argv[i];
+        system( s );
+    }
+    // generate the makefile
+    s = "minscript --makemakefile "+sTemp+" >Makefile";
+    system( s );
+
+    // run the makefile
+	string sMake = "nmake";
+#ifdef __linux__
+    sMake = "make";
+#endif
+    system( sMake );
+
+    // test the new generated module !
+    string sDllExt = ".dll";
+#ifdef __linux__
+    sDllExt = ".so";
+#endif
+    s = "minscript testmodule.ic -a module"+sDllExt;
+    system( s );
+}
+
+
+if( argc > 0 )
+    ProcessDllBuild();
+else
+    PrintUsage();
+
