@@ -1,0 +1,23 @@
+// A simple script to test a module
+
+if( argc > 0 )
+{
+    string sName = argv[0];
+
+    int hDll = __loaddll(sName);
+
+    __println("Loaddll Test ("+sName+") hDll="+hDll );
+
+    if( hDll!=0 )
+    {
+        string s = "Call test: "+test(8);
+        __println( s );
+        string strg = "nix";
+        reftest(s);
+        __println( s );
+    }
+}
+else
+{
+    __println( "usage: minscript testmodule.ic -a modulename" );
+}
