@@ -9,13 +9,14 @@
 <h2 style="text-align: center; font-family: helvetica,arial,sans-serif;"><span
  style="color: rgb(0, 0, 153);">minscript</span> - a simple Java/C++
 like script interpreter</h2>
-<span style="font-family: helvetica,arial,sans-serif;">Minscript  is an
-object oriented scripting language. The scripting language is a small
-subset of the C++ language. It has even more in common with Java than
-with C++. The aim of  the script language is not to execute all possible
-C++ programs, instead every valid minscript program should compile with
-a C++ compiler. Have a look at the <a href="#Sample_scripts">sample
-script</a> to get an impression of the syntax of the scripting language.</span><br
+<span style="font-family: helvetica,arial,sans-serif;">Minscript
+&nbsp;is an object oriented scripting language. The scripting language
+is a small subset of the C++ language. It has even more in common with
+Java than with C++. The aim of &nbsp;the script language is not to
+execute all possible C++ programs, instead every valid minscript program
+should compile with a C++ compiler. Have a look at the <a
+ href="#Sample_scripts">sample script</a> to get an impression of the
+syntax of the scripting language.</span><br
  style="font-family: helvetica,arial,sans-serif;">
 <br style="font-family: helvetica,arial,sans-serif;">
 <span style="font-family: helvetica,arial,sans-serif;">The main
@@ -76,21 +77,21 @@ minscript program packag are:</span><br
 modules</a><br>
   </li>
   <li>stubcode-generator for automatic creation of stubcode needed for
-the registration of  external functions in the interperter</li>
+the registration of &nbsp;external functions in the interperter</li>
   <li>wrappercode-generator for automatic creation of wrapper-classes</li>
   <li>test scripts to validate the minscript-interpreter against a c++
 compiler (see: specs/auto_test.ic)<br>
   </li>
 </ul>
 <span style="font-family: helvetica,arial,sans-serif;">Known bugs of
- minscript are:</span><br
+&nbsp;minscript are:</span><br
  style="font-family: helvetica,arial,sans-serif;">
 <ul style="font-family: helvetica,arial,sans-serif;">
   <li>#if defined( 1 ) is false<br>
   </li>
   <li>const modifier of methods is not verified</li>
   <li>every virtual method has to be declared with the virtual keyword,
-even if the method is declared as virtual in the baseclass </li>
+even if the method is declared as virtual in the baseclass&nbsp;</li>
   <li>for( int i=0; i&lt;10; i++ ) {} doesn't work, you can not declare
 variables in the for-statement</li>
   <li>long, short, unsigned doesn't work, use long int, short int,
@@ -374,12 +375,28 @@ with the exit-code iValue</td>
       </td>
     </tr>
     <tr>
+      <td style="vertical-align: top;"><small><span
+ style="font-family: courier new,courier,monospace;">bool splitpath(
+string sFullPath, string &amp; sDrive, string &amp; sPath, string &amp;
+sName, string &amp; sExt )</span></small><br>
+      </td>
+      <td style="vertical-align: top;">splits a given path in
+substrings for drive, path, name and extension</td>
+    </tr>
+    <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
  size="-1"><br>
       </font> </td>
       <td style="vertical-align: top;"><br>
       </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; font-family: courier new,courier,monospace;"><font
+ size="-1">int string_read()</font></td>
+      <td style="vertical-align: top;">reads a string from the standard
+input and returns the string</td>
     </tr>
     <tr>
       <td
@@ -474,7 +491,7 @@ of the string is replaced by another string<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double fabs( double d )<br>
+ size="-1">double&nbsp;fabs( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns absolute value of d<br>
       </td>
@@ -482,7 +499,7 @@ of the string is replaced by another string<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double sin( double d )<br>
+ size="-1">double&nbsp;sin( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the sinus of d<br>
       </td>
@@ -490,7 +507,7 @@ of the string is replaced by another string<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double asin( double d )<br>
+ size="-1">double&nbsp;asin( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the arcus-sinus of d<br>
       </td>
@@ -498,7 +515,7 @@ of the string is replaced by another string<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double sinh( double d )<br>
+ size="-1">double&nbsp;sinh( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the sinus hyperbolicus
 of d<br>
@@ -507,21 +524,21 @@ of d<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double cos( double d )<br>
+ size="-1">double&nbsp;cos( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the cosinus of d </td>
     </tr>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double acos( double d )<br>
+ size="-1">double&nbsp;acos( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the arcus-cosinus of d </td>
     </tr>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double cosh( double d )<br>
+ size="-1">double&nbsp;cosh( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the cosinus hyperbolicus
 of d </td>
@@ -529,7 +546,7 @@ of d </td>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double tan( double d )<br>
+ size="-1">double&nbsp;tan( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the tangens of d<br>
       </td>
@@ -537,7 +554,7 @@ of d </td>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double atan( double d )<br>
+ size="-1">double&nbsp;atan( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the arcus-tangens of d<br>
       </td>
@@ -545,14 +562,14 @@ of d </td>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double atan2( double d1, double d2 )<br>
+ size="-1">double&nbsp;atan2( double d1, double d2 )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the arcus-tangens of d </td>
     </tr>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double tanh( double d )<br>
+ size="-1">double&nbsp;tanh( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the tanges hyperbolicus
 of d<br>
@@ -561,7 +578,7 @@ of d<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double sqrt( double d )<br>
+ size="-1">double&nbsp;sqrt( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the squareroot of d<br>
       </td>
@@ -569,7 +586,7 @@ of d<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double exp( double d )<br>
+ size="-1">double&nbsp;exp( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the e the power of d<br>
       </td>
@@ -577,7 +594,7 @@ of d<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double log( double d )<br>
+ size="-1">double&nbsp;log( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the logarithm of d<br>
       </td>
@@ -585,7 +602,7 @@ of d<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double log10( double d )<br>
+ size="-1">double&nbsp;log10( double d )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the logarithm for base
 10 of d<br>
@@ -594,7 +611,7 @@ of d<br>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace;"><font
- size="-1">double pow( double d1, double d2 )<br>
+ size="-1">double&nbsp;pow( double d1, double d2 )<br>
       </font> </td>
       <td style="vertical-align: top;">returns the power of d1 by d2<br>
       </td>
@@ -613,7 +630,7 @@ of d<br>
     <tr>
       <td
  style="vertical-align: top; width: 35%; font-family: courier new,courier,monospace;"><font
- size="-1">__exists variablename    <br>
+ size="-1">__exists variablename &nbsp; &nbsp;<br>
       </font> </td>
       <td
  style="vertical-align: top; font-family: helvetica,arial,sans-serif;">verifys
@@ -654,7 +671,7 @@ the type of the variable</td>
     <tr>
       <td
  style="vertical-align: top; font-family: courier new,courier,monospace; width: 35%;"><font
- size="-1">__MINSCRIPT__   <br>
+ size="-1">__MINSCRIPT__&nbsp; &nbsp;<br>
       </font> </td>
       <td
  style="vertical-align: top; font-family: helvetica,arial,sans-serif;">
@@ -696,6 +713,14 @@ executed on the windows plattform<br>
       </font> </td>
       <td style="vertical-align: top;">is defined if the script is
 executed on the OS/2 plattform</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: courier new,courier,monospace;">__ZAURUS__</span><br>
+      </td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">is
+defined if the script is executed on the ZAURUS plattform</td>
     </tr>
     <tr style="font-family: helvetica,arial,sans-serif;">
       <td
@@ -746,13 +771,53 @@ with the option -? for a complete list of available options.<br>
  style="font-family: helvetica,arial,sans-serif;"><a
  name="Module_interface"></a>Module interface</span></h3>
 <h3><span style="font-family: helvetica,arial,sans-serif;"></span></h3>
-<span style="font-family: helvetica,arial,sans-serif;">TODO !<br>
-</span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">To generate a
+module see the demo module example.<br>
+<br>
+The folowing steps are necessary</span><br>
+<ul>
+  <li><span style="font-family: helvetica,arial,sans-serif;">write the
+C/C++ implementation of the module (example: <span
+ style="font-family: courier new,courier,monospace;">module_test.h,
+module_test.cpp</span>)</span><br>
+    <span style="font-family: helvetica,arial,sans-serif;"></span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">generate
+the stub files for your implementation files using the
+minscript-program (example: <span
+ style="font-family: courier new,courier,monospace;">minscript&nbsp;
+--mmakestubs &gt;module_test.h.cpp</span>)</span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">optional:
+if your implementation module uses classes, you have to generate
+wrapper-classes for the minscript&nbsp; interpreter: (example: <span
+ style="font-family: courier new,courier,monospace;">minscript
+--makewrappers module_test.h &gt;module_test.ic</span>). Use this
+wrapper files with an #include statement.<br>
+    </span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">generate
+the makefile to create the shared library (linux) or dll (windows).
+(example: <span style="font-family: courier new,courier,monospace;">minscript
+--makemakefile module_test.h</span>)<br>
+    </span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">generate
+the shared library (module.so) or dll (module.dll) with <span
+ style="font-family: courier new,courier,monospace;">make</span> or <span
+ style="font-family: courier new,courier,monospace;">nmake</span>.</span></li>
+  <li><span style="font-family: helvetica,arial,sans-serif;">test the
+generated module (module.*) by loading the module with <span
+ style="font-family: courier new,courier,monospace;">__loaddll("module.so")</span>
+or <span style="font-family: courier new,courier,monospace;">__loaddll("module.dll")</span><br>
+    </span></li>
+</ul>
+<span style="font-family: helvetica,arial,sans-serif;">All these steps
+are done in the script buildmodule.ic (minscript buildmodule.ic -a
+module_test.h).</span><br>
+<span style="font-family: helvetica,arial,sans-serif;"> </span><br
+ style="font-family: helvetica,arial,sans-serif;">
 <hr
  style="width: 100%; height: 2px; font-family: helvetica,arial,sans-serif;">
 <h3 style="font-family: helvetica,arial,sans-serif;">License</h3>
 <span style="font-family: helvetica,arial,sans-serif;">The usage of
-minscrit is free for non commercial use. <br>
+minscript is free for non commercial use. <br>
 <br>
 Please contact the author if you want to use minscript commercially.<br>
 <br>
@@ -769,13 +834,13 @@ package comes without any warranty. Use it at your own risk.</span></span><br>
 Homepage: <a
  href="http://people.freenet.de/mneuroth/zaurus/minscript.html"><span
  style="font-family: helvetica,arial,sans-serif;"></span></a></span><a
- href="http://people.freenet.de/mneuroth/zaurus/minscript.html"><span
- style="font-family: helvetica,arial,sans-serif;">http://people.freenet.de/mneuroth/zaurus/minscript.html</span></a><br>
+ href="http://www.mneuroth.de/privat/zaurus/minscript.html"><span
+ style="font-family: helvetica,arial,sans-serif;">http://www.mneuroth.de/privat/zaurus/minscript.html</span></a><br>
 <br style="font-family: helvetica,arial,sans-serif;">
 <hr style="width: 100%; height: 2px;">
 <h3 style="font-family: helvetica,arial,sans-serif;">Copyright</h3>
 <span style="font-family: helvetica,arial,sans-serif;">Minscript is
-written by Michae Neuroth, (c) 1999-2003.</span><br
+written by Michae Neuroth, (c) 1999-2004.</span><br
  style="font-family: helvetica,arial,sans-serif;">
 <br>
 </body>
