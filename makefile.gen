@@ -65,7 +65,7 @@ DEBUG = $(DODEBUG)
 minip:
 $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT):  $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
 		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minparsernodes$(OBJEXT) \
-		$(OUTDIR)minparser$(OBJEXT) $(OUTDIR)minip$(OBJEXT) 
+		$(OUTDIR)minparser$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT)
 	$(CC) $(DLLOPT) $(ADDOPT) $(DEBUG) $(DLLOUTOPT)$(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) \
 		$(MININTERPRETERDLLDEFNAME) \
         $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
