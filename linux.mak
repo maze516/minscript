@@ -3,6 +3,7 @@
 #
 #DEFINES = -Dgulp
 DEFINES =
+MYCC = gcc
 CCOPT = -fexceptions -c
 #-I/usr/X11R6/include -I/home/root/lesstif-0.75a/include
 #STDLIBS =  -lm -lgcc -lg++ -lpthread -ldl

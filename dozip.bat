@@ -1,1 +1,1 @@
-zip -u script.zip *.h *.cpp *.txt *.def *.mak *.gen *.unx *.ic *.bat *.palm *.dsw *.dsp minscriptdll/*.dsp
+zip -u script.zip *.h *.cpp *.txt *.def *.mak *.gen *.unx *.ic *.bat *.palm *.dsw *.dsp minscriptdll/*.dsp demomodul/*.dsp demomodul/*.cpp specs/* test/*
