@@ -8,9 +8,12 @@
  *
  *  $Source: /Users/min/Documents/home/cvsroot/minscript/minparsernodes.cpp,v $
  *
- *  $Revision: 1.1.1.1 $
+ *  $Revision: 1.2 $
  *
  *	$Log: not supported by cvs2svn $
+ *	Revision 1.1.1.1  2003/06/22 09:31:22  min
+ *	Initial checkin
+ *	
  *
  ***************************************************************************/
 /***************************************************************************
@@ -29,7 +32,7 @@
  * conform with the GPL please contact the author.                         *
  *                                                                         *
  *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html      *
+ *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
  *                                                                         *
  ***************************************************************************/
 
@@ -37,6 +40,10 @@
 
 #include "minparsernodes.h"
 #include "minipenv.h"			// fuer: minInterpreterEnvironment
+
+#include "minparser.h"
+#include "minnativehlp.h"
+
 
 #include <stdio.h>				// fuer: sprintf
 
@@ -201,44 +208,103 @@ static void ExecuteDestructorHelper( minInterpreterValue & aVar, minInterpreterE
 
 //*************************************************************************
 
-minNativeFcnInterface::~minNativeFcnInterface()
+void InitDefaultTokenizer( minTokenizer & m_aTokenizer );
+
+//*************************************************************************
+// Hilfsklasse zum Parsen von Funktions-Prototypen beim Registrieren von native Funktionen
+class minPrivateParser
 {
+public:
+	minPrivateParser()
+		: m_aTokenizer(), m_aParser( &m_aTokenizer )
+	{
+		InitDefaultTokenizer( m_aTokenizer );
+
+#ifndef _slow_search_
+		m_aTokenizer.SortTokenContainer();
+#endif
+	}
+
+	minFunctionDeclarationNode * ParseFunction( const string & sScript )
+	{
+		//m_aTokenizer.SetText( "{ "+sScript+" }" );	// ein Script muss immer in einem Block stehen !
+		m_aTokenizer.SetText( sScript );
+		if( m_aParser.ParseFunction() )
+		{
+			minInterpreterNode * pNode = m_aParser.GetProgramNode();
+			return (minFunctionDeclarationNode *)pNode;
+		}
+		return 0;
+	}
+
+private:
+	minTokenizer				m_aTokenizer;
+	minParser					m_aParser;
+};
+
+
+minNativeFcnWrapperBaseAdapter::minNativeFcnWrapperBaseAdapter( NativeFcnWrapperBase * pNativeFcn )
+	: m_pNativeFcn( pNativeFcn ), m_aReturnType( Unknown )
+{
+	// aus dem Prototyp den Namen, return-Wert und Parameter parsen
+	if( m_pNativeFcn )
+	{
+		minPrivateParser aPrivParser;
+		minFunctionDeclarationNode * pFcn = aPrivParser.ParseFunction( m_pNativeFcn->GetPrototype() );
+		if( pFcn )
+		{
+			m_aReturnType = pFcn->GetReturnType();
+			m_aVarList = pFcn->GetArgumentsList();
+			m_sFcnName = pFcn->GetName();
+
+			// set the correct infos at the native function wrapper
+			NativeFcnWrapperBase::ReferenceArrayType aArgsReference(m_aVarList.size());
+			for( int i=0; i<m_aVarList.size(); i++ )
+			{
+				aArgsReference[i] = m_aVarList[i]->IsReference();
+			}
+			m_pNativeFcn->SetReferenceArray( aArgsReference );
+		}
+	}
 }
 
-minInterpreterValue minNativeFcnInterface::operator()() 
+minNativeFcnWrapperBaseAdapter::~minNativeFcnWrapperBaseAdapter()
+{
+	m_aVarList.erase( m_aVarList.begin(), m_aVarList.end() );
+
+	delete m_pNativeFcn;
+}
+
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()() 
 { 
-	throw minNotImplementedException( "no (0) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()();
 }
 
-minInterpreterValue minNativeFcnInterface::operator()( minInterpreterValue & aParam1 )
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()( minInterpreterValue & aParam1 )
 {
-	throw minNotImplementedException( "no (1) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1,
 	minInterpreterValue & aParam2
 )
 {
-	throw minNotImplementedException( "no (2) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1, 
 	minInterpreterValue & aParam2, 
 	minInterpreterValue & aParam3
 )
 {
-	throw minNotImplementedException( "no (3) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2, aParam3 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1, 
 	minInterpreterValue & aParam2, 
@@ -246,11 +312,10 @@ minInterpreterValue minNativeFcnInterface::operator()
 	minInterpreterValue & aParam4
 )
 {
-	throw minNotImplementedException( "no (4) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2, aParam3, aParam4 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1, 
 	minInterpreterValue & aParam2,
@@ -259,11 +324,10 @@ minInterpreterValue minNativeFcnInterface::operator()
 	minInterpreterValue & aParam5
 )
 {
-	throw minNotImplementedException( "no (5) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2, aParam3, aParam4, aParam5 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1, 
 	minInterpreterValue & aParam2, 
@@ -273,11 +337,10 @@ minInterpreterValue minNativeFcnInterface::operator()
 	minInterpreterValue & aParam6
 )
 {
-	throw minNotImplementedException( "no (6) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2, aParam3, aParam4, aParam5, aParam6 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1, 
 	minInterpreterValue & aParam2, 
@@ -288,11 +351,10 @@ minInterpreterValue minNativeFcnInterface::operator()
 	minInterpreterValue & aParam7
 )
 {
-	throw minNotImplementedException( "no (7) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2, aParam3, aParam4, aParam5, aParam6, aParam7 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1, 
 	minInterpreterValue & aParam2, 
@@ -304,11 +366,10 @@ minInterpreterValue minNativeFcnInterface::operator()
 	minInterpreterValue & aParam8
 )
 {
-	throw minNotImplementedException( "no (8) operator" ); 
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2, aParam3, aParam4, aParam5, aParam6, aParam7, aParam8 );
 }
 
-minInterpreterValue minNativeFcnInterface::operator()
+minInterpreterValue minNativeFcnWrapperBaseAdapter::operator()
 ( 
 	minInterpreterValue & aParam1, 
 	minInterpreterValue & aParam2, 
@@ -321,8 +382,7 @@ minInterpreterValue minNativeFcnInterface::operator()
 	minInterpreterValue & aParam9
 )
 {
-	throw minNotImplementedException( "no (9) operator" );
-	return minInterpreterValue();	// dummy-Return fuer Compiler
+	return m_pNativeFcn->operator ()( aParam1, aParam2, aParam3, aParam4, aParam5, aParam6, aParam7, aParam8, aParam9 );
 }
 
 //*************************************************************************
@@ -1130,6 +1190,21 @@ void minFunctionDeclarationNode::SetNewMethodName( const string & sNewName, Inte
 {
 	m_sName = sNewName;
 	m_aClassScope = aClassScope;
+}
+
+bool minFunctionDeclarationNode::HasReferenceArgs() const
+{
+	minVariableDeclarationList::const_iterator aIter = m_aArgumentDeclarationList.begin();
+	while( aIter != m_aArgumentDeclarationList.end() )
+	{
+		// const string & ist keine richtige Referenc !
+		if( (*aIter)->IsReference() && !(*aIter)->IsConst() )
+		{
+			return true;
+		}
+		++aIter;
+	}
+	return false;
 }
 
 string minFunctionDeclarationNode::GetManglingName() const

@@ -8,9 +8,12 @@
  *
  *  $Source: /Users/min/Documents/home/cvsroot/minscript/minparsernodes.h,v $
  *
- *  $Revision: 1.1.1.1 $
+ *  $Revision: 1.2 $
  *
  *	$Log: not supported by cvs2svn $
+ *	Revision 1.1.1.1  2003/06/22 09:31:22  min
+ *	Initial checkin
+ *	
  *
  ***************************************************************************/
 /***************************************************************************
@@ -29,7 +32,7 @@
  * conform with the GPL please contact the author.                         *
  *                                                                         *
  *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://people.freenet.de/mneuroth/zaurus/minscript.html      *
+ *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
  *                                                                         *
  ***************************************************************************/
 
@@ -113,43 +116,34 @@ inline string MakeMethodName( const string & sClassName, const string & sMethodN
 }
 
 //*************************************************************************
-/** Klasse wird aufgeworfen, wenn eine Funktionalitaet noch nicht implementiert ist. */
-class minNotImplementedException
+// Hilfsklasse (Basisklasse zur Implementation von Funktionalitaet)
+class MINDLLEXPORT minNativeFcnWrapperBaseAdapter
 {
 public:
-	minNotImplementedException( const string & sMsg ) : m_sMsg( sMsg ) {}
-	virtual ~minNotImplementedException() {}
+	minNativeFcnWrapperBaseAdapter( NativeFcnWrapperBase * pNativeFcn );
+	virtual ~minNativeFcnWrapperBaseAdapter();
+
+	const string &						GetFunctionName() const { return m_sFcnName; }
+	int									GetFunctionTyp() const	{ return m_aVarList.size(); }
+	minInterpreterType					GetReturnType() const	{ return m_aReturnType; }
+	const minVariableDeclarationList &	GetArgumentList() const { return m_aVarList; }
+
+	minInterpreterValue operator()();
+	minInterpreterValue operator()( minInterpreterValue & aParam1 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6, minInterpreterValue & aParam7 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6, minInterpreterValue & aParam7, minInterpreterValue & aParam8 );
+	minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6, minInterpreterValue & aParam7, minInterpreterValue & aParam8, minInterpreterValue & aParam9 );
 
 private:
-	string		m_sMsg;
-};
-
-
-//*************************************************************************
-/** Mit Hilfe dieser Klasse werden Native-Functions dem Interpreter bekannt gemacht. */
-class MINDLLEXPORT minNativeFcnInterface
-{
-public:
-	virtual ~minNativeFcnInterface();
-
-	virtual const string &						GetFunctionName() const = 0;
-	virtual int									GetFunctionTyp() const = 0;
-
-	// Aufruf-Operatoren fuer die verschiedenen Function-Typen (0..9)
-	virtual minInterpreterValue operator()();
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6, minInterpreterValue & aParam7 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6, minInterpreterValue & aParam7, minInterpreterValue & aParam8 );
-	virtual minInterpreterValue operator()( minInterpreterValue & aParam1, minInterpreterValue & aParam2, minInterpreterValue & aParam3, minInterpreterValue & aParam4, minInterpreterValue & aParam5, minInterpreterValue & aParam6, minInterpreterValue & aParam7, minInterpreterValue & aParam8, minInterpreterValue & aParam9 );
-
-	virtual minInterpreterType					GetReturnType() const = 0;
-
-	virtual const minVariableDeclarationList &	GetArgumentList() const = 0;
+	NativeFcnWrapperBase *			m_pNativeFcn;
+	string							m_sFcnName;
+	minInterpreterType				m_aReturnType;
+	minVariableDeclarationList 		m_aVarList;
 };
 
 //*************************************************************************
@@ -476,6 +470,7 @@ public:
 	bool							IsMethod() const					{ return m_aClassScope!=None; }
 	bool							IsConstant() const					{ return m_bIsConstant; }
 	bool							IsVirtual() const					{ return m_bIsVirtual; }
+	bool							HasReferenceArgs() const;
 	// durch Aufruf dieser Methode wird diese Funktion zu einer Methode !
 	void							SetNewMethodName( const string & sNewName, InterpreterClassScope aClassScope );
 
@@ -544,7 +539,7 @@ private:
 class MINDLLEXPORT minNativeFunctionDeclarationNode : public minFunctionDeclarationNode
 {
 public:
-	minNativeFunctionDeclarationNode( minNativeFcnInterface * pFcn )
+	minNativeFunctionDeclarationNode( minNativeFcnWrapperBaseAdapter * pFcn )
 		: minFunctionDeclarationNode( pFcn->GetFunctionName(), /*bIsConst*/false, /*bIsVirtual*/false, pFcn->GetReturnType(), 
   		    /*ACHTUNG: hier wird die Eigentuemerschaft an dem Argument-Zeiger uebernommen !*/ pFcn->GetArgumentList() ), 
 		  m_pFcn( pFcn )
@@ -559,7 +554,7 @@ public:
 									minInterpreterEnvironment & aEnv );
 
 private:
-	minNativeFcnInterface *		m_pFcn;			// ist Eigentuemer !
+	minNativeFcnWrapperBaseAdapter *		m_pFcn;			// ist Eigentuemer !
 };
 
 //*************************************************************************
