@@ -1,0 +1,116 @@
+/*
+bool bTest;
+bool bTrue = true;
+bool bFalse = false;
+
+bTest = bTrue && bFalse;
+__println( "(&&)bTest=" + bTest );
+bTest = bTrue || bFalse;
+__println( "(||)bTest=" + bTest );
+*/
+/*
+#include "test.ic"
+
+string s = "die ist \" \n ein test";
+
+__println( s );
+*/
+/*
+char ch = 'a';
+
+ch = "66";
+
+__println( "char=" + ch );
+*/
+/*
+#define _TEST 0
+#if defined( _TEST )
+#message "Then TEST !"
+#else
+#message "Else TEST !"
+#endif
+
+#if defined( 1 )
+#message "Then TEST !"
+#else
+#message "Else TEST !"
+#endif
+*/
+
+//#define MY_FUNC(x)		(x*x)
+//#define MY_FUNC2(x)		(x+x)
+
+//int i = 5;
+//__println( "test: " + MY_FUNC( i ) );
+
+
+//#define DEBUG( x )		x 
+//#define TEST()			"gulp" + 4
+
+/*
+#ifdef _DEBUG
+#define DEBUG(x)		x
+#message "_DEBUG is defined !"
+#else
+#define DEBUG(x)
+#message "_DEBUG is NOT defined !"
+#endif
+
+DEBUG( __println( "hallo debug welt" ); )
+//string s = DEBUG( "asd"; )
+//__println( s );
+//__println( TEST() );
+*/
+/*
+#if defined( _WIN32 )
+#message "Windows found !"
+#elif defined( __OS2__ )
+#message "OS/2 found !"
+#elif defined( __linux__ )
+#message "Linux found !"
+#else
+#message "Unkown operating system found !"
+#endif
+*/
+
+int k = -8;
+/*
+++k;  // * 3;
+k++; // / 3;
+//k * k + (3*k-4);
+//*k;
+//k*k;
+(k++);	 
+*/
+/*
+int n;
+
+__println( "k="+k );		
+n = ++k * 4;
+__println( "n="+n );
+n= (k++) + 4;
+__println( "n="+n );
+__println( "k="+k );		// bug wenn entfernt !!!
+*/
+/*
+bool bOk;
+int i=8, j=9;
+__println( "vals: " + i+ " "+j );
+
+	bOk = (i!=j);
+__println( "asdf" );
+	if( (i != j) || bOk )
+	{
+		__println( "then selected." );
+	}
+	else 
+	{
+		__println( "else selected." );
+	}
+*/
+/*
+int	i = 6;
+	while( (i-->0) )
+		__println(  "while loop i="+i );
+*/
+~123;

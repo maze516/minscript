@@ -1,0 +1,69 @@
+int * * ppi;
+ppi  = new int *;
+delete ppi;
+PrintLn( "typeof " + (typeof ppi) );
+
+// BUG: Problem mit: int * * i;
+// BUG: typedef double * * DOUBLE;
+double * pInt;
+// TODO: pInt = new int;  // ok: pInt = new pInt;
+pInt = new double;
+*pInt = 5.4; 
+int i = *pInt * *pInt;
+double d = *pInt * *pInt;
+string ts = typeof pInt;
+PrintLn( "--> typedef POINTER " + ts );
+PrintLn( "--> value of POINTER " + *pInt );
+PrintLn( "--> value of i " + i );
+PrintLn( "--> value of d " + d );
+delete pInt;
+//delete i;
+// 7778896
+
+i = 9*7;
+PrintLn( "Hallo welt ! "+i );
+PrintLn( ""+i );
+i;
+
+typedef unsigned int UINT;
+typedef UINT UUINT;
+
+string ss;
+int ii = 5;
+ii = 2 * 4;
+string s = typeof ii;
+PrintLn( "--> typedef test (2) " + s );
+
+UINT iVal = 5;
+//iVal = 7;
+//unsigned int i = iVal * 4;
+int _i = iVal * 4;
+
+int f( int * p )
+{
+	return 1;
+}
+PrintLn( "--> typedef test (1) " + iVal );
+
+class Gulp
+{
+//Gulp() {}		
+//~Gulp() {}		
+};
+
+class Gulp2
+{
+//Gulp() {}		
+//~Gulp() {}		
+Gulp m_aGulp;
+};
+
+Gulp aObj;
+
+_i = 0;
+_i = !_i;
+s = typeof aObj;
+PrintLn( "--> typedef test (2) " + s );
+//Gulp2 & aGulp2 = aObj.m_aGulp;
+Gulp2 aGulp2;
+PrintLn( "--> typedef test (3) " + (typeof aGulp2) );

@@ -1,0 +1,160 @@
+/*
+	Testsubject: functions
+
+	This statements for functions are available:
+
+		return;
+
+*/
+
+//extern double sin( double x );
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+void Test1()
+{
+	__println( "Test1() called" );
+}
+
+void Test1( string s )
+{
+	__println( "Test1(string) called s="+s );
+	s = "changed in Test1()";
+	__println( "  --> s="+s );
+}
+
+void Test1_ref( string & t_s )
+{
+	__println( "Test1ref(string&) called s="+t_s );
+	t_s = "String was changed !";
+	__println( "  --> s="+t_s );
+}
+
+void Test1_const_ref( const string & t_s1 )
+{
+	__println( "Test1ref(string&) called s="+t_s1 );
+	//t_s = "String was changed !";
+}
+
+void TestArgs( string s, double d, int i, bool b, char ch )
+{
+	__println( "TestArgs(...) called" );
+	__println( _CONVERT "s="+s );
+	__println( _CONVERT "d="+d );
+	__println( _CONVERT "i="+i );
+	__println( _CONVERT "b="+b );
+	__println( _CONVERT "ch="+ch );
+
+	if( b )
+		return;
+
+	s = "TestArgs changed";
+	d = 678.123;
+	i = 9876;
+	b = false;
+	ch = 'X';
+	ch = 0x45;
+	__println( _CONVERT "s="+s );
+	__println( _CONVERT "d="+d );
+	__println( _CONVERT "i="+i );
+	__println( _CONVERT "b="+b );
+	__println( _CONVERT "ch="+ch );
+}
+
+int f( int x );
+int f();
+
+int g( int x )
+{
+	__println( _CONVERT "g("+x+")" );
+	return f( x-4 )*f();
+}
+
+int f( int x )
+{
+	__println( _CONVERT "f("+x+")" );
+	return x*x+5;
+}
+
+int f()
+{
+	__println( _CONVERT "f()" );
+	return -1;
+}
+
+double DoubleRef( double & d )
+{
+	double dTemp = d;
+
+	d = d-f(7);
+
+	return dTemp;
+}
+
+int RekursionTest( int i )
+{
+	__println( _CONVERT "RekursionTest() i="+i );
+	if( i==0 )
+	{
+		return -1;
+	}
+	return RekursionTest( i-1 );
+}
+
+// die Hauptfunktion
+int main()
+{
+	__println( "Test for functions:" );
+
+	__println( _CONVERT "sin(x)=" + sin( 3.456 ) );
+
+	string s = "\"A simple string !\"";
+
+	Test1();
+
+	Test1( "Hello world !" );
+	
+	__println( "call by value test" );
+	string sTemp = "call by value";
+	Test1( sTemp );
+	__println( "sTemp="+sTemp );
+
+	__println( "call by reference test" );
+	__println( "s="+s );
+	Test1_ref( s );
+	__println( "s="+s );
+
+	__println( "call by const reference test" );
+	s = "const ref";
+	Test1_const_ref( s );
+	__println( "s="+s );
+
+	TestArgs( "abcdef", 6.789, 13, false,'a' );
+	TestArgs( "test string", 3.1415*42.123, 77-53, true, 'b' );
+
+	int i=8;
+	__println( _CONVERT "f()="+f() );
+	__println( _CONVERT "f("+i+")="+f(i) );
+	__println( _CONVERT "g("+i+")="+g(i) );
+
+	RekursionTest( 11 );
+
+//	RekursionTest( 200 );
+
+	double d = 12.334567;
+	__println( _CONVERT "d="+d );
+	double dRet = DoubleRef( d );
+	__println( _CONVERT "d="+d );
+	__println( _CONVERT "dRet="+dRet );
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

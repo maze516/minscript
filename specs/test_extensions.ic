@@ -1,0 +1,31 @@
+/*
+	Testsubject: language extensions
+
+	This language extensions are available:
+
+		typeof
+		__exists
+		_*exists
+		__dbghalt
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#else
+#endif
+
+
+//*******************************************************
+
+// die Hauptfunktion
+int main()
+{
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif
+
+
+__dbghalt "my breakpoint";

@@ -1,0 +1,161 @@
+/*
+	Testsubject: generic stl list
+
+	Real world example for the interpreter,
+	implementing a simple stl conform list.
+
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+//**********************************************************
+
+#define TYPE	int
+
+//**********************************************************
+
+struct _node;
+class list;
+
+struct _node
+{
+	_node *		m_pNext;
+	TYPE		m_aItem;
+};
+
+class list
+{
+public:
+	list()
+	{
+		m_pFirstNode = 0;
+		m_iCount = 0;
+	}
+	virtual ~list()
+	{
+		_node * pNode = m_pFirstNode;
+
+		while( pNode != 0 )
+		{
+			_node * pTemp = pNode->m_pNext;
+	
+			delete pNode;
+
+			pNode = pTemp;
+		}
+	}
+
+	int size() const
+	{
+		return m_iCount;
+	}
+
+	void push_front( TYPE aItem )
+	{
+		_node * pNewNode = new _node;
+	
+		pNewNode->m_aItem = aItem;
+		pNewNode->m_pNext = m_pFirstNode;
+
+		m_pFirstNode = pNewNode;
+		 
+		m_iCount++;
+	}
+	void push_back( TYPE aItem )
+	{
+		_node * pNewNode = new _node;
+	
+		pNewNode->m_aItem = aItem;
+
+		_node * pLastNode = GetLastNode();
+		if( pLastNode )
+		{
+			pNewNode->m_pNext = pLastNode->m_pNext;
+
+			pLastNode->m_pNext = pNewNode;
+		}
+		else
+		{
+			pNewNode->m_pNext = m_pFirstNode;
+
+			m_pFirstNode = pNewNode;
+		}
+		 
+		m_iCount++;
+	}
+
+	void dump()
+	{
+		__println( "dump list:" );
+
+		int i = 0;
+		_node * pNode = m_pFirstNode;
+
+		while( pNode != 0 )
+		{
+			__println( _CONVERT "item "+i+": " + pNode->m_aItem );
+
+			i++;
+
+			pNode = pNode->m_pNext;
+		}
+	}
+
+private:
+	_node *	GetLastNode()
+	{
+		_node * pNode = m_pFirstNode;
+
+		while( pNode != 0 )
+		{
+			if( pNode->m_pNext == 0 )
+			{
+				return pNode;
+			}
+
+			pNode = pNode->m_pNext;
+		}
+
+		return pNode;
+	}
+		
+	_node *		m_pFirstNode;
+	int			m_iCount;		
+};
+
+/*
+class empty			// BUG
+{
+public:
+	
+private:
+};
+*/
+
+int main()
+{
+	list aList;
+
+_node aNode;
+
+	aList.push_front( 8 );
+	aList.push_front( 12 );
+	aList.push_front( 42 );
+	aList.push_back( 99 );
+
+	aList.dump();
+
+	__println( _CONVERT "count="+aList.size() );
+
+	return 0;
+}
+
+
+#ifdef __MINSCRIPT__
+main();
+#endif

@@ -1,0 +1,61 @@
+/* 
+    A simple sample script with some features
+*/
+
+#define MAX	512
+
+const int c_sString = "C++ is nice.";
+
+// a simple class to test the scope mechanismus 
+class MyTestClass
+{
+public:
+    // allways inlining !
+    MyTestClass( int i )
+    {
+        __println( "MyTestClass::MyTestClass(int) i="+i );
+        m_i = i;
+    }
+    ~MyTestClass()
+    {
+        __println( "MyTestClass::~MyTestClass(int) i="+m_i );
+    }
+
+    int f()
+    {
+        return m_i*m_i;
+    }
+private:
+    int    m_i;
+};
+
+void TestFunction( string s, double d )
+{
+    double dResult = d * d - 4.5;
+    string sTemp;
+
+    /* create a result string */
+    sTemp = s + " Result="+dResult;
+
+    // now print the string
+    __println( sTemp );
+}
+
+int main()
+{
+    TestFunction( "Hello minscript world ! This is a function.", 9.123 );
+
+    __println( "test scope..." );
+    {
+        MyTestClass aObj( 7 );
+
+        __println( "aObj.f() = " + aObj.f() );
+    }
+    __println( "test scope done." );
+
+    return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

@@ -1,0 +1,43 @@
+void test( const string & s )
+{
+	string sStrg;
+
+	sStrg = s;
+	
+	__println( "test() " + s +" "+sStrg);
+}
+
+
+class MyClass
+{
+public:
+	MyClass( const string & s )
+	{
+		m_s = s;
+		test( s );
+	}
+
+private:
+	string	m_s;
+};
+
+
+__println( "argc=" + argc );
+
+int i;
+for( i=0; i<argc; i++ )
+{
+	__println( "Arg "+i+" "+argv[i] );
+}
+
+{
+__println( "start..." );
+//__dbghalt "fcn";
+	MyClass aClass( "hallo" );
+	string s;
+	s = "abc";
+	__println( "try..." );
+	test( "abc" );
+//	test( s );
+	__println( "done." );
+}

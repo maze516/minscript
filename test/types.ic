@@ -1,0 +1,93 @@
+
+char ch;
+ch = '\'';
+//ch = 65;
+PrintLn( "CHAR = "+ch );
+
+class MyClass
+{
+	int i;
+	int j;
+
+	~MyClass()
+	{
+		PrintLn( "~Destruktor fuer MyClass aufgerufen !" );
+	}
+	MyClass( double ii )
+	{
+		i = ii;
+		j = i*i;
+		PrintLn( "Konstruktor fuer MyClass ausgefuehrt !" );
+	}
+
+	int ff( int x )
+	{
+		return x*i;
+	}
+
+};
+
+int ff( /*d*/ int x )
+{
+    return x+x;
+}
+
+int xx = ff( /*d*/ 4 );
+
+int _nInt;
+MyClass aObj2( 42 );		// WORKING !!!
+
+{
+	MyClass aObj( /* d */ _nInt );		/*7*/
+	//int xx = aObj.ff( 4 );
+	//aObj.ff( 4 );
+//BUG	aObj.i = 6;
+	//int i = 7;
+	int xxx = aObj.ff( 4 );
+	int xxxx = aObj.ff( 2 );	// MyClass_ff( 2 ); und aObj.MyClass_ff( 2 ); liefern einen Fehler
+	PrintLn( "xx=" + xx );
+	PrintLn( "xxx=" + xxx );
+	PrintLn( "xxxx=" + xxxx );
+//BUG	PrintLn( "MyObj.i="+aObj.i );
+}
+//PrintLn( "MyObj.i="+aObj2.i );
+
+bool bIsOk = true;
+int bval;		// BUG: int bvla = bIsOk; !
+bval = bIsOk;
+PrintLn( "int = "+bval );
+PrintLn( "bool = "+bIsOk );
+
+//iVar;
+
+//####################################################
+
+/*
+// Tests fuer automatisches casten und String-Addition
+int iVar;
+double dVar;
+string sVar;
+iVar = 8.64;
+dVar = 8.34;
+sVar = 8.34;
+
+PrintLn( iVar );
+PrintLn( dVar );
+PrintLn( sVar );
+PrintLn( iVar+" Hallo Welt ! ret="+dVar*dVar );
+
+// Tests fuer Funktions-Ueberladen
+double f( double x )
+{
+    return x*x;
+}
+
+int f( int & x )
+{
+    return x+x;
+}
+
+//PrintLn( "int f("+iVar+")="+f(iVar*4) );
+PrintLn( "int f("+iVar+")="+f(iVar) );
+PrintLn( "double f("+dVar+")="+f(dVar) );
+*/

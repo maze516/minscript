@@ -1,0 +1,58 @@
+int iVar;
+iVar = 8.34;
+PrintLn( iVar );
+
+int i=9,aa[8*4+1],j=9;
+//int i=9,aArr[10],bArr[8],j=9;
+int aArr[10],bArr[8];
+int iii;
+aArr[8] = 4;
+iii = aArr[4+4]+5;
+PrintLn( aArr[8] );
+PrintLn( bArr[0] );
+PrintLn( iii );
+aArr[8] = 444;
+//int aArr2[10][10];
+//aArr2[1][1] = 7;
+
+PrintLn( "ArrayTestDone" );
+
+
+class MyTest
+{
+	int i = 42;
+	int j;
+	double d = 1.234;
+
+	double f( double d )
+	{
+		return d;
+	}
+}
+
+MyTest aObj;
+MyTest & aObj2 = aObj;
+int n;
+n = 34;
+aObj.i = 7*n;
+n;
+
+double ff( double d )
+{
+	return d*d;
+}
+
+//int iii = aObj[78]; // aArr[8];
+
+PrintLn( aObj.i );
+PrintLn( iii );
+int ii = aObj.i;
+string s = "hallo welt "; //+ii;
+PrintLn( s ); 
+PrintLn( ff( 9 ) ); 
+PrintLn( aObj.f( 8 )+f(8) ); 
+// es geht auch: PrintLn( aObj.ff( 8 ) ); 
+PrintLn( ii ); 
+PrintLn( aObj.d );
+PrintLn( aObj.i );
+PrintLn( aObj.j );

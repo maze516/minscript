@@ -1,0 +1,10 @@
+int i = 9;
+int * p ; // = new int ( 6 );
+p = &i;
+PrintLn( "typeof "+(typeof p) );
+int j = *p;
+PrintLn( "i="+i );
+PrintLn( "j="+j );
+PrintLn( "p="+p );
+PrintLn( "*p="+(*p) );
+PrintLn( "*p="+*p+" "+p );

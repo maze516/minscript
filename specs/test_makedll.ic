@@ -1,0 +1,10 @@
+
+
+int test( double d );
+const char * teststring( const string & s );
+
+class MyTestClass
+{
+private:
+	int f( string s );
+}

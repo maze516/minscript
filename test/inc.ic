@@ -1,0 +1,9 @@
+int i = 9;
+++i;
+PrintLn( ""+i );
+//--i;
+//int j = i;
+int j = --i;		
+PrintLn( ""+i+" "+(++j) );
+PrintLn( ""+i+" "+(--j) );
+//i++;

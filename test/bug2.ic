@@ -1,0 +1,55 @@
+
+int x1()
+{
+    this->f();
+    return 1;
+}
+
+//static const int npos = -1;
+
+class MyClass
+{
+	int m_i;
+
+	MyClass()
+	{
+		println( "MyClass::MyClass()" );
+		//dbghalt 1;
+		m_i = 0;
+//BUG		this.>a();
+		println( "MyClass::MyClass() exit" );
+	}
+
+	void a()
+	{
+		println( "MyClass::a()" );
+		++m_i;
+	}
+	int f()
+	{
+		println( "MyClass::f()" );
+//println( "abc" + &this );
+//sin(123);
+//1;
+//this;
+//dbghalt 1;
+//a();
+		this->a();	// Seiteneffekt !
+		return 1;
+	}
+	int g()
+	{
+		println( "MyClass::g()" );
+		return this->f() + 1;
+	}
+};
+
+MyClass aObj;
+
+int iSum = aObj.g();
+
+println( "sum=" + iSum + " count="+aObj.m_i );
+
+aObj.a();
+
+println( "sum=" + iSum + " count="+aObj.m_i );

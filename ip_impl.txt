@@ -1,0 +1,106 @@
+Environment:
+============
+
+	minInterpreterValue
+	  - m_nTyp 			(void, int, Double, Object, ...)
+	  - m_nSimpleValue		(long, double string)
+	  - handle<minCallStackItem>	(Object)
+
+	minInterpreterVariable
+	  - m_sName
+	  - m_sAliasName
+	  - minInterpreterValue * m_pValue
+
+	minCallStackItem
+	  - m_sUserName
+	  - container<minInterpreterValue>
+
+	minInterpreterEnvironment
+	  - container<minCallStackItem>
+	  - container<minFunctionDeclarationNode>
+	  - container<minClassDeclarationNode>
+
+
+Parser-Knoten:
+==============
+
+  Basisklasse:		
+	minInterpreterNode
+
+  Abgeleitete Klassen:
+	minEmptyNode
+	minCommentNode
+	minConstantNode
+	  - minInterpreterValue	m_aValue
+
+	minVariableDeclarationNode
+	  - m_sName
+ 	  - m_sTypeName		(object)
+	  - m_nType		(simple types)
+	  - m_bIsReference
+	  - m_nArraySize
+	  - m_pInitExpression			// Node
+	  - m_pNextVariableDeclarationNode	// Node
+	minVariableNode
+	  - m_sName
+
+	minClassDeclarationNode
+	  - m_sName
+	  - minClassBlockNode *	m_pCode
+	minClassBlockNode		
+	  - container<Methode>			// Node
+	  - container<Variable>			// Node
+	  - container<Konstruktor>		// Node
+	  - m_hDestructor			// Node
+
+	minFunctionDeclarationNode
+	  - m_sName
+	  - m_nReturnType
+	  - m_bIsMethod				// Methoden: ff --> MyClass_ff
+	  - container<Variable>    (Argumente)
+		minInterpreterFunctionDeclarationNode
+		  - m_pCode			// Node
+		minNativeFunctionDeclarationNode
+	minFunctionCallNode
+	  - m_sName
+	  - m_sUserClassName
+	  - container<Expression>  (Parameter)
+
+	(minUnaryOperatorNode)
+	minForkNode
+		minOperatorNode
+			minNotOperatorNode
+			minCommaOperatorNode
+			minAddOperatorNode
+			minSubOperatorNode
+			minMultOperatorNode
+			minDivOperatorNode
+			minModOperatorNode
+			minAssignOperatorNode
+			minLessOperatorNode
+			minMoreOperatorNode		
+			minEqualOperatorNode
+			minNotEqualOperatorNode
+			minLogAndOperatorNode
+			minLogOrOperatorNode
+			
+			minObjectElementNode
+			minArrayElementNode
+
+	minParenthisNode
+
+	minBlockNode
+	minWhileNode
+	minDoNode
+	minForNode
+	minIfNode
+	minReturnNode
+	minBreakNode
+	minContinueNode
+
+Parser
+======
+
+Tokenizer
+=========
+

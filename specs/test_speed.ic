@@ -1,0 +1,13 @@
+
+int i;
+int j;
+double d;
+double x,y;
+
+__println( "for start" );
+for( i=0; i<1000; i++ )
+{
+	j = 2*i*i-4;
+}
+__println( "for done." );
+

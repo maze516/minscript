@@ -1,0 +1,143 @@
+#====================================================================
+
+MININTERPRETERDLL			= minipdll
+MININTERPRETEREXE			= minscript
+MININTERPRETERTEST			= mintest
+
+#====================================================================
+# Select the actual platform via the compiler...
+#====================================================================
+
+!if "$(CC)"=="icc"
+icc3=1
+!endif
+
+!if "$(CC)"=="cl"
+msc=1
+!endif
+
+!if "$(CC)"=="gcc"
+linux=1
+!endif
+
+#====================================================================
+# Setup platform specific defines
+#====================================================================
+
+!ifdef msc
+!include <msc.mak>
+OUTDIR	= ./
+#OBJEXT	= .obj
+MININTERPRETERDLLDEFNAME	= minipw.def
+msc:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) 
+!endif
+
+!ifdef linux
+!include linux.mak
+OUTDIR	= ./
+#OBJEXT	= .o
+MININTERPRETERDLLDEFNAME	= 
+linux:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) 
+!endif
+
+!ifdef icc3
+!include <icc3.mak>
+OUTDIR	= ./
+#OBJEXT	= .obj
+MININTERPRETERDLLDEFNAME	= minip.def
+icc3:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) 
+!endif
+
+#====================================================================
+
+!ifdef release
+DEBUG = $(DORELEASE)
+!else 
+DEBUG = $(DODEBUG)
+!endif
+
+# $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) 
+
+#====================================================================
+# the targets:
+#====================================================================
+
+minip:
+$(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT):  $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
+		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minparsernodes$(OBJEXT) \
+		$(OUTDIR)minparser$(OBJEXT) $(OUTDIR)minip$(OBJEXT) 
+	$(CC) $(DLLOPT) $(ADDOPT) $(DEBUG) $(DLLOUTOPT)$(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) \
+		$(MININTERPRETERDLLDEFNAME) \
+        $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
+		$(OUTDIR)minparsernodes$(OBJEXT) $(OUTDIR)minparser$(OBJEXT) \
+		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT)
+!ifdef icc3
+	$(IMPLIB) $(OUTDIR)$(MININTERPRETERDLL)$(LIBEXT) $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT)
+!endif
+
+minipexe:		
+$(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT): $(OUTDIR)minscript$(OBJEXT) $(OUTDIR)$(MININTERPRETERDLL)$(DLLLIBEXT) 
+	$(CC) $(EXEOPT) $(ADDOPT) $(INCLUDES) $(DEBUG) $(EXEOUTOPT)$(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) \
+		$(OUTDIR)$(MININTERPRETERDLL)$(DLLLIBEXT) $(OUTDIR)minscript$(OBJEXT) $(STDLIBS) $(LINKOPT)
+		
+miniptest:		
+$(OUTDIR)$(MININTERPRETERTEST)$(EXEEXT): $(OUTDIR)miniptest$(OBJEXT) $(OUTDIR)$(MININTERPRETERDLL)$(DLLLIBEXT) 
+	$(CC) $(EXEOPT) $(ADDOPT) $(INCLUDES) $(DEBUG) $(EXEOUTOPT)$(OUTDIR)$(MININTERPRETERTEST)$(EXEEXT) \
+		$(OUTDIR)$(MININTERPRETERDLL)$(DLLLIBEXT) $(OUTDIR)miniptest$(OBJEXT) $(STDLIBS) $(LINKOPT)
+		
+#$(STDLIBS) $(PROFILEOBJ) 
+
+#====================================================================
+
+#$(OUTDIR)mintoken$(OBJEXT):        mintoken.cpp mintoken.h dllexport.h
+#	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)mintoken$(OBJEXT) mintoken.cpp
+
+$(OUTDIR)mintokenizer$(OBJEXT):    mintokenizer.cpp mintokenizer.h mintoken.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)mintokenizer$(OBJEXT) mintokenizer.cpp
+
+$(OUTDIR)minparsernodes$(OBJEXT):	minparsernodes.cpp minparsernodes.h minipenv.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)minparsernodes$(OBJEXT) minparsernodes.cpp
+
+$(OUTDIR)minparser$(OBJEXT):       minparser.cpp minparser.h mintoken.h mintokenizer.h minparsernodes.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)minparser$(OBJEXT) minparser.cpp
+
+$(OUTDIR)minipenv$(OBJEXT):      minipenv.cpp minipenv.h minparsernodes.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)minipenv$(OBJEXT) minipenv.cpp
+
+$(OUTDIR)minpreproc$(OBJEXT):		minpreproc.cpp minpreproc.h mintokenizer.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)minpreproc$(OBJEXT) minpreproc.cpp
+
+$(OUTDIR)minip$(OBJEXT):			minip.cpp minip.h mintokenizer.h minparser.h minpreproc.h minparsernodes.h minipenv.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)minip$(OBJEXT) minip.cpp
+
+$(OUTDIR)osdep$(OBJEXT):			osdep.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCDLLOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)osdep$(OBJEXT) osdep.cpp
+
+$(OUTDIR)miniptest$(OBJEXT):       miniptest.cpp minip.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCEXEOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)miniptest$(OBJEXT) miniptest.cpp
+
+$(OUTDIR)minscript$(OBJEXT):       minscript.cpp minip.h dllexport.h
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCEXEOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)minscript$(OBJEXT) minscript.cpp
+
+#====================================================================
+# other targets:
+#====================================================================
+
+clean:
+	-$(DEL) *$(OBJEXT)
+
+help:
+	@echo Help for MinScript Makefile.gen:
+	@echo usage: nmake -f makefile.gen { debug=1; release=1 } { help; clean }
+	@echo no option means building debug version
+
+
+#====================================================================
+# better default rules for cpp-files
+#====================================================================
+
+.cpp{$(OUTDIR)}.obj:
+	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCEXEOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)$* $<
+
+#{$(SRCDIR)}.cpp{$(OUTDIR)}.obj:
+#	$(CC) $(DEFINES) $(DEBUG) $(CCOPT) $(CCEXEOPT) $(INCLUDES) $(OUTOPT)$(OUTDIR)$* $<

@@ -1,0 +1,29 @@
+int i;
+int j;
+
+int f2( int x )
+{
+	return 42;
+}
+
+int f( int x )
+{
+	return x*x;
+}
+
+for( i=0; i<10; i=i+1 )
+{
+  j = i*i + f(i+1);
+}
+
+j;
+
+int n=5+4,m=6;
+
+n+m+j;
+
+//mygulp( 5 );
+
+//int & x = i;
+
+//x;

@@ -1,0 +1,90 @@
+
+class ClassA
+{
+public:
+	ClassA()
+	{
+		m_i = -1;
+	}
+
+	void Dump()
+	{	
+		__println( "try dump" );	
+		__println( "ClassA::Dump() m_i="+m_i+ " this="+ this );
+		this->m_i = 9;
+		__println( "ClassA::Dump() m_i="+m_i+ " this="+ this );
+		__println( "done" );
+	}
+
+	int m_i;
+
+};
+
+class TestInterface
+{
+public:
+	virtual int f()
+	{
+//	_dbghalt;
+		return 1;
+	}
+};
+
+class TestClass
+{
+public:
+	virtual int f()
+	{
+		return 2;
+	}
+};
+
+void TestIntPtr()
+{
+	int * pInt = 0;
+
+	/*int **/ pInt = new int(8);
+
+	__println( "*pInt=" + (*pInt) );
+	*pInt = 45;
+	__println( "*pInt=" + (*pInt) );
+	* pInt = *pInt -3;
+	__println( "*pInt=" + (*pInt) );
+	*pInt = 6;
+	__println( "*pInt=" + (*pInt) );
+
+	delete pInt;
+}
+
+int main()
+{
+	string s;
+
+	TestIntPtr();
+
+	TestInterface * pInterface =  new TestClass();
+//	TestInterface * pInterface = new TestInterface();
+
+	int i = pInterface->f();
+
+	__println( "i="+i );
+
+	__println( "typeof = " + (typeof pInterface) );
+	__println( "typeof = " + (typeof (*pInterface)) );
+
+	s = (typeof (*pInterface));
+
+	delete pInterface;
+
+	__println( "done." );
+
+	ClassA aObj;
+
+	aObj.Dump();
+
+	__println( "i="+i );
+
+	return 0;
+}
+
+main();

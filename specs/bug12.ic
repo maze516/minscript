@@ -1,0 +1,77 @@
+const int c_gTest1 = 12;
+
+void SwitchTest( char ch )
+{
+	switch( ch )
+	{
+		case '0':
+		case 'a': 
+			__println( "case 'a'" );
+			break;
+		case 'b': 
+			__println( "case 'b'" );
+			break;
+		case 'c': 
+			__println( "case 'c'" );
+			__println( "second statement" );
+			break;
+		
+		default:
+			__println( "default" );
+
+	};
+}
+
+void SwitchTestInt( int i )
+{
+	switch( i )
+	{
+		case 0:
+		case 1: 
+		case 2: 
+			__println( "small" );
+			break;
+		case 3: 
+			__println( "medium" );
+			break;
+		case 4: 
+			__println( "large" );
+			break;
+		case c_gTest1:
+			__println( "very large" );
+			break;
+		
+		default:
+			__println( "unknown" );
+	};
+}
+
+/*
+SwitchTest( 'a' );
+__println( "******" );
+SwitchTest( 'b' );
+__println( "******" );
+SwitchTest( 'c' );
+__println( "******" );
+SwitchTest( '0' );
+__println( "******" );
+SwitchTest( '1' );
+__println( "******" );
+
+SwitchTestInt( 123 );
+__println( "******" );
+SwitchTestInt( -1 );
+__println( "******" );
+SwitchTestInt( 0 );
+__println( "******" );
+SwitchTestInt( 1 );
+__println( "******" );
+SwitchTestInt( 2 );
+__println( "******" );
+SwitchTestInt( 3 );
+__println( "******" );
+SwitchTestInt( 4 );
+__println( "******" );
+*/
+SwitchTestInt( 12 );
+__println( "******" );

@@ -1,0 +1,89 @@
+
+class BaseClass
+{
+public:
+    BaseClass() 	{ PrintLn( "CON BaseClass()" ); m_i = 6; }
+    BaseClass( int i ) 	{ PrintLn( "CON BaseClass("+i+")" ); m_i = i; }
+    ~BaseClass()	{ PrintLn( "~BaseClass" ); }
+
+    int f( int x )	{ return m_i*x; }
+    int f2( int x )	{ return x*x; }
+
+    void Dump()		{ PrintLn( "BaseClass.m_i="+m_i ); }
+
+private:
+    int m_i;
+};
+
+class MyBaseClass
+{
+    MyBaseClass()	{ PrintLn( "CON MyBaseClass()" ); }
+    ~MyBaseClass()	{ PrintLn( "~MyBaseClass" ); }
+
+private:
+    double m_d;
+};
+
+class UserClass : public BaseClass
+{
+    UserClass()	: BaseClass( 7 )	{ PrintLn( "CON UserClass()" ); }
+//    UserClass()		{ PrintLn( "UserClass()" ); }
+    ~UserClass()	{ PrintLn( "~UserClass" ); }
+
+//    int f2( int x )	{ return x; }
+};
+
+class UserClass2 : public BaseClass, public MyBaseClass
+{
+    UserClass2()	: BaseClass( 7 )	{ PrintLn( "UserClass2()" ); }
+//    UserClass2()		{ PrintLn( "UserClass2()" ); }
+    ~UserClass2()	{ PrintLn( "~UserClass2" ); }
+
+    int f2( int x )	{ return x; }
+};
+
+//**************************************
+
+// void TestVirtual( /*BaseClass*/UserClass2 & aObj )   // TODO --> funktioniert auch !
+
+void TestVirtual( BaseClass & aObj )
+{
+    PrintLn( "VIRTUAL TEST " + aObj.f2( 3 ) );
+}
+
+PrintLn( "Class Test" );
+
+if( true )
+{
+BaseClass aBase;
+aBase.Dump();
+PrintLn( "f(.)="+aBase.f( 42 ) );
+PrintLn( "typeof "+ (typeof aBase) );
+PrintLn( "typeof "+ (typeof aBase.m_i) );
+}
+
+{
+UserClass aUser;
+PrintLn( "hallo Block" );
+//dbghalt 1;
+aUser.m_i;
+PrintLn( "typeof "+ (typeof aUser) );
+PrintLn( "hallo ~Block" );
+
+UserClass2 aUser2;
+aUser2.m_i = 4;
+aUser2.m_d = 42.123;
+PrintLn( "typeof "+ (typeof aUser2) );
+PrintLn( "inheritance "+ aUser.f(8) );	// BUG !
+PrintLn( "inheritance "+ aUser2.f(2) );	// BUG !
+PrintLn( "inheritance "+ aUser2.f2(8) );
+PrintLn( "inheritance "+ aUser2.m_d );
+
+TestVirtual( aUser );
+TestVirtual( aUser2 );
+
+}
+
+PrintLn( "done" );
+
+

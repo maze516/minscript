@@ -1,0 +1,59 @@
+/*
+int** ppi;
+ppi = new int *;
+PrintLn( " "+ppi );
+*ppi = new int;
+PrintLn( " "+ppi );
+**ppi = 41;
+PrintLn( "int-test "+i0+" "+i1+" "+*pi+" "+*ppi+" "+**ppi );
+*/
+/*
+typedef int * PINT;
+PINT xxx;
+xxx = new int;
+*xxx = 123;
+PrintLn( "xxx=>" + xxx +"< " + *xxx + " " +(typeof xxx ) );
+delete xxx;
+
+typedef PINT * PPINT;
+PPINT pxxx;
+PrintLn( typeof pxxx );
+*/
+typedef unsigned int UINT;
+typedef UINT UUINT;
+UINT ui = 5;
+UUINT uui = 89.56;
+PrintLn( "ui = "+ui );
+PrintLn( "uui = "+uui );
+PrintLn( (typeof ui ) );
+
+int i0;
+int i1 = 3-4;
+int * pi;
+pi = new int( 8 );
+PrintLn( "*pi="+*pi );
+*pi = 7;
+int** ppi;
+ppi = new int *;
+PrintLn( "ppi="+ppi );
+*ppi = new int(7);
+PrintLn( "*ppi="+*ppi );
+PrintLn( " "+ppi );
+**ppi = 41;
+PrintLn( "int-test "+i0+" "+i1+" "+*pi+" "+*ppi+" "+**ppi );
+//delete pi;
+delete *ppi;
+delete ppi;
+
+double d0;
+double d1 = 4.3*6.1;
+double * pd;
+pd = new double;
+*pd = 8.9;
+//pd = pd+1;	// --> gibt Fehler ! --> Pointer Arithmetrik ist nicht erlaubt !
+PrintLn( "double-test "+d0+" "+d1+" "+*pd );
+delete pd;
+
+void * ptr = 0;
+PrintLn( "void * "+ptr );
+//delete ptr;

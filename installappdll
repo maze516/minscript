@@ -1,0 +1,8 @@
+cp minscript $QPEDIR/usr/bin
+cp libminip.so.1.0 $QPEDIR/usr/lib
+/opt/Qtopia/sharp/bin/mkipks_cmd minscript.control
+
+
+
+
+

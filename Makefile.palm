@@ -1,0 +1,79 @@
+#INCLUDES = -I /home/min/projects/palm/stl_palm -I /home/min/projects/palm/sdk35/Incs -I /home/min/projects/palm/sdk35/Incs/Core -I /home/min/projects/palm/sdk35/Incs/Core/System    -I /home/min/projects/palm/sdk35/Incs/Core/UI -I /home/min/projects/palm/sdk35/Incs/Core/Hardware
+INCLUDES = -I /home/min/projects/palm/stl_hp -I /home/min/projects/palm/sdk35/Incs -I /home/min/projects/palm/sdk35/Incs/Core -I /home/min/projects/palm/sdk35/Incs/Core/System    -I /home/min/projects/palm/sdk35/Incs/Core/UI -I /home/min/projects/palm/sdk35/Incs/Core/Hardware
+#INCLUDES = -I /home/min/projects/palm/sdk35/Incs -I /home/min/projects/palm/sdk35/Incs/Core -I /home/min/projects/palm/sdk35/Incs/Core/System    -I /home/min/projects/palm/sdk35/Incs/Core/UI -I /home/min/projects/palm/sdk35/Incs/Core/Hardware -I /usr/include -I /usr/include/g++
+
+
+CC = m68k-palmos-gcc
+#CFLAGS = -x c++ -O2 -palmos2
+CFLAGS = -O -palmos2 -D __PALMOS__
+#-fno-exceptions -fno-rtti
+
+all: script.prc
+
+script.prc: target1 bin.stamp
+	build-prc script.prc "pilrc test" plRc target1 *.bin
+
+target1: minipenv.o minparsernodes.o minparsernodes2.o minparsernodes3.o minparsernodes4.o minparsernodes5.o mintokenizer.o minparser.o minparser2.o minip.o minip2.o minip3.o minip4.o
+	$(CC) $(CFLAGS) $(INCLUDES) -o target1 minipenv.o minparsernodes.o minparsernodes2.o minparsernodes3.o minparsernodes4.o minparsernodes5.o mintokenizer.o minparser.o minparser2.o minip.o minip2.o minip3.o minip4.o
+
+
+##script.prc: target1 target2 bin.stamp
+#	build-prc script.prc "pilrc test" plRc target1 *.bin
+
+#target2: minipenv.o minparsernodes.o minparsernodes2.o minparsernodes3.o minparsernodes4.o minparsernodes5.o
+#	$(CC) $(CFLAGS) $(INCLUDES) -o target2 minipenv.o minparsernodes.o minparsernodes2.o minparsernodes3.o minparsernodes4.o minparsernodes5.o
+
+#target1: mintokenizer.o minparser.o minparser2.o minip.o minip2.o minip3.o
+#	$(CC) $(CFLAGS) $(INCLUDES) -o target1 mintokenizer.o minparser.o minparser2.o minip.o minip2.o minip3.o
+
+#target1: minip.o minip2.o minip3.o
+#	$(CC) $(CFLAGS) $(INCLUDES) -o target1 minip.o minip2.o minip3.o
+
+minipenv.o: minipenv.cpp minipenv.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minipenv.cpp
+
+minparsernodes.o: minparsernodes.cpp minparsernodes.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minparsernodes.cpp
+
+minparsernodes2.o: minparsernodes2.cpp minparsernodes.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minparsernodes2.cpp
+
+minparsernodes3.o: minparsernodes3.cpp minparsernodes.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minparsernodes3.cpp
+
+minparsernodes4.o: minparsernodes4.cpp minparsernodes.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minparsernodes4.cpp
+
+minparsernodes5.o: minparsernodes5.cpp minparsernodes.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minparsernodes5.cpp
+
+minparser.o: minparser.cpp minparser.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minparser.cpp
+
+minparser2.o: minparser2.cpp minparser.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minparser2.cpp
+
+mintokenizer.o: mintokenizer.cpp mintokenizer.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c mintokenizer.cpp
+
+minpeproc.o: minpreproc.cpp minpreproc.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minpreproc.cpp
+
+minip.o: minip.cpp minip.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minip.cpp
+
+minip2.o: minip2.cpp minip.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minip2.cpp
+
+minip3.o: minip3.cpp minip.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minip3.cpp
+
+minip4.o: minip4.cpp minip.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c minip4.cpp
+
+
+bin.stamp: script.rcp script.h pilrc.bmp pilrcic.bmp
+	pilrc script.rcp
+
+clean:
+	-rm -f *.[oa] script *.bin *.stamp

@@ -1,0 +1,6 @@
+
+int _f( int );
+int _g( int & a );
+void _h( double, int );
+void _i();
+

@@ -1,0 +1,22 @@
+int i=9;
+i;
+
+int f2(int & x)
+{
+        x = 2*x; 
+	return 42;
+}
+
+int f(int & x)
+{
+	x = 21;
+	return 42;
+}
+
+
+int k=f2(i);
+i;
+
+//int j=f(i);
+
+//j+i+k;

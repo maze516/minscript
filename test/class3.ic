@@ -1,0 +1,101 @@
+const char * f_const( const int ) { return 0; }
+
+const int g_iMyConst = 6;
+//g_iMyConst = 5;
+
+//int aArr[8];
+//aArr[2] = 432;
+//PrintLn( "Array = " + aArr[2] );
+
+class MyClass
+{
+public:
+	MyClass() { PrintLn( "Konstruktor" ); ii = 9; }
+	MyClass( int ) { PrintLn( "Konstruktor INT !!!" ); }
+	~MyClass() { PrintLn( "Destruktor" ); }
+
+	int f( int x ) const { return x*x*ii; }
+	int g( int & x, int * y ) { PrintLn( "CALLME" ); x = x-1;  return ii; }
+	int g( double sx ) { sx = sx-1;  return 12.34; }
+
+	MyClass * GetThis() { return this; }
+
+
+private:
+	int ii;
+};
+
+MyClass aClass2int( const int );	// ist ein Funktions-Prototyp
+
+//MyClass aClass;		// ist ein Objekt
+//MyClass aClass2();	// ist ein Funktions-Prototyp
+
+int * _pi = new int(8);
+PrintLn( "*_pi="+*_pi );
+delete _pi;
+
+MyClass * pObj = 0;
+pObj = new MyClass( 1 );
+PrintLn( typeof pObj );
+MyClass & rObj = *pObj; // ---> TODO BUG !!!
+PrintLn( "THIS-TEST: "+ pObj->GetThis() );
+int i;
+pObj->ii = 888;
+i = (*pObj).ii;
+rObj.ii = 34;
+//i = pObj->ii;
+PrintLn( "i="+i+" "+(*pObj).ii );
+PrintLn( "typeof " +(typeof rObj)+" "+rObj.ii );
+//i = pObj->ii;
+//pObj->ii;
+
+PrintLn( "pObj->f() "+pObj->f( 8 )+" "+(*pObj).f( 8 ) );
+PrintLn( "typeof "+(typeof pObj->ii) );
+
+int x=6;
+int * px;
+double fd()
+{
+  {
+  	MyClass aObj;
+
+	if( true )
+		return 3.4566;
+	
+  PrintLn( "method call " + aObj.f( 6 ) );
+  }
+	
+//jj;		// Breakpoint mit unbekannter Variable erreichen !!!
+return 4.5;
+}
+//double ddd = fd();
+PrintLn( "REF a " +pObj->g( x, px ) );
+PrintLn( "REF b " +pObj->g( /*1.20*/ fd() ) );
+PrintLn( "X="+x );
+
+delete pObj;
+
+//MyClass aObj;
+//aObj.ii;
+/*
+MyClass aClass2()
+{
+	return MyClass();
+}
+
+MyClass aClass2int( int i )
+{
+	return MyClass( i );
+}
+
+MyClass aClassint( 2 );		// ist ein Objekt
+MyClass aClass2int( int c );	// ist ein Funktions-Prototyp
+
+int i = aClassint.i;
+
+//MyClass aTestClass = aClass;
+//MyClass aTestClass2 = aClass2();
+//MyClass aTestClass_ = aClassint( 9 );
+//MyClass aTestClass2_ = aClass2int( 4 );
+
+*/

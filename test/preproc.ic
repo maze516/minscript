@@ -1,0 +1,41 @@
+
+#define MY_DEF
+
+#ifdef MY_DEF
+
+PrintLn( "#ifdef Anweisung ausgefuehrt" );
+
+#else
+
+PrintLn( "#else Anweisung ausgefuehrt" );
+
+#endif
+
+#ifdef _WIN32
+
+PrintLn( "WIN32 !!!" );
+
+#endif
+
+int _f( int );
+int _g( int & a );
+void _h( double, int );
+void _i();
+
+#ifdef _gulp
+
+int i;
+//for( i=0; i<100; i=i+1 ) 	// Bug: i++ !!!
+for( i=0; i<100; i=i+1 ) 	// Bug: i++ !!!
+{
+    PrintLn( "loop "+i );
+}
+
+#endif
+
+int j;
+j = 5;
+//j++;
+++j;
+
+PrintLn( "j="+j );

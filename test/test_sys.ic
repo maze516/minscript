@@ -1,0 +1,20 @@
+
+void TesteSystemFunctions()
+{
+	int iRet = system( "minscript -v --help" );
+//	int iRet = system( "notepad" );
+	PrintLn( "iRet="+iRet );
+}
+
+int main()
+{
+	TesteSystemFunctions();
+
+	println( "Test done.");
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

@@ -1,0 +1,46 @@
+#define __STDC__
+
+#undef _ANSI_ARGS_
+#undef CONST
+
+#if ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus) || defined(USE_PROTOTYPE)
+#   define _USING_PROTOTYPES_ 1
+#   define _ANSI_ARGS_(x)	x
+#   define CONST const
+//#message _ANSI_ARGS_ 1
+#else
+#   define _ANSI_ARGS_(x)	()
+#message _ANSI_ARGS_ 2
+#   define CONST
+#endif
+
+#ifdef __cplusplus
+#   define EXTERN extern "C" TCL_STORAGE_CLASS
+#else
+#   define EXTERN extern TCL_STORAGE_CLASS
+#endif
+
+
+#if defined(__STDC__) || defined(HAS_STDARG)
+#   define TCL_VARARGS(type, name) (type name, ...)
+#   define TCL_VARARGS_DEF(type, name) (type name, ...)
+#   define TCL_VARARGS_START(type, name, list) (va_start(list, name), name)
+#else
+#   ifdef __cplusplus
+#	define TCL_VARARGS(type, name) (type name, ...)
+#	define TCL_VARARGS_DEF(type, name) (type va_alist, ...)
+#   else
+# message hallo welt
+#	define TCL_VARARGS(type, name) ()
+#	define TCL_VARARGS_DEF(type, name) (va_alist)
+#   endif
+#   define TCL_VARARGS_START(type, name, list) \
+	(va_start(list), va_arg(list, type))
+#endif
+
+#define TCL_VARARGS(type, name) (type name, ...)
+#define FFF( x )   x
+
+EXTERN void		Tcl_AppendResult _ANSI_ARGS_( TCL_VARARGS(Tcl_Interp *,interp) ) ;
+
+FFF( TCL_VARARGS( Michael , Neuroth ) )

@@ -1,0 +1,32 @@
+
+class SimpleClass
+{
+public:
+    SimpleClass()
+    {
+       PrintLn( "Konstruktor Class" );
+    }
+    ~SimpleClass()
+    {
+       PrintLn( "DESTRUKTOR Class" );
+    }
+};
+
+double SimpleFcn( double d )
+{
+    return d*d;
+}
+
+PrintLn( "Hallo Linux World !" );
+
+string s;
+
+double d = SimpleFcn( 9.123 );
+
+s = s + d;
+
+PrintLn( s );
+
+{
+    SimpleClass aClass;
+}

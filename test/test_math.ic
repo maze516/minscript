@@ -1,0 +1,34 @@
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#endif
+
+
+void TestMathFunctions()
+{
+    double x,y;
+    string s;
+	string sTemp;
+
+    x = 3.32345;
+
+    y = sin(x);
+    s = y;
+    println( sTemp+ "sin-test="+y );
+
+    y = cos( 2.1234 );
+    println( sTemp+ "sin-test="+y );
+
+    
+}
+
+int main()
+{
+	TestMathFunctions();
+	
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

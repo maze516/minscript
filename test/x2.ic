@@ -1,0 +1,64 @@
+
+struct Tcl_AsyncHandler__;
+
+extern  const int	Tcl_GetNameOfExecutable (void);
+//extern  const char *	Tcl_GetNameOfExecutable (void);
+
+// WORKING
+//typedef struct Tcl_AsyncHandler_ * abc;
+
+//  typedef enum {TCL_INT, TCL_DOUBLE, TCL_EITHER} Tcl_ValueType;
+//typedef struct Tcl_AsyncHandler_ * Tcl_AsyncHandler;
+//typedef int (Tcl_CmdProc) (ClientData clientData, Tcl_Interp *interp, int argc, char *argv[]);
+//typedef void (Tcl_DupInternalRepProc) (struct Tcl_Obj *srcPtr, struct Tcl_Obj *dupPtr);
+/*
+    union {			
+	long longValue;		
+	double doubleValue;	
+	void *otherValuePtr;
+    } aName;
+*/
+//    Tcl_HashEntry *(*findProc) (struct Tcl_HashTable *tablePtr, const char *key);
+
+//struct Tcl_Event {
+//    Tcl_EventProc *proc;	/* Procedure to call to service this event. */
+//    struct Tcl_Event *nextPtr;	/* Next in list of pending events, or NULL. */
+//};
+
+//Tcl_Obj * * const objv;
+
+//extern  void		Tcl_SetPanicProc (void (*proc)());
+
+typedef struct Tcl_Namespace {
+    struct Tcl_Namespace* parentPtr;			// BUG
+} Tcl_Namespace;
+
+
+typedef struct Tcl_Interp {
+    int (*freeProc) ( char *blockPtr);				
+    char *result;		; ; 
+    int errorLine;              
+} Tcl_Interp;
+
+class MyClass;
+struct MyStruct;
+
+
+#ifndef _XLIB_H
+
+#message gulp
+#   ifdef MAC_TCL
+#message gulp2
+#	include <Xlib.h>
+#	include <X.h>
+#   else
+#message gulp3
+#	include <X11/Xlib.h>
+#   endif
+#message gulp4
+#endif
+#message hallo3
+#ifdef __STDC__
+#   include <stddef.h>
+#endif
+

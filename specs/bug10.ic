@@ -1,0 +1,48 @@
+/*
+	int aArr[8];
+
+	aArr[1] = 1;
+	__println( "array = " + aArr[1] );
+*/
+
+class TestClass
+{
+public:
+	TestClass()
+	{
+		__println( "TestClass" );
+	}
+	int f()
+	{
+		return 9;
+	}
+	virtual ~TestClass()
+	{
+		__println( "~TestClass" );
+	}
+public:
+private:
+	int GetI() const
+	{
+		__println( "geti" );
+		return m_i;
+	}
+	int m_i;
+};
+
+TestClass aObj;
+__println( "m_i="+aObj.m_i );
+aObj.GetI();
+
+//	TestClass * pClass = new TestClass;
+
+	int pInt[8];
+//	int * pInt = 0;
+
+//	pInt = new int [8];
+
+	__println( "typeof " + (typeof pInt) );
+//	pInt[0] = 1;
+//	__println( "array = " + pInt[0] );
+
+//	delete [] pInt;

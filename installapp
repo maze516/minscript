@@ -1,0 +1,7 @@
+cp minscript $QPEDIR/usr/bin
+/opt/Qtopia/sharp/bin/mkipks_cmd minscript.control
+
+
+
+
+

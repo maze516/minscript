@@ -1,0 +1,10 @@
+// Zeiger auf Funktion deklarieren
+//int (*pFcnT)();
+
+int i;
+
+//int ft() { return 2; }
+
+//PrintLn( "*pFcnT=>" + pFcnT +"<" );
+//pFcnT();
+

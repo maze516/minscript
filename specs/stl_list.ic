@@ -1,0 +1,240 @@
+/*
+	Testsubject: generic stl list
+
+	Real world example for the interpreter,
+	implementing a simple stl conform list.
+
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+//**********************************************************
+//**********************************************************
+//**********************************************************
+
+//**********************************************************
+template <class TYPE>
+class _node
+{
+public:
+	_node<TYPE> *		m_pNext;
+	TYPE	        	m_aItem;
+};
+
+//**********************************************************
+template <class TYPE>
+class list_iterator
+{
+public:
+    list_iterator()
+    {
+        m_pActNode = 0;
+    }
+    list_iterator( _node<TYPE> * pActNode )
+    {
+        m_pActNode = pActNode;
+    }
+
+    TYPE get()
+    {
+        return m_pActNode->m_aItem;
+    }
+
+    void next()
+    {
+        m_pActNode = m_pActNode->m_pNext;
+    }
+
+    bool is_end() const
+    {
+        return ( m_pActNode == 0 );
+    }
+
+    _node<TYPE> *      m_pActNode;
+};
+
+//**********************************************************
+template <class TYPE>
+class list
+{
+public:
+	list()
+	{
+		m_pFirstNode = 0;
+		m_iCount = 0;
+        __println( _CONVERT "list() type=" );
+	}
+	~list()
+	{
+		_node<TYPE> * pNode = m_pFirstNode;
+
+		while( pNode != 0 )
+		{
+			_node<TYPE> * pTemp = pNode->m_pNext;
+
+            __println( _CONVERT "delete " + pNode );	
+
+			delete pNode;
+
+			pNode = pTemp;
+		}
+	}
+
+	int size() const
+	{
+		return m_iCount;
+	}
+
+    list_iterator<TYPE> begin()
+    {
+        //return list_iterator<TYPE>( m_pFirstNode );     // BUG !
+
+        list_iterator<TYPE> aIter( m_pFirstNode );
+        return aIter;
+    }
+    list_iterator<TYPE> end()
+    {
+        //return list_iterator<TYPE>( 0 );       // BUG !
+
+        _node<TYPE> * p = 0;
+        list_iterator<TYPE> aIter( p );          // BUG ! 0 kann nicht jedem Pointer zugewiesen werden (im Funktions-Call)
+        return aIter;
+    }
+
+	void push_front( TYPE aItem )
+	{
+        __println( _CONVERT "push_front "+aItem );
+
+		_node<TYPE> * pNewNode = new _node<TYPE>();
+	
+		pNewNode->m_aItem = aItem;
+		pNewNode->m_pNext = m_pFirstNode;
+
+		m_pFirstNode = pNewNode;
+		 
+		m_iCount++;
+	}
+	void push_back( TYPE aItem )
+	{
+        __println( _CONVERT "push_back "+aItem );
+
+		_node<TYPE> * pNewNode = new _node<TYPE>();
+	
+		pNewNode->m_aItem = aItem;
+
+		_node<TYPE> * pLastNode = GetLastNode();
+		if( pLastNode )
+		{
+			pNewNode->m_pNext = pLastNode->m_pNext;
+
+			pLastNode->m_pNext = pNewNode;
+		}
+		else
+		{
+			pNewNode->m_pNext = m_pFirstNode;
+
+			m_pFirstNode = pNewNode;
+		}
+		 
+		m_iCount++;
+	}
+
+	void dump()
+	{
+		__println( "dump list:" );
+
+		int i = 0;
+		_node<TYPE> * pNode = m_pFirstNode;
+
+		while( pNode != 0 )
+		{
+			//__println( _CONVERT "item "+i+": " + pNode->m_aItem + " type=" + typeof( pNode->m_aItem ) );
+			__println( _CONVERT "item "+i+": " + pNode->m_aItem );
+
+			i++;
+
+			pNode = pNode->m_pNext;
+		}
+	}
+
+private:
+	_node<TYPE> *	GetLastNode()
+	{
+		_node<TYPE> * pNode = m_pFirstNode;
+
+		while( pNode != 0 )
+		{
+			if( pNode->m_pNext == 0 )
+			{
+				return pNode;
+			}
+
+			pNode = pNode->m_pNext;
+		}
+
+		return pNode;
+	}
+		
+	_node<TYPE> *	m_pFirstNode;
+	int				m_iCount;		
+};
+
+int main()
+{
+	list<int> aList;
+	list<double> aListDbl;
+	list<string> aListStrg;
+
+    aListDbl.push_front( 9.86 );
+
+    aListStrg.push_back( "hallo world" );
+    aListStrg.push_back( "a list item" );
+
+	aList.push_front( 8 );
+	aList.push_front( 12 );
+	aList.push_front( 42 );
+	aList.push_back( 99 );
+
+    __println( "int list" );
+
+	aList.dump();
+
+    __println( "double list" );
+
+    aListDbl.dump();
+
+    __println( "string list" );
+
+    aListStrg.dump();
+
+    {
+        __println( "list_iterator Test:" );
+        list_iterator<int> aIter;
+        aIter = aList.begin();
+
+        //while( aIter != aList.end() )       // BUG: objektvergleiche noch nicht moeglich !
+        while( !aIter.is_end() )              // BUG: !aIter.is_end()
+        {
+            __println( _CONVERT "iter-item="+aIter.get() );
+            aIter.next();
+        }
+    }
+
+	__println( _CONVERT "count="+aList.size() );
+
+	return 0;
+}
+
+
+//typedef _node<string> _node_string;
+#define _node_string _node<string>;
+
+
+#ifdef __MINSCRIPT__
+main();
+#endif

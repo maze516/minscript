@@ -1,0 +1,10 @@
+Files: usr/bin/minscript usr/lib/libminip.so.1.0
+Priority: optional
+Section: development
+Maintainer: Michael Neuroth <min@developer.zaurus.de>
+Architecture: arm
+Version: 1.2.1
+Depends: libc6
+License: GPL
+Description: minscript
+ A simple Java/C++ like script language.

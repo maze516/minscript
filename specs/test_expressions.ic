@@ -1,0 +1,344 @@
+/*
+	Testsubject: expressions
+
+	This operators in expressions are available:
+
+		? :
+		,
+		!=, ==, <=, >=, <, >
+		!
+		~
+		++, --
+		*, /, %
+		+, -
+		&&, ||
+		&, |
+		<<, >>
+		=
+
+		()
+
+		new, delete
+
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+void TestCompare( int i, int j )
+{
+	__println( "#### compare operators" );
+
+	__println( _CONVERT "i="+i+" j="+j);
+
+	if( i<j )
+		__println( "i<j == true" );
+	else
+		__println( "i<j == false" );
+	if( i>j )
+		__println( "i>j == true" );
+	else
+		__println( "i>j == false" );
+
+	if( i<=j )
+		__println( "i<=j == true" );
+	else
+		__println( "i<=j == false" );
+	if( i>=j )
+		__println( "i>=j == true" );
+	else
+		__println( "i>=j == false" );
+
+	if( i!=j )
+		__println( "i!=j == true" );
+	else
+		__println( "i!=j == false" );
+	if( i==j )
+		__println( "i==j == true" );
+	else
+		__println( "i==j == false" );
+
+	bool bOk = ( i>4 );
+	bool bNotOk = !bOk;
+	__println( _CONVERT "bOk="+bOk+ " !bOk="+bNotOk );
+	bOk =  i<=4 ;
+	bNotOk = !bOk;
+	__println( _CONVERT "bOk="+bOk+ " !bOk="+bNotOk );
+}
+
+void TestUnaryOperators()
+{
+	__println( "#### unary operators" );
+
+	int i = 2134;
+	int j = ~i;
+
+	__println( _CONVERT "i=" + i + " ~i=" + j );
+	i = 14;
+	j = ~i;
+	__println( _CONVERT "i=" + i + " ~i=" + j );
+
+	unsigned int ii = 5;
+	unsigned int jj = ~ii;
+	i = ii;
+	j = jj;
+	__println( _CONVERT "ii=" + i + " ~ii=" + j );
+
+	bool bOk = false;
+	__println( _CONVERT "bOk=" + bOk + " !bOk=" + (!bOk) );
+	bOk = true;
+	__println( _CONVERT "bOk=" + bOk + " !bOk=" + (!bOk) );
+
+	i = 0;
+	__println( _CONVERT "i=" + i );
+	i++;
+	__println( _CONVERT "i=" + i );
+	++i;
+	__println( _CONVERT "i=" + i );
+	i--;
+	__println( _CONVERT "i=" + i );
+	--i;
+	__println( _CONVERT "i=" + i );
+}
+
+void TestCalculateOperators()
+{
+	__println( "#### calculate operators" );
+
+	{
+		int i = 5;
+		int j = 8;
+		int n;
+		
+		n = 2*i-j/3 + 12;
+		__println( _CONVERT "n="+n );
+	
+		n = 2*i+j/3 - 12;
+		__println( _CONVERT "n="+n );
+
+		n = 1-2-3;
+		__println( _CONVERT "n=" + n );
+
+		n = 4*i/9+4*(j-3)-3;
+		__println( _CONVERT "n=" + n );
+
+		n = 3-4-7/2+2*(3-4+2*9);
+		__println( _CONVERT "n=" + n );
+
+		n = 3*(i+j*(2+i)-4*(5-2+j));
+		__println( _CONVERT "n=" + n );
+
+		n = 1+2+3+4+5+6+7+8;
+		__println( _CONVERT "n=" + n );
+		
+		n = 1*2*3*4*5*6*7*8;
+		__println( _CONVERT "n=" + n );
+
+		n =8*7*6/5/4/3/2*3;
+		__println( _CONVERT "n=" + n );
+
+		n = 1-2-3-4-5-6-7-8;
+		__println( _CONVERT "n=" + n );
+
+		n = j % i;
+		__println( _CONVERT "n=" + n );
+	}
+	{
+		double i = 5.346;
+		double j = 8.135;
+		double n;
+		
+		n = 2*i-j/3 + 12;
+		__println( _CONVERT "n="+n );
+	
+		n = 2*i+j/3 - 12;
+		__println( _CONVERT "n="+n );
+
+		n = 1-2-3;
+		__println( _CONVERT "n=" + n );
+
+		n = 4*i/9+4*(j-3)-3;
+		__println( _CONVERT "n=" + n );
+
+		n = 3-4-7/2+2*(3-4+2*9);
+		__println( _CONVERT "n=" + n );
+
+		n = 3*(i+j*(2+i)-4*(5-2+j));
+		__println( _CONVERT "n=" + n );
+
+		n = 1+2+3+4+5+6+7+8;
+		__println( _CONVERT "n=" + n );
+		
+		n = 1*2*3*4*5*6*7*8;
+		__println( _CONVERT "n=" + n );
+
+		n =8*7*6/5/4/3/2*3;
+		__println( _CONVERT "n=" + n );
+
+		n = 1-2-3-4-5-6-7-8;
+		__println( _CONVERT "n=" + n );
+
+		//n = j % i;
+		//__println( _CONVERT "n=" + n );
+	}
+}
+
+void TestAndOr()
+{
+	__println( "#### and/or operators" );
+
+	bool bOk = true;
+	int i = 1, j = 3;
+
+	bool bResult = bOk && ( i==j );
+	__println( _CONVERT "bResult=" + bResult );
+	
+	bResult = bOk && !( i==j );
+	__println( _CONVERT "bResult=" + bResult );
+
+	bResult = !(bOk && !( i==j ));
+	__println( _CONVERT "bResult=" + bResult );
+
+	bResult = !(bOk && !( i!=j ));
+	__println( _CONVERT "bResult=" + bResult );
+
+	bResult = bOk || ( i==j );
+	__println( _CONVERT "bResult=" + bResult );
+	
+	bResult = bOk || !( i==j );
+	__println( _CONVERT "bResult=" + bResult );
+
+	bResult = !(bOk || !( i==j ));
+	__println( _CONVERT "bResult=" + bResult );
+
+	bResult = !(bOk || !( i!=j ));
+	__println( _CONVERT "bResult=" + bResult );
+
+	bResult = (bOk || false && (i>j || true));
+	__println( _CONVERT "bResult=" + bResult );
+
+	{
+		int i = 0x123;
+		int j = 0x456;
+		int k = 0x038;
+		int n = i | j;
+
+		__println( _CONVERT "i=" + i + " j=" + j + " i | j = " + n );
+		n = i | j | k;
+		__println( _CONVERT "i=" + i + " j=" + j + " k="+ k + " i | j | k = " + n );
+
+		i = 15;
+		j = 7;
+		k = 3;
+		n = i | j;
+		__println( _CONVERT "i=" + i + " j=" + j + " i | j = " + n );
+		n = i | j | k;
+		__println( _CONVERT "i=" + i + " j=" + j + " k="+ k + " i | j | k = " + n );
+		n = i | j & k;
+		__println( _CONVERT "i=" + i + " j=" + j + " k="+ k + " i | j & k = " + n );
+		n = i & j | k;
+		__println( _CONVERT "i=" + i + " j=" + j + " k="+ k + " i & j | k = " + n );
+		n = i & j;
+		__println( _CONVERT "i=" + i + " j=" + j + " i & j = " + n );
+
+	}
+}
+
+void TestShift()
+{
+	__println( "#### shift operators" );
+
+	int i = 1, j = 3;
+	int m = 63;
+	int n = -1;
+
+	n = i << 4;
+	__println( _CONVERT "n=" + n );
+	n = i << 4+2;
+	__println( _CONVERT "n=" + n );
+	n = m >> 3;
+	__println( _CONVERT "n=" + n );
+	n = m >> 3-1;
+	__println( _CONVERT "n=" + n );
+	n = m >> (3-1);
+	__println( _CONVERT "n=" + n );
+}
+
+void TestDiverse()
+{
+	__println( "#### complicated expressions" );
+
+	int i, j, n, m, k;
+
+	i=5;
+	j=9;
+	n=87;
+	m=42;
+	k=234;
+
+	int iResult = (1 << i)+73-n*(5-m)/2;
+	__println( _CONVERT "iResult=" + iResult );
+
+	iResult = 1+87%3+1.23*k-(3>>2);
+	__println( _CONVERT "iResult=" + iResult );
+}
+
+struct MyTestClass
+{
+	int		m_i;
+	double	m_d;
+	string	m_s;
+	string  m_str;
+};
+
+void TestSizeof()
+{
+	int i;
+	double d;
+	string s;
+	string s1 = "abcdefghaltlaksdf";
+	MyTestClass aObj;
+
+	i = sizeof( i );
+	__println( _CONVERT "sizeof()="+i );
+	i = sizeof( d );
+	__println( _CONVERT "sizeof()="+i );
+	i = sizeof( s );
+	__println( _CONVERT "sizeof()="+i );
+	i = sizeof( s1 );
+	__println( _CONVERT "sizeof()="+i );
+	i = sizeof( aObj );
+	__println( _CONVERT "sizeof()="+i );
+}
+
+// die Hauptfunktion
+int main()
+{
+	__println( "Test for expressions:" );
+
+	TestCompare( 1, 2 );
+	TestCompare( 2, 1 );
+	TestCompare( 44, 44 );
+
+	TestUnaryOperators();
+
+	TestCalculateOperators();
+
+	TestAndOr();
+
+	TestShift();
+
+	TestDiverse();
+
+	TestSizeof();
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

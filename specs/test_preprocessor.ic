@@ -1,0 +1,169 @@
+/*
+	Testsubject: preprocessor
+
+	This preprocessor functions are available:
+
+		#define
+		#undef
+		#ifdef
+		#ifndef
+		#if defined
+		#else
+		#elif
+		#endif
+		#message
+		#error
+
+		#include
+
+	Predefined symbols are:
+
+		Name											  Value
+		----------------------------------------------------------
+		__MINSCRIPT__										1
+		__STDC__											1
+		__cplusplus											1
+		_WIN32 or __OS2__ or __linux__ or __UNKNOWN__		1
+		_DEBUG or _NDEBUG									1
+
+		not supported yet:
+		__FILE__
+		__LINE__
+		__TIME__
+		__DATE__
+
+TODO: # ## und \ Tokens testen
+
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+#message "predefined symbols:"
+
+#ifdef __cpluspllus
+#message "__cplusplus"
+#endif
+
+#ifdef __STDC__
+#message "__STDC__"
+#endif
+
+#ifdef __MINSCRIPT__
+#message "__MINSCRIPT__"
+#endif
+
+#if defined( _WIN32 )
+#message "_WIN32 is defined"
+#else
+#message "_WIN32 is NOT defined"
+#endif
+
+#if !defined( __OS2__ )
+#message "__OS2__ is NOT defined"
+#else
+#message "__OS2__ is defined"
+#endif
+
+#if defined( __linux__ )
+#message "__linux__ is defined"
+#else
+#message "__linux__ is NOT defined"
+#endif
+
+#if defined( __UNKNOWN__ )
+#message "__UNKNOWN__ is defined"
+#else
+#message "__UNKNOWN__ is NOT defined"
+#endif
+
+#if defined( _WIN32 )
+#message "Windows found !"
+#elif defined( __OS2__ )
+#message "OS/2 found !"
+#elif defined( __linux__ )
+#message "Linux found !"
+#else
+#message "Unkown operating system found !"
+#endif
+
+#message "predefined symbols done."
+
+#define _MY_TEST 8
+
+#ifdef _MY_TEST
+#message "_MY_TEST is defined"
+#else
+#message "_MY_TEST is NOT defined"
+#endif
+
+#undef _MY_TEST
+
+#ifdef _MY_TEST
+#message "_MY_TEST is defined"
+#else
+#message "_MY_TEST is NOT defined"
+#endif
+
+#define _FLAG1 4
+#undef _FLAG2
+
+#if defined( _FLAG1 ) || defined( _FLAG2 )
+#message "OR Test: true"
+#else
+#message "OR Test: false"
+#endif
+
+#if defined( _FLAG1 ) && defined( _FLAG2 )
+#message "AND Test: true"
+#else
+#message "AND Test: false"
+#endif
+
+//#error "this is an error !"
+
+#include "test_include.ic"
+#include <test_include2.ic>
+
+#define MY_FUNC(x)				(x*x)
+#define MY_SUM(x,y)				(x+y)
+#define MY_TEST( x, y, z )		x + y + z
+
+#ifdef _DEBUG
+#define DEBUG(x)		x
+#message "_DEBUG is defined !"
+#else
+#define DEBUG(x)
+#message "_DEBUG is NOT defined !"
+#endif
+
+//*******************************************************
+
+// die Hauptfunktion
+int main()
+{
+#if defined( __MINSCRIPT__ )
+	// only for minscript !
+	__println( "__MINSCRIP__" );
+#endif
+
+	int i = 9;
+	int j = MY_TEST( 3,4,5);
+
+	__println( "FUNCTION-Define 1 : " + MY_FUNC( i ) );
+	__println( "FUNCTION-Define 2a: " + MY_SUM( i, 7 ) );
+	__println( "FUNCTION-Define 2b: " + MY_SUM(6+4,7*2-2) );
+	__println( "FUNCTION-Define 3 : " + j );
+
+	DEBUG( __println( "This is a Debug statment" ) );
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

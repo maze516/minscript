@@ -1,0 +1,84 @@
+void h() {}
+int g() { __println( "asdf" ); return 0; }
+int f() { __println( "asdf" ); return 0; }
+
+double f2( double d, const char * s ) { return 0; }
+
+class MyClass
+{
+public:
+	MyClass()
+	{
+		m_i = 7;
+	}
+	MyClass( int i )
+	{
+		m_i = i;
+	}
+
+//	MyClass & operator * ();
+
+	double Fcn( int o );
+
+	int f1(); // { return 0; }
+//	int f2( int * i, double & d ); // { return 0; }
+	virtual int f2( int i, double & d ); // { return 0; }
+
+	int * GetPtr() const { return 0; }
+
+	void testvoid();
+protected:
+	string gulp();
+
+	int m_i;
+};
+
+void Test()
+{
+MyClass aObj;
+//aObj.f();
+
+//__println( "xxx=" + aObj );
+//aObj.m_i;
+
+int aArray[12];
+
+int i;
+
+i = aArray[0];
+__println( "i="+i );
+
+for( i=0; i<8; i++ )
+{
+	aArray[i] = i*i;
+}
+
+
+for( i=0; i<8; i++ )
+{
+//	__println( "aArray["+i+"]="+aArray[i] );
+}
+
+
+//aObj = aArray;
+
+//__println( "aObj[]="+aObj[0] );
+//__dbghalt 4;
+
+//*aObj;
+
+__println( "done." );
+
+
+double d;
+string s;
+string s1 = "abcdefghaltlaksdf";
+i = sizeof( i ) + 5;
+__println( "sizeof()="+i );
+i = sizeof( d );
+__println( "sizeof()="+i );
+i = sizeof( s );
+__println( "sizeof()="+i );
+i = sizeof( s1 );
+__println( "sizeof()="+i );
+}

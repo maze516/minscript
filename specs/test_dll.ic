@@ -1,0 +1,27 @@
+
+#include "cppclasstest.ic"
+
+
+int main()
+{
+	__println( "DLL Test" );
+
+	string s = "gulp";
+	TestFcn( s );
+
+	s = "Michael und Madeleen";
+	CppClassTest aObj( s );
+//	CppClassTest aObj( "Michael und Madeleen" );
+
+	aObj.f();
+
+	__println( "int="+aObj.GetInt() );
+	__println( "sting="+aObj.GetString() );
+
+	__println( "done." );
+
+	return 0;
+}
+
+
+main();

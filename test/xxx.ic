@@ -1,0 +1,15 @@
+{
+int TCL_MAJOR_VERSION = 8;
+int TCL_MINOR_VERSION = 0;
+string TCL_PATCH_LEVEL = "8.0.5";
+int TCL_RELEASE_LEVEL = 2;
+int TCL_RELEASE_SERIAL = 5;
+//int _WIN32 = 0;
+//int WIN32 = 1;
+string TCL_VERSION = "8.0";
+string _TCL = "";
+//_*exists _WIN32 || _*exists WIN32;
+//bool bCondition = (  __exists _WIN32 || __exists WIN32 );
+bool bCondition = defined( _WIN32 ) || defined( WIN32 );
+PrintLn( ""+bCondition );
+}

@@ -1,0 +1,9 @@
+int i;
+
+i = 42;
+
+i;
+
+int testxyz( int i );
+
+mygulp( 4 );

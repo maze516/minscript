@@ -1,0 +1,21 @@
+char ch;
+ch = '\'';
+//ch = 65;
+PrintLn( "CHAR = "+ch );
+
+int iVar;
+double dVar;
+string sVar;
+iVar = 8.64;
+dVar = 8.34;
+sVar = 8.34;
+
+double f( double x )
+{
+    return x*x;
+}
+
+PrintLn( iVar );
+PrintLn( dVar );
+PrintLn( sVar );
+PrintLn( iVar+" Hallo Welt ! ret="+dVar*dVar );

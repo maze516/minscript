@@ -1,0 +1,180 @@
+/*
+	Testsubject: arrays
+
+	This operations are available:
+
+		[]
+
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+class MyTestClass
+{
+public:
+	MyTestClass()
+	{
+		m_i = 0;
+	}
+	MyTestClass( int i )
+	{
+		m_i = i;
+	}
+	int dump()
+	{
+		__println( _CONVERT "MyClass m_i="+m_i );
+		return m_i;
+	}
+
+private:
+	int		m_i;
+};
+
+const int c_iMaxIntArr = 16;
+
+//#define c_iMaxIntArr	16
+#define c_iMaxDblArr	64
+#define c_iMaxStrArr	23
+
+// BUG: mehrdimensionale Arrays funktionieren noch nicht !
+void Teste2DimIntArray()
+{
+	int i;
+/*
+	int aArray[c_iMaxIntArr][2];
+
+	for( i=0; i<c_iMaxIntArr; i++ )
+	{
+		aArray[i][0] = i*i;
+	}
+
+	for( i=0; i<c_iMaxIntArr; i++ )
+	{
+		__println( _CONVERT "aArray["+i+"]="+aArray[i][0] );
+	}
+*/
+}
+
+void TesteIntArray()
+{
+	int i;
+	int aArray[c_iMaxIntArr];
+
+	for( i=0; i<c_iMaxIntArr; i++ )
+	{
+		aArray[i] = i*i;
+	}
+
+	for( i=0; i<c_iMaxIntArr; i++ )
+	{
+		__println( _CONVERT "aArray["+i+"]="+aArray[i] );
+	}
+}
+
+void TesteDoubleArray()
+{
+	int i;
+	double aArray[c_iMaxDblArr];
+
+	for( i=0; i<c_iMaxDblArr; i++ )
+	{
+		aArray[i] = i*i;
+	}
+
+	for( i=0; i<c_iMaxDblArr; i++ )
+	{
+		__println( _CONVERT "aArray["+i+"]="+aArray[i] );
+	}
+}
+
+void TesteStringArray()
+{
+	int i;
+	string aArray[c_iMaxStrArr];
+
+	for( i=0; i<c_iMaxStrArr; i++ )
+	{
+		aArray[i] = _CONVERT "string test i="+i;
+	}
+
+	for( i=0; i<c_iMaxStrArr; i++ )
+	{
+		__println( _CONVERT "aArray["+i+"]="+aArray[i] );
+	}
+}
+
+void TesteClassArray()
+{
+	int i;
+	MyTestClass aArray[c_iMaxStrArr];
+
+	for( i=0; i<c_iMaxStrArr; i++ )
+	{
+		MyTestClass aObj( i );
+		aArray[i] = aObj;
+	}
+
+	for( i=0; i<c_iMaxStrArr; i++ )
+	{
+		aArray[i].dump();
+		//__println( _CONVERT "aArray["+i+"]="+ );
+	}
+}
+
+void TestArrayAssign()
+{
+	int i;
+	int aArr1[5];
+	int aArr2[8];
+
+	for( i=0; i<5; i++ )
+	{
+		aArr1[i] = i;
+	}
+	for( i=0; i<8; i++ )
+	{
+		aArr2[i] = -i;
+	}
+
+#ifdef __MINSCRIPT__
+	aArr1 = aArr2;		// funktioniert nur mit minscript !
+	//aArr2 = aArr1;		// funktioniert nur mit minscript !
+#endif
+
+	for( i=0; i<6; i++ )
+	{
+		__println( _CONVERT "Array i="+i+" "+aArr1[i] );
+	}
+	for( i=0; i<8; i++ )
+	{
+		__println( _CONVERT "Array i="+i+" "+aArr2[i] );
+	}
+}
+
+
+// die Hauptfunktion
+int main()
+{
+	TesteIntArray();
+
+	TesteDoubleArray();
+
+	TesteStringArray();
+
+	TesteClassArray();
+
+	TestArrayAssign();
+
+	Teste2DimIntArray();
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

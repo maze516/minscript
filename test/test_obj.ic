@@ -1,0 +1,48 @@
+
+#ifndef __MINSCRIPT__
+#include "minscript_cpp.h"
+#endif
+
+class MyClass
+{
+};
+
+class Container
+{
+public:
+    int size()
+    {
+        return 1;
+    } 
+};
+
+int main()
+{
+	MyClass aObjX;
+	Container aObj;
+	int iInt;
+	double dDouble;
+	string sStrg;
+
+	aObj.size();
+
+	println( "object Typ=" + typeof( aObj ) );
+	println( "object Typ=" + typeof( aObjX ) );
+	println( "int Typ=" + typeof( iInt ) );
+	println( "double Typ=" + typeof( dDouble ) );
+	println( "string Typ=" + typeof( sStrg ) );
+
+	// BUG !!!	
+	//aObj = aObjX;
+	println( "object Typ=" + typeof( aObj ) );
+	println( "object Typ=" + typeof( aObjX ) );
+
+	//aObj.size();
+
+	//object aXXX;
+	//println( "object Typ=" + typeof aXXX );
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

@@ -1,0 +1,116 @@
+
+/*static*/ const int npos = string_npos();
+
+// eine einfache String-Klasse, zur Kapselung des eingebauten Datentyps
+class String
+{
+    int npos;
+
+    String() 
+    { 
+        this->Init(); 
+    }    
+    String( string s )
+    {
+		println( "String::String("+s+")" );
+        this->Init();
+        m_sString = s;
+    }
+
+    int find( string s )
+    {
+// BUG !!!
+println( "find !" );
+//dbghalt 1;
+this->Init();
+        return string_find( m_sString, s );
+    }
+    string toString() const
+    {
+println( "toString" );
+//dbghalt 1;
+this->Init();
+        return m_sString;
+    }
+
+    void Init()
+    {
+println("Init");
+        npos = string_npos();
+    }
+
+private:
+
+    string m_sString;
+};
+
+
+void Bug()
+{
+    String aStrgObj( "initialisierter String" );
+    string sSearch = "it";
+
+
+	string sRes1 = aStrgObj.toString();
+
+	aStrgObj.toString();
+	aStrgObj.toString();
+	aStrgObj.toString();
+	aStrgObj.toString();
+
+/*
+	string sRes2 = aStrgObj.find( "asdf" );
+	string sRes3 = aStrgObj.toString();
+	string sRes4 = aStrgObj.find( "asdf" );
+*/
+	/*aStrgObj.toString() +*/ string s = "";
+//	aStrgObj.toString();
+//	aStrgObj.find( "asdf" );
+//	aStrgObj.toString();
+//	aStrgObj.find( sSearch ) + aStrgObj.toString();
+}
+
+/* Funktion zum Testen von Strings */
+void TestStringFunctions()
+{
+    string s1;
+    string s2; //string s2( "initialisierter String" );
+    string s3 = "zugewiesener String";
+    String aStrgObj( "initialisierter String" );
+    String aDefaultObj;
+
+    string sSearch = "it";
+
+    PrintLn("String Test:");
+    println( "s1=>" + s1 + "<" );
+    println( "s2=>" + s2 + "<" );
+    println( "s3=>" + s3 + "<" );
+
+/*
+	string sRes1;
+	sRes1 = aStrgObj.toString();
+	string sRes2;
+	sRes2 = "x";
+*/
+
+//    println( "find string " + sSearch + " in " + sRes1 + " --> pos=" + sRes2 );
+    println( "find string " + sSearch + " in " + aStrgObj.toString() + " --> pos=" + aStrgObj.find( sSearch ) );
+
+    println( "string typ = " + ( typeof s1 ) );
+}
+
+int main()
+{
+	TestStringFunctions();
+
+	String aString;
+
+	println( "aString=" + (typeof aString));
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+//Bug();
+main();
+#endif

@@ -1,0 +1,144 @@
+/*
+	Testsubject: variables
+
+	This types are available:
+
+		bool
+		char
+short
+		int
+long
+		double
+float
+		string
+
+[unsigned, signed]
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+bool	g_bGlobal = false;
+char	g_cChar = 'a';
+int		g_iGlobal = 9;
+string	g_sGlobal = "ein globaler String";
+
+// die Hauptfunktion
+int main()
+{
+	int i = 0;
+	int j = 2;
+	int n, m,k;
+
+	n = j*j;
+	m = 4*n;
+	k = m*2;
+
+	__println("Variable-Test:");
+
+	__println( "********** int **********" );
+	__println( _CONVERT "i=" + i );
+	__println( _CONVERT "j=" + j );
+	__println(_CONVERT"n="+n);
+	__println( _CONVERT "m=" + m );
+	__println( _CONVERT "k=" + k );
+
+	__println( _CONVERT "g_iGlobal=" + g_iGlobal );
+	__println( _CONVERT "g_sGlobal=" + g_sGlobal );
+
+	string s = "xyz";
+	__println( "(vor block) s=" + s );
+	{
+		string s = "abc";
+		__println( "(block) s=" + s );
+	}
+	__println( "(nach block) s=" + s );
+
+	__println( "********** double **********" );
+	double d = 0;
+	double d1 = 42.987;
+	double d2 = 3.4*7.5;
+	double d3 = 42341.123/34.23456;
+	double d4 = 1.23e12 + 4.123e11;
+
+	__println( _CONVERT "d=" + d );
+	__println( _CONVERT "d1=" + d1);
+	__println( _CONVERT "d2=" + d2);
+	__println( _CONVERT "d3=" + d3 );
+	__println( _CONVERT "d4=" + d4 );
+
+	__println( "********** string **********" );
+	string s1 = "init string";
+	string s2 = " and \n";
+	string s3 = "End \tString";
+	string s4;
+	
+	s4 = s1+s2 + s3;
+
+	__println( "s1="+s1 );
+	__println( "s2="+s2 );
+	__println( "s3="+s3 );
+	__println( "s1+s2+s3="+s4 );
+
+	// Ausgaben kombinieren
+	__println( _CONVERT "Ausgabe: \""+m+" "+d1+" "+s1+"\"" );
+
+	__println( "********** bool **********" );
+	__println(_CONVERT"g_bGlobal="+g_bGlobal);
+	{
+		bool bOk = true;
+		bool bTrue = true;
+		bool bFalse = false;
+		bool bTest;
+		
+		__println( _CONVERT "bOk=" + bOk );
+		bOk = true;
+		__println( _CONVERT "bOk=" + bOk );
+		bOk = false;
+		__println( _CONVERT "bOk=" + bOk );
+
+		bTest = bTrue && bFalse;
+		__println( _CONVERT "(&&)bTest=" + bTest );
+		bTest = bTrue || bFalse;
+		__println( _CONVERT "(||)bTest=" + bTest );
+	}
+
+	__println( "********** char **********" );
+	__println( _CONVERT "g_cChar=" + g_cChar );
+	g_cChar = 'Z';
+	__println( _CONVERT "g_cChar=" + g_cChar );
+	char ch;
+	//__println( "ch=>" + ch + "< [uninitialized!]" );
+	int iCh = ch;
+	__println( _CONVERT "(int)ch=>" + iCh + "< [uninitialized!]" );
+	ch = 65;
+	__println( _CONVERT "ch=" + ch );
+	ch = 'T';
+	__println( _CONVERT "ch=" + ch );
+	
+#if defined( __MINSCRIPT__ )
+	// only for minscript !
+	__println( "ONLY minscript features:" );
+	ch = "69";								// means: Asci-Code 69 !
+	__println( _CONVERT "ch=" + ch );
+	{
+		double d;
+		int i;
+		bool bOk;
+
+		__println( _CONVERT "d=" + d + " [uninitialized!]" );	
+		__println( _CONVERT "i=" + i +" [uninitialized!]" );
+		__println( _CONVERT "bOk=" + bOk + " [uninitialized!]" );
+	}
+#endif
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

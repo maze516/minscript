@@ -1,0 +1,99 @@
+/*
+int * ___p = new int(3);
+(*___p) = 5;
+int kkk = ((*___p)+5);
+PrintLn("kkk="+kkk);
+*/
+// Zeiger auf Funktion deklarieren
+int (*pFcnT)( int );
+
+int ft() { return 2; }
+int ft2() { return 7; }
+
+int i=((ft()))*(ft());
+PrintLn( "i="+i );
+
+PrintLn( "*pFcnT=>" + pFcnT +"<" );
+pFcnT = ft;
+int m = pFcnT();
+PrintLn( "m="+m );
+pFcnT = ft2;
+pFcnT = &ft2;
+m = pFcnT();
+//m = 4 + (*pFcnT)();
+m = (*pFcnT)() + 4;
+PrintLn( "m="+m );
+
+//int * _pf = &ft;
+
+// Typ eines Zeigers auf eine Funktion definieren
+typedef int (*pFcnT)();
+typedef int (pFcnTT)();
+//typedef int pFcnTTT();
+pFcnT _pFcn;
+pFcnTT _pFcn2 = &ft;
+_pFcn = &ft2;
+//int u = (*_pFcn)();
+int u = _pFcn();
+PrintLn( "typedef fcn = " + u  );
+PrintLn( "typedef fcn = " + _pFcn2() );
+
+//m = u;
+if( m == u )
+  PrintLn( "THEN" );
+else
+  PrintLn( "ELSE "+(m == u) );
+bool b;
+b = m==u;
+PrintLn( "bOk = "+b );
+
+/*
+//################################################
+
+struct my;
+int my_f( my a );
+struct my;
+struct my { my() { i=9;} int i; }
+
+int my_f( my a )
+{
+	return a.i;
+}
+
+my a;
+int kk = my_f( a );
+PrintLn( "kk=" + kk );
+
+//TODO
+class yy;
+struct y;
+
+typedef struct Gulpx { Gulpx() { PrintLn("GULP-KONSTRUKTOR"); } int i; } Gulpx;
+
+Gulpx aGulp;
+
+//################################################
+
+int * _pi;
+{
+int i = 7;
+static int ii = 78;
+extern "C" int j;
+_pi = &i;
+*_pi = 89;
+//i=123;
+
+static int f( int ) { return 6; }
+extern "C" int ff( int ) { return 63; }
+
+PrintLn( "delete now" );
+//delete _pi;			// ist nicht erlaubt 
+int k = 4;
+PrintLn( "i="+i );
+PrintLn( "f(i)="+f(i) );
+PrintLn( "ff(i)="+ff(i) );
+}
+PrintLn( "*_pi="+*_pi );	// ACHTUNG: Zugriff als haengende Refernz !!!
+_pi = 0;			// damit keine Memory-Leak Meldung erzeugt wird
+
+*/

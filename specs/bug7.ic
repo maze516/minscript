@@ -1,0 +1,278 @@
+
+class ClassC
+{
+public:
+	ClassC()
+	{
+		__println( "ClassC "+this );
+	}
+	~ClassC()
+	{
+		__println( "~ClassC "+this );
+	}
+};
+
+class ClassA
+{
+public:
+	ClassA()
+	{
+		__println( "ClassA "+this );
+	}
+	ClassA( int i )
+	{
+		m_i = i;
+		__println( "ClassA(int) "+i+" this="+this );
+		m_i++;
+		__println( "test" );
+		this->m_i = 8;
+		__println( "done" );
+	}
+	ClassA( int i, int j )
+	{
+		__println( "ClassA(int,int) "+i+" "+j );
+	}
+	~ClassA()
+	{
+		__println( "~ClassA "+this );
+	}
+	void f()
+	{
+		__println( "ClassA::f()" );
+	}
+	void Dump()
+	{
+		this->f();
+//		this->m_i = 5444;
+		__println( "dump it i="+m_i+" this="+this );
+	}
+	int m_i;
+};
+
+class ClassB : public ClassA , public ClassC
+{
+public:
+	ClassB( int i ) : ClassA(i)
+	{
+		__println( "ClassB "+this );
+	}
+	~ClassB()
+	{
+		__println( "~ClassB " +this );
+	}
+};
+
+//int i  = 9;
+//int iArr[8];
+//i = iArr[1];
+/*
+int * pInt = new int;
+*pInt = 4;
+//__println( "i="+i );
+__println( "pInt="+(*pInt) );
+delete pInt;
+*/
+__println("********************************");
+{
+	ClassA * pObj = new ClassA(6);
+	pObj->Dump();
+	delete pObj;
+}
+__println("********************************");
+/*
+{
+	ClassA * pObj = new ClassA(8,9);
+	delete pObj;
+}
+
+__println("********************************");
+
+{
+	ClassB aObj(8);
+	aObj.Dump();
+	__println( "adress=" + (&aObj) );
+}
+__println("********************************");
+
+{
+	ClassB * pObj = new ClassB(5);
+	__println( "adress=" + (&(*pObj)) );
+	delete pObj;
+}
+__println("********************************");
+*/
+
+
+
+//string s;
+//s = "abc\\\tabc";
+//__println( s );
+
+//char ch = '\\';
+//__println( "ch=" + ch);
+//ch = '\n';
+//__println( "ch=" + ch);
+
+//unsigned int i = 9;
+//long int l = 0;
+//short int s;
+//long l;
+//_asdf;
+
+#ifdef asdfasdfasdf
+class a
+{
+public:
+	a()
+	{
+		__println( "a::a() "/*+this*/ );
+		m_iVal = 1;
+	}
+	~a()
+	{
+		__println( "~a() "/*+this*/ );
+	}
+	virtual string GetName() const
+	{
+	}
+	int m_iVal;
+};
+
+class b : public a
+{
+public:
+	b()
+	{
+		__println( "b::b() "/*+this*/ );
+		m_iVal = 2;
+	}
+	~b()
+	{
+		__println( "~b() "/*+this*/ );
+	}
+};
+
+/*
+{
+	a aObj1;
+}
+{
+	b aObj2;
+}
+*/
+__println( "************" );
+{
+//	a aObj1;
+	b aObj2;
+	__println( "m_iVal="+ (aObj2.m_iVal) ); 
+}
+
+#endif
+
+/*
+int * pInt = 0;
+pInt = new int;
+//*pInt = 9;
+//__println( "int="+(*pInt));
+//int iArr[8];
+//__println( "array="+iArr[0] );
+*/
+
+#ifdef _gulp
+
+int f()
+{
+	return 1;
+}
+
+int f( const int i )
+{
+	i = i+3;
+	return i*i;
+}
+
+int sf( string & s )
+{
+	s = "abc";
+	return 1;
+}
+
+int j = 8;
+int i = f( j );
+__println( "i="+i );
+__println( "j="+j );
+
+string s = "aaa";
+__println( "s="+s );
+sf( s );
+__println( "s="+s );
+
+
+int n = 0;
+
+n++;
+++n;
+
+__println( "n=" + n );
+__println( "done." );
+
+void f( int & i, int j )
+{
+	i = i*i+j;
+}
+
+void ReadFile( string sFileName )
+{
+	int hFile = fopen( sFileName, "r" );
+	__println( "read fopen " + hFile );
+
+	if( hFile )
+	{
+		string sLine = "nix";
+
+		__println( "try fgets" );
+		fgets( sLine, hFile );
+
+		__println( "read line: >" + sLine + "<" );
+
+		fclose( hFile );
+	}
+}
+
+ReadFile( "test_expressions.ic.txt" );
+
+{
+int i = 9;
+
+int j = 0;
+
+__println( "i="+i+" j="+j );
+
+j = my_ref_test( i );
+
+__println( "i="+i+" j="+j );
+}
+
+{
+string i = "abc";
+string j = "def";
+
+__println( "i="+i+" j="+j );
+
+j = my_ref_test_string( i );
+
+__println( "i="+i+" j="+j );
+
+j = "michael";
+
+__println( "i="+i+" j="+j );
+}
+
+int x = 8;
+int y= f( x, 5 );
+
+__println( "x="+x+" f(x)="+y );
+
+__println( "argc="+argc );
+
+#endif

@@ -1,0 +1,49 @@
+//object a;
+//a.b;
+int ii;
+
+class MichaelsClass {
+   int i;
+
+};
+
+double dd = 78.45;
+int inta=0;
+int j,n=0,m;
+
+//inta j;
+
+int f( int & x )
+{
+	x = 2*x;
+	return x*x;
+}
+
+int testprn( string s )
+{
+	s = "gulp";
+}
+
+n=9;
+
+f( n );
+
+//TODO: int a[8];
+//a[8+4] = 4;
+object a;
+//a.b = 9;
+
+string ss;
+testprn( ss );
+string s = "hallo welt\n\n\n";
+
+PrintLn( s );
+PrintLn( "hier steht ein Text" );
+PrintLn( "sin="+sin( 1.57 ) );
+PrintLn( "cos="+cos( 2.344 ) );
+
+voidgulp( inta );
+PrintLn( "inta="+inta );
+
+PrintLn( "double="+dd );
+

@@ -1,0 +1,10 @@
+Files: usr/bin/minscript
+Priority: optional
+Section: development
+Maintainer: Michael Neuroth <min@developer.zaurus.de>
+Architecture: arm
+Version: 1.2.1
+Depends: libc6
+License: GPL
+Description: minscript
+ A simple Java/C++ like script language.

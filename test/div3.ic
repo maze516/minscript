@@ -1,0 +1,14 @@
+bool bCondition = ( 1 > 0 );
+bCondition;
+PrintLn( "bCondition="+bCondition );
+
+bool bExists = __exists bCondition3;
+string sStrg = "bExists";
+
+PrintLn( "bExists1="+bExists );
+PrintLn( "bExists2="+(_*exists sStrg) );
+bool bTest;
+bTest = defined sStrg3 ;
+bTest = defined ( sStrg );
+PrintLn( "bExists3="+bTest );
+//defined( sStrg )

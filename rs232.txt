@@ -1,0 +1,367 @@
+//###########################################################################
+//ZAURUS:
+http://www.w-m-p.com/pocketworkstation/
+http://www.mmhart.com/zaurus_on_mmhartcom.htm
+
+
+http://www.freedict.de/		
+--> zBedic --> http://sourceforge.net/projects/bedic
+
+http://www.linux-solutions.at/projects/zaurus/de/index.html
+
+// RS232:
+http://www.cpcug.org/user/clemenzi/technical/Languages/SerialIO.htm
+http://www.samblackburn.com/wfc/
+http://www.samblackburn.com/wfc/index.html
+http://www.codeproject.com/library/wfc/serial.asp
+
+aDBC.fAbortOnError = FALSE; !!!
+
+SetupComm()
+SetCommState()
+
+An example using the win32api calls. This routine compiled and run under
+Borland C++Builder 4.0. 
+void getdistance(void)
+{
+	HANDLE hComm = NULL;
+	COMMTIMEOUTS ctmoNew = {0}, ctmoOld;
+	char tempfloatarray[4];
+	char InBuff[100];
+	unsigned long int dwBytesRead;
+	char status;
+	float *ergdistance;
+
+	DCB dcbCommPort;
+// OPEN THE COMM PORT.
+	hComm = CreateFile("COM1", GENERIC_READ | GENERIC_WRITE, 0, 0, 
+	
+OPEN_EXISTING, 0, 0);
+	if(hComm == INVALID_HANDLE_VALUE)
+                AppQuit();      				//quit on
+port failure-insert your own routine
+  									//
+SET THE COMM TIMEOUTS.
+	GetCommTimeouts(hComm,&ctmoOld);
+	ctmoNew.ReadTotalTimeoutConstant = 100;
+	ctmoNew.ReadTotalTimeoutMultiplier = 0;
+	ctmoNew.WriteTotalTimeoutMultiplier = 0;
+	ctmoNew.WriteTotalTimeoutConstant = 0;
+	SetCommTimeouts(hComm, &ctmoNew);
+
+  // SET BAUD RATE, PARITY, WORD SIZE, AND STOP BITS.
+  // THERE ARE OTHER WAYS OF DOING SETTING THESE BUT THIS IS THE EASIEST.
+  // IF YOU WANT TO LATER ADD CODE FOR OTHER BAUD RATES, REMEMBER
+  // THAT THE ARGUMENT FOR BuildCommDCB MUST BE A POINTER TO A STRING.
+  // ALSO NOTE THAT BuildCommDCB() DEFAULTS TO NO HANDSHAKING.
+
+	dcbCommPort.DCBlength = sizeof(DCB);
+	GetCommState(hComm, &dcbCommPort);
+	BuildCommDCB("9600,N,8,1", &dcbCommPort);
+	SetCommState(hComm, &dcbCommPort);
+
+	TransmitCommChar(hComm, 0xb0);       //transmit distance query
+	TransmitCommChar(hComm, 0x00);        	// erg address -always zero
+
+	ReadFile(hComm, InBuff, 5, &dwBytesRead, NULL);   
+	
+//read the serial port
+	if(dwBytesRead)
+	{
+		status = InBuff[0];
+		tempfloatarray[0] = InBuff[1];
+		tempfloatarray[1] = InBuff[2];
+		tempfloatarray[2] = InBuff[3];
+		tempfloatarray[3] = InBuff[4];
+		ergdistance = (float*)&tempfloatarray;
+	}
+	if(hComm)
+	{
+		SetCommTimeouts(hComm, &ctmoOld);     //restore old settings
+		CloseHandle(hComm);
+	}
+}
+//###########################################################################
+
+
+
+
+
+     com_bdata= new BYTE[com_bsize];  
+
+     if(com_bdata==NULL) { com_Exit(); return -1; }        // error, cannot allocate memory
+
+//** Allocate internal buffer sizes within the comms driver ................   
+
+     e=SetupComm (com_handle,com_bsize,1024);     
+
+//** Default DCB to some initial values.....................................   
+
+     DCB  Dcb;                      // Holds a dcb structure
+
+     e=GetCommState(com_handle,&Dcb);    // fills DCB with current settings   0=fail
+
+     Dcb.DCBlength=           sizeof(DCB);
+
+     Dcb.BaudRate=            115200;                 // Ignored by FT driver
+
+     Dcb.fAbortOnError=       FALSE;                  // Stop tx rx if error rx     
+
+     Dcb.fBinary=             TRUE;                   // Binary mode, noEOF check
+
+     Dcb.fParity=             0;                      // 0=disable parity
+
+     Dcb.fOutxCtsFlow=        0;                      // 1=enable CTS for outgoing flow control
+
+     Dcb.fOutxDsrFlow=        0;                      // 1=enable DSR for outgoing flow control
+
+     Dcb.fDtrControl=         DTR_CONTROL_ENABLE;     // set DTR to on   (DTR_CONTROL_HANDSHAKE)
+
+     Dcb.fDsrSensitivity=     0;                      // if true, enable rx when DSR=1
+
+     Dcb.fOutX=               0;                      // if TRUE, XON/XOFF enabled for outgoing
+
+     Dcb.fInX=                0;                      // if TRUE, XON/XOFF enabled for ingoing
+
+     Dcb.fErrorChar=          0;                      // Error char replacement when parity detected
+
+     Dcb.fNull=               0;                      // if TRUE, discard NULL bytes on rx
+
+     Dcb.fRtsControl=         RTS_CONTROL_ENABLE;     // leave rts on always  (RTS_CONTROL_HANDSHAKE)
+
+     Dcb.fAbortOnError=       0;
+
+     Dcb.ByteSize=            8;            // nr of bytes
+
+     Dcb.Parity=              NOPARITY;               // NOPARITY;
+
+     Dcb.StopBits=            ONESTOPBIT;     // 0,1,2; 1,1.5,2  ONESTOPBIT;
+
+     Dcb.ErrorChar=           0x00;
+
+     e=SetCommState(com_handle,&m_Dcb);                    // set DCB   0=fail
+
+
+
+  OSDN:  Our Network - Newsletters - Advertise - Shop    SEARCH:    
+Geocrawler
+   Home | Privacy Statement | About
+ Mailing Lists
+     SourceForge
+         mingw-users -
+Archive
+ 2002 (5813 msgs)
+ 2001 (3451 msgs)
+ 2000 (1138 msgs)
+ 1997 (2 msgs)
+Thread: [Mingw-users] serial port
+
+Print
+Message: 4585073
+
+FROM: Lofstad Eric
+DATE: 10/31/2000 13:44:53
+SUBJECT: RE:  [Mingw-users] serial port
+
+ 
+
+Thanks, that worked for me. I was missing a little in
+the initialization.
+
+Eric
+
+
+--- Michael Haertl <<EMAIL: PROTECTED>> wrote:
+> Hello Eric,
+> > I`ve included a small test program which run
+> successfully 
+> on my PC. Means I could see the outgoing data on
+> another 
+> PC`s com port.
+> > My programming skills are sureley not the best, but
+> I 
+> think you get the idea anyway. At least this worked
+> for me:
+> - CreateFile()
+> - SetCommState()
+> - WriteFile()
+> > I`ve built it with Developer Studio 4, but I see no
+> real 
+> problems compiling it with another c-compiler. Tell
+> me if 
+> it works for you.
+> > HTH
+> Michael
+> > > Lofstad Eric wrote:
+> > Is there a good way to access the serial port
+> using
+> > mingw since is does not have the termios
+> functions?
+> > I`ve tried using some Windows code (CreateFile,
+> > BuildCommDBC, and WriteFile).  That compiles and
+> links
+> > without any warnings but always crashes on
+> execution
+> > with a invalid page fault in Kernel32.dll.  Listed
+> > below are the main lines for I used for opening
+> the
+> > port.
+> > > > char *SerPort = "com1";
+> > HANDLE Comm;
+> > DCB dcb;
+> > COMMTIMEOUTS cto = {0};
+> > > > Comm = CreateFile(SerPort, GENERIC_READ |
+> > GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+> > > > cto.ReadTotalTimeoutConstant = 500;
+> > SetCommTimeouts(Comm, &cto);
+> > FillMemory(&dcb, sizeof(dcb), 0);
+> > dcb.DCBlength = sizeof(dcb);
+> > > > BuildCommDCB("19200,n,8,1", &dcb);
+> > > > Eric
+> > -- 
+> /* <EMAIL: PROTECTED> */
+> > > > >
+/*****************************************************
+>  *
+>  * transmit simple commands via rs232 
+>  *
+> >
+*****************************************************/
+> > #include <stdio.h>
+> #include <stdlib.h>
+> #include <string.h>
+> #include <conio.h>
+> #include <wtypes.h>
+> >
+/*****************************************************/
+> #define TESTSTRING "Test... "
+> #define KEYB_Q      `q`
+> #define KEYB_PLUS   `+`
+> #define KEYB_MINUS  `-`
+> #define KEYB_SPACE  ` `
+> > const char* ComPortStr[] = {
+>   "ERR",
+>   "COM1",
+>   "COM2"
+> };
+> >
+/*****************************************************/
+> > > > void usage(int argc, char* argv[])
+> {
+>  >
+printf("********************************************");
+>   printf("wrong number of arguments. usage:");
+>   printf("%s <port> <vca-nr>", "txcom");
+>   printf("  where <port>    is the number of the
+> used com port (1,2)");
+>   printf("        <vca-nr>  is the number of the
+> used VCA (1...24)");
+> }
+> > > > int main(int argc, char* argv[])
+> {
+>   // com port
+>   int    com_no;
+>   HANDLE hCom;
+>   DCB    dcb;
+>   ULONG  nBytesWritten;
+> >   // vca parameters
+>   int vca_no;
+>   int vca_val       = 60;
+>   int vca_delta     = 10;
+>   int vca_mutestate = 0;
+>   unsigned char cmd_word[3];
+> >   // div
+>   char c = 0;
+> > >   printf("txcom - send commands to com port
+> (test)");
+>   > >   // chk for no of arguments
+>   if (argc != 3) {
+>     usage(argc, argv);
+>     // getchar();
+>     exit(-1);
+>   }
+> > >   // chk for com port
+>   com_no = atoi(argv[1]);
+>   if ((com_no != 1) && (com_no !=2)) {
+>     printf("cannot open com port %d", com_no);
+>     exit(-1);
+>   } else {
+>     // try to open com port
+>     hCom = CreateFile(
+>       ComPortStr[com_no],
+>       GENERIC_READ | GENERIC_WRITE,
+>       0,                               /* com devs
+> must be opeend w/ exclusive-access */
+>       NULL,                            /* no
+> security attribs */
+>       OPEN_EXISTING,                   /* necessary
+> for com ports */
+>       0,                               /* no
+> overlapped i/o */
+>       NULL                             /* must be
+> null for com */  
+>     );
+> >     if (!hCom) {
+>       printf("could not open com port %d!",
+> com_no);
+>       exit(-1);
+>     } else {
+>       printf("com port %d opened.", com_no);
+> >       // set dcb struct: 19200baud, 8bits no parity,
+> 1 stop bit etc
+>       dcb.DCBlength         = sizeof(dcb);          
+> // sizeof(DCB)
+>       dcb.BaudRate          = CBR_19200;            
+> // current baud rate
+>       dcb.fParity           = FALSE;                
+> // disable parity checking
+>       dcb.fOutxCtsFlow      = FALSE;                
+> // no CTS output flow control
+>       dcb.fOutxDsrFlow      = FALSE;                
+> // no DSR output flow control
+>       dcb.fDtrControl       = DTR_CONTROL_DISABLE;  
+> // DTR flow control type
+>       dcb.fDsrSensitivity   = FALSE;                
+> // DSR sensitivity
+>       dcb.fTXContinueOnXoff = TRUE;                 
+> // XOFF continues Tx
+>       dcb.fOutX             = FALSE;                
+> // XON/XOFF out flow control
+>       dcb.fInX              = FALSE;                
+> // XON/XOFF in flow control
+>       dcb.fNull             = FALSE;                
+> // enable null stripping
+>       dcb.fRtsControl       = RTS_CONTROL_DISABLE;  
+> // RTS flow control
+>       dcb.fAbortOnError     = FALSE;                
+> // abort reads/writes on error
+>       dcb.ByteSize          = 8;                    
+> // number of bits/byte, 4-8
+>       dcb.Parity            = NOPARITY;             
+> // 0-4=no,odd,even,mark,space
+>       dcb.StopBits          = ONESTOPBIT;           
+> // 
+=== message truncated ===
+
+
+__________________________________________________
+Do You Yahoo!?
+Yahoo! Messenger - Talk while you surf!  It`s FREE.
+http://im.yahoo.com/
+_______________________________________________
+MinGW-users mailing list
+<EMAIL: PROTECTED>
+
+You may change your MinGW Account Options at:
+http://lists.sourceforge.net/mailman/listinfo/mingw-users
+
+		
+
+
+
+
+Sponsored Content
+
+© Copyright 2002 - OSDN Open Source Development Network, All Rights Reserved
+About Geocrawler •  About OSDN geo •  Privacy Statement  •  Terms of Use  •  Advertise  •  Self Serve Ad System  •  Contact Us
+

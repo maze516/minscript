@@ -1,0 +1,35 @@
+class MyClass
+{
+	int i;
+
+//	MyClass() {}
+	MyClass( int ) {}
+};
+
+MyClass aClass2int( int );	// ist ein Funktions-Prototyp
+
+//MyClass aClass;		// ist ein Objekt
+MyClass aClass2();	// ist ein Funktions-Prototyp
+
+MyClass aClass2()
+{
+	return MyClass();
+}
+
+MyClass aClass2int( int i )
+{
+	return MyClass( i );
+}
+
+MyClass aClassint( 2 );		// ist ein Objekt
+MyClass aClass2int( int c );	// ist ein Funktions-Prototyp
+
+int i = aClassint.i;
+
+//MyClass aTestClass = aClass;
+//MyClass aTestClass2 = aClass2();
+//MyClass aTestClass_ = aClassint( 9 );
+//MyClass aTestClass2_ = aClass2int( 4 );
+/*
+
+*/

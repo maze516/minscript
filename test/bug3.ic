@@ -1,0 +1,58 @@
+// eine einfache String-Klasse, zur Kapselung des eingebauten Datentyps
+class String
+{
+    int npos;
+
+    String() 
+    { 
+        //this.Init(); 
+    }    
+    String( string s )
+    {
+	println( "String:String(s)" );
+        this->Init();
+        m_sString = s;
+    }
+
+    int find( string s )
+    {
+// BUG !!!
+println( "find !" );
+//dbghalt 1;
+this->Init();
+        return string_find( m_sString, s );
+    }
+    string toString() const
+    {
+println( "toString");
+//dbghalt 1;
+this->Init();
+        return m_sString;
+    }
+
+    void Init()
+    {
+println( "init");
+//        npos = string_npos();
+    }
+
+private:
+
+    string m_sString;
+};
+
+
+    String aStrgObj( "initialisierter String" );
+    string sSearch = "it";
+
+
+	string sRes1 = aStrgObj.toString();
+
+	aStrgObj.toString();
+	aStrgObj.toString();
+	aStrgObj.toString();
+	aStrgObj.toString();
+
+	aStrgObj.find( "xx" );
+
+	string sRes2 = aStrgObj.find( "gulp" );

@@ -1,0 +1,11 @@
+
+-1.2;
+println( "-->" + (-1) );
+
+int i = -1;
+int j = 6;
+
+int n= -i-j;
+
+println( "sume=" + n );
+

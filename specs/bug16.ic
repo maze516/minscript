@@ -1,0 +1,94 @@
+template <class TYPE>
+class _node
+{
+public:
+	_node<TYPE> *		m_pNext;
+	TYPE	        	m_aItem;
+};
+
+//**********************************************************
+template <class TYPE>
+class iterator
+{
+public:
+    iterator()
+    {
+        m_pActNode = 0;
+    }
+    iterator( _node<TYPE> * pActNode )
+    {
+        m_pActNode = pActNode;
+    }
+
+    TYPE Get()
+    {
+        return m_pActNode->m_aItem;
+    }
+
+    _node<TYPE> *      m_pActNode;
+};
+
+
+template <class TYPE>
+class MyClass
+{
+public:
+    MyClass()
+    {
+        __println( "MyClass()" );
+    }	
+    virtual ~MyClass()
+    {
+        __println( "~MyClass()" );
+    }	
+
+    static TYPE min( TYPE iVal1, TYPE iVal2 )
+    {
+        if( iVal1 < iVal2 )
+            return iVal1;
+        else
+            return iVal2;
+
+        iterator<TYPE> aIter;
+    }
+    iterator<TYPE> begin()
+    {
+        iterator<TYPE> aIter;
+        return aIter;
+    }
+
+    TYPE * m_iValue;
+};
+
+{
+    MyClass<int> aObj;
+    MyClass<int> aObj2;
+
+    aObj2 = aObj;
+
+    __println( "min= " + aObj.min( 5444,123) );
+
+    iterator<int> aIter;
+    aIter = aObj.begin();
+    
+    //__dbghalt "fcn";
+}
+
+//typedef MyClass<int> MyIntClass;
+#define MyIntClass MyClass<int> 
+
+{
+	MyIntClass aIntclass;
+}
+
+/*
+template <class Type>
+TYPE f( TYPE i )
+{
+    return i*i;
+}
+
+int j;
+
+j = f<int>( 6 );
+*/

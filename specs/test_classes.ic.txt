@@ -1,0 +1,561 @@
+/*
+	Testsubject: classes
+
+	This keywords for classes are available:
+
+		class
+
+		virtual
+		
+		private:
+		protected:
+		public:
+
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+//**********************************************************
+
+int f( int x )
+{
+	__println( _CONVERT "::f("+x+")" );
+	return 2*x+1;
+}
+
+int f()
+{
+	__println( _CONVERT "::f()" );
+	return 37;
+}
+
+//**********************************************************
+class BaseClass
+{
+public:
+	BaseClass() 
+	{
+		__println( "BaseClass()" );
+		m_iFlag = -2;
+		m_iPrivate = +1;
+	}
+	BaseClass( int i ) 
+	{
+		__println( _CONVERT "BaseClass("+i+")" );
+		m_iFlag = i;
+		m_iPrivate = -1;
+	}
+	~BaseClass()
+	{
+		__println( "~BaseClass()" );
+	}
+
+	int f( int x )
+	{
+		__println( _CONVERT "BaseClass::f("+x+")" );
+		return x*x;
+	}
+	int f()
+	{
+		__println( _CONVERT "BaseClass::f()" );
+		return 7;
+	}
+
+	virtual double g( double d )
+	{
+		__println( _CONVERT "BaseClass::g("+d+") "/* WITH_THIS*/ );
+		d = d*4.561/1.234*6.3456;
+		return d;
+	}
+	virtual double g()
+	{
+		__println( _CONVERT "BaseClass::g()" );
+		return -72.2356;
+	}
+
+	virtual string GetName() const
+	{
+		return "BaseClass";
+	}
+
+	string GetClassName() const
+	{
+		return "BaseClass";
+	}
+
+	void Dump()
+	{
+		__println( "BaseClass::Dump() "+GetName()+" clsss="+GetClassName() );
+		__println( _CONVERT "m_iFlag="+m_iFlag );
+		__println( _CONVERT "m_iPrivate="+m_iPrivate );
+		__println( _CONVERT "g(...)="+g( 945.23 ) );
+	}
+
+protected:
+	int		m_iFlag;
+
+private:
+	int		m_iPrivate;
+};
+
+//**********************************************************
+class DerivedClass : public BaseClass
+{
+public:
+	DerivedClass() 
+	{
+		__println( "DerivedClass()" );
+		m_iFlag = 1;
+	}
+	~DerivedClass()
+	{
+		__println( "~DerivedClass()" );
+	}
+
+	virtual double g( double d )
+	{
+		__println( _CONVERT "DerivedClass::g("+d+")" );
+		d = 5*d;
+		return d;
+	}
+
+	virtual string GetName() const
+	{
+		return "DerivedClass";
+	}
+
+	string GetClassName() const
+	{
+		return "DerivedClass";
+	}
+
+};
+
+//**********************************************************
+
+//#define WITH_THIS	+this
+#define WITH_THIS	
+
+class ClassA
+{
+public:
+	virtual void f()
+	{
+		__println( _CONVERT "ClassA::f()" WITH_THIS );
+	}
+	void g()
+	{
+		__println( _CONVERT "ClassA::g()" WITH_THIS );
+		this->f();		
+	}
+};
+
+class ClassB : public ClassA
+{
+public:
+	virtual void f()
+	{
+		__println( _CONVERT "ClassB::f()" WITH_THIS );
+	}
+	void gb()
+	{
+		__println( _CONVERT "ClassB::g()" WITH_THIS );
+		f();
+	}
+};
+
+class ClassC : public ClassB
+{
+public:
+	virtual void f()
+	{
+		__println( _CONVERT "ClassC::f()" WITH_THIS );
+	}
+	void gc()
+	{
+		__println( _CONVERT "ClassC::g()" WITH_THIS );
+		this->f();
+	}
+};
+
+class ClassTest 
+{
+public:
+	ClassTest()
+	{
+		m_i = 7;
+	}
+	ClassTest( int i )
+	{
+		m_i = i;
+	}
+
+
+	virtual void h()
+	{
+		__println( _CONVERT "ClassTest::h()" WITH_THIS );
+	}
+	void i()
+	{
+		__println( _CONVERT "ClassTest::i()" WITH_THIS );
+		__println( _CONVERT "i=" + m_i );
+	}
+
+	int m_i;
+};
+
+class ClassD : public ClassA, public ClassTest
+{
+public:
+	ClassD()
+	{
+		m_i = 8;
+	}
+	ClassD( int i ) : ClassTest( i*i )
+	{
+		m_i = 8;
+	}
+
+	virtual void h()
+	{
+		__println( _CONVERT "ClassD::h()" WITH_THIS );
+	}
+	void i()
+	{
+		__println( _CONVERT "ClassD::i()" WITH_THIS );
+		__println( _CONVERT "i=" + m_i );
+	} 
+};
+
+//**********************************************************
+
+class _ClassC
+{
+public:
+	_ClassC()
+	{
+		__println( _CONVERT "ClassC " WITH_THIS );
+	}
+	~_ClassC()
+	{
+		__println( _CONVERT "~ClassC " WITH_THIS );
+	}
+};
+
+class _ClassA
+{
+public:
+	_ClassA()
+	{
+		__println( _CONVERT "ClassA " WITH_THIS );
+	}
+	_ClassA( int i )
+	{
+		m_i = i;
+		__println( _CONVERT "ClassA(int) "+i+" this=" WITH_THIS );
+		m_i++;
+		__println( "test" );
+		this->m_i = 8;
+		__println( "done" );
+	}
+	_ClassA( int i, int j )
+	{
+		__println( _CONVERT "ClassA(int,int) "+i+" "+j );
+	}
+	~_ClassA()
+	{
+		__println( _CONVERT "~ClassA " WITH_THIS );
+	}
+	void f()
+	{
+		__println( "ClassA::f()" );
+	}
+	void Dump()
+	{
+		this->f();
+		//this->m_i = 5444;
+		__println( _CONVERT "dump it i="+m_i+" this=" WITH_THIS );
+	}
+	int m_i;
+};
+
+class _ClassB : public _ClassA , public _ClassC
+{
+public:
+	_ClassB( int i ) : _ClassA(i)
+	{
+		__println( _CONVERT "ClassB " WITH_THIS );
+	}
+	~_ClassB()
+	{
+		__println( _CONVERT "~ClassB "  WITH_THIS );
+	}
+};
+
+//**********************************************************
+
+class DestrA
+{
+public:
+	DestrA()
+	{
+		m_i = 1;
+	}
+	virtual ~DestrA()
+	{
+		__println( _CONVERT "virtual ~DestrA " + m_i WITH_THIS );
+	}
+	int m_i;
+};
+
+class DestrB : public DestrA
+{
+public:
+	DestrB()
+	{
+		m_i = 99;
+	}
+	virtual ~DestrB()
+	{
+		__println( _CONVERT "virtual ~DestrB " + m_i WITH_THIS );
+	}
+};
+
+//**********************************************************
+
+class _DestrA
+{
+public:
+	_DestrA()
+	{
+		m_i = 1;
+	}
+	~_DestrA()
+	{
+		__println( _CONVERT "~_DestrA " + m_i WITH_THIS );
+	}
+	int m_i;
+};
+
+class _DestrB : public _DestrA
+{
+public:
+	_DestrB()
+	{
+		m_i = 99;
+	}
+	~_DestrB()
+	{
+		__println( _CONVERT "~_DestrB " + m_i WITH_THIS );
+	}
+};
+
+//**********************************************************
+
+class EmptyClass
+{
+public:
+protected:
+private:
+};
+
+//**********************************************************
+//**********************************************************
+//**********************************************************
+// die Hauptfunktion
+int main()
+{
+	__println( "Test for classes/objects:" );
+
+	f(8);
+
+	__println( "before block" );
+	{
+		int n;
+		BaseClass aObj;
+
+		n = aObj.f(6);
+		__println( _CONVERT "n="+n );
+
+		n = f( 7 );
+		__println( _CONVERT "n="+n );
+		
+		n = f();
+		__println( _CONVERT "n="+n );
+
+		int y = aObj.f();
+		__println( _CONVERT "y="+y );
+
+		double dy = aObj.g();
+		__println( _CONVERT "dy="+dy );
+
+		aObj.f(6);
+		double d = aObj.g(123.456);
+		__println( _CONVERT "d="+d );
+
+		aObj.Dump();
+
+		__println( "**************************************" );
+		{
+			DerivedClass aObj2;
+			BaseClass & aRefObj = aObj;
+
+			aRefObj.Dump();
+			aObj2.Dump();
+
+			__println( "Name="+aRefObj.GetName() );
+			__println( "Name="+aObj2.GetName() );
+			__println( "Name="+aRefObj.GetClassName() );
+			__println( "Name="+aObj2.GetClassName() );
+
+			aObj2.g( 23.456 );
+			__println( _CONVERT "d="+d );
+
+			d = aObj.g(123.456);
+			__println( _CONVERT "d="+d );
+
+			d = aRefObj.g( 67.1456 );
+			__println( _CONVERT "d="+d );
+
+			//double dy = aObj2.g();
+			//__println( _CONVERT "dy="+dy );
+
+			//aObj2.m_iPrivate = 9;			// TODO Bug !!!
+		}
+
+		BaseClass aObj2( 9 );
+
+		aObj.Dump();
+		aObj2.Dump();
+
+	}
+	__println( "after block" );
+
+	__println( "done." );
+
+	{
+		ClassA a;
+		ClassB b;
+		ClassC c;
+		ClassD d;
+		ClassTest e;
+		ClassTest & eRef = d;
+
+		a.f();
+		a.g();
+		__println( "***********" );
+		b.f();
+		b.g();
+		__println( "***********" );
+		c.f();
+		c.g();
+		//c.gc();
+		__println( "***********" );
+		d.f();
+		d.g();
+		d.h();
+		d.i();
+		__println( "***********" );
+		e.h();
+		e.i();
+		__println( "***********" );
+		eRef.h();
+		eRef.i();
+		__println( "***********" );
+		{
+			ClassD d(9);
+		}
+		{
+			__println("********************************");
+			{
+				_ClassA * pObj = new _ClassA(6);
+				pObj->Dump();
+				delete pObj;
+			}
+			__println("********************************");
+			{
+				_ClassA * pObj = new _ClassA(8,9);
+				delete pObj;
+			}
+			__println("********************************");
+			{
+				_ClassB aObj(8);
+				aObj.Dump();
+				void * i = &aObj;
+				__println( _CONVERT "adress=" + (&aObj) +" "+i);
+			}
+			__println("********************************");
+			{
+				_ClassB * pObj = new _ClassB(5);
+				__println( _CONVERT "adress=" + (&(*pObj)) );
+				delete pObj;
+			}
+			__println("********************************");			
+		}
+		{
+			DestrA aClass1;
+			DestrB aClass2;
+		}
+		{
+			__println("********************************");			
+
+			DestrA * pClass1;
+			DestrB * pClass2;
+
+			pClass1 = new DestrA();			
+			delete pClass1;
+			__println("********************************");			
+
+			pClass2 = new DestrB();			
+			delete pClass2;
+			__println("********************************");			
+
+			pClass1 = new DestrB();
+			delete pClass1;
+			__println("********************************");			
+		}
+
+		{
+			_DestrA aClass1;
+			_DestrB aClass2;
+		}
+		{
+			__println("********************************");			
+
+			_DestrA * pClass1;
+			_DestrB * pClass2;
+
+			pClass1 = new _DestrA();			
+			delete pClass1;
+			__println("********************************");			
+
+			pClass2 = new _DestrB();			
+			delete pClass2;
+			__println("********************************");			
+
+			pClass1 = new _DestrB();
+			delete pClass1;
+		}
+		{
+			__println("********************************");			
+			__println("********************************");			
+			__println("********************************");			
+
+			_DestrA aClass1;
+			_DestrB aClass2;
+			_ClassA a;
+			_ClassB b(9);
+			_ClassC c;
+		}
+	}
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

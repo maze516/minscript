@@ -1,0 +1,151 @@
+/*
+	Testsubject: automatic test for the interpreter
+
+
+*/
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT
+#endif
+
+#if defined( _WIN32 )
+string g_sSpecsDir			= "..\\specs\\";
+string g_sCompileStrg 		= "cl -I .. -I ..\\specs -GX -Tp " + g_sSpecsDir;
+string g_sOutputOpt			= " -o ";
+string g_sExeExt			= ".exe";
+string g_sDiff				= "windiff";
+#elif defined( __OS2__ )
+#message "OS/2 found !"
+#elif defined( __linux__ )
+string g_sSpecsDir			= "./specs/";
+string g_sCompileStrg 		= "gcc -I . -I ./specs -lg++ -x c++ " + g_sSpecsDir;
+string g_sOutputOpt			= " -o ";
+string g_sExeExt			= "";
+string g_sDiff				= "diff";
+#else
+#message "Error: No C++-compiler known for this operating system !"
+#endif
+
+string g_sScriptExt			= ".ic";
+string g_sOutputExeExt		= ".exe.txt";
+string g_sOutputScriptExt	= ".ic.txt";
+
+bool TestMinscript( string sFileName )
+{
+	int iRet;
+	string sCmd;
+
+	// running the script with minscript 
+	sCmd = "minscript "+g_sSpecsDir+sFileName+g_sScriptExt;
+	__println( "*** try: "+sCmd );
+	iRet = system( sCmd );
+	if( iRet != 0 )
+	{
+		__println( "Error running "+sCmd+" iRet="+iRet );
+	}
+	return ( iRet == 0 );
+}
+
+bool TestAgainstCpp( string sFileName )
+{
+	int iRet;
+	string sCmd;
+
+	__println( "***********************************************************" );
+	__println( "Name--> "+sFileName );
+
+	// running the script with minscript and generating output
+	string sOutput2 = sFileName+g_sOutputScriptExt;
+	sCmd = "minscript "+g_sSpecsDir+sFileName+g_sScriptExt + " >"+sOutput2;
+	__println( "*** try: "+sCmd );
+	iRet = system( sCmd );
+	if( iRet != 0 )
+	{
+		__println( "Error running "+sCmd+" iRet="+iRet );
+	}
+
+	// creating an exe with a C++ compiler
+	sCmd = g_sCompileStrg + sFileName + g_sScriptExt + g_sOutputOpt + sFileName + g_sExeExt;
+	__println( "*** try: "+sCmd );
+	iRet = system( sCmd );
+	if( iRet != 0 )
+	{
+		__println( "Error compiling "+sCmd+" iRet="+iRet );
+	}
+	else
+	{
+		// generating the output for the exe
+		string sOutput1 = sFileName+g_sOutputExeExt;
+		sCmd = sFileName+" >"+sOutput1;
+		__println( "*** try: "+sCmd );
+		iRet = system( sCmd );
+		if( iRet != 0 )
+		{
+			__println( "Error executing "+sCmd+" iRet="+iRet );
+		}
+
+		// compare the outputs
+		sCmd = g_sDiff + " " + sOutput1 + " "+ sOutput2;
+		__println( "*** try: "+sCmd );
+		iRet = system( sCmd );
+		if( iRet != 0 )
+		{
+			__println( "Error comparing output "+sCmd+" iRet="+iRet );
+		}
+	}
+	return ( iRet == 0 );
+}
+
+void CheckOk( bool bOk )
+{
+	if( !bOk )
+	{
+		__println( "ERROR: last Test failed !!!" );
+		exit( -1 );
+	}
+}
+
+// die Hauptfunktion
+int main()
+{
+	bool bOk;
+
+	__println( "Automatic interpreter Test:" );
+
+	bOk = TestMinscript( "test_preprocessor" );
+	//CheckOk( bOk );
+	bOk = TestMinscript( "test_extensions" );
+	//CheckOk( bOk );
+	bOk = TestMinscript( "test_string" );
+	CheckOk( bOk );
+
+	bOk = TestAgainstCpp( "test_variables" );
+	CheckOk( bOk );
+	bOk = TestAgainstCpp( "test_arrays" );
+	CheckOk( bOk );
+	bOk = TestAgainstCpp( "test_statements" );
+	CheckOk( bOk );
+	bOk = TestAgainstCpp( "test_expressions" );
+	CheckOk( bOk );
+	bOk = TestAgainstCpp( "test_functions" );
+	CheckOk( bOk );
+	bOk = TestAgainstCpp( "test_classes" );
+	CheckOk( bOk );
+	bOk = TestAgainstCpp( "test_list" );
+	CheckOk( bOk );
+	bOk = TestAgainstCpp( "stl_list" );
+	CheckOk( bOk );
+
+	__println( "" );
+	__println( "test successfully completed !" );
+	__println( "" );
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

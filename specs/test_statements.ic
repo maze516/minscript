@@ -1,0 +1,314 @@
+/*
+	Testsubject: control statements
+
+	This control statements are available:
+
+		if(...) {} else {}
+		for(...) {}
+		while(...) {}
+		do {} while(...)
+		switch(...) { case ' ': default: }
+
+		break;
+		continue;
+		return;
+
+//		goto:
+
+*/
+
+#define _with_switch
+
+#if !defined( __MINSCRIPT__ )
+#include "minscript_cpp.h"
+#define _CONVERT	string("")+
+#else
+#define _CONVERT	
+#endif
+
+void ForTesten()
+{
+	__println( "#### for(...)" );
+	__println("*** for up ***");
+	int i;
+	for( i=0; i<10; i++ )
+	{
+		__println( _CONVERT "for i=" + i );
+	}
+	__println("*** for down ***");
+	for( i=3+5*2; i>=0; --i )
+	{
+		__println( _CONVERT "for i=" + i );
+	}
+	__println("*** new for ***");
+	int a=7-1;
+	int j = 4;
+	for( j=0; j<=a+3* 2; j=j+1 )
+		__println( _CONVERT "for j=" + j );
+
+	__println("*** for break ***");
+	for( i=-2; i<10; i++ )
+	{
+		__println( _CONVERT "for i=" + i );
+		if( i==7 )
+		{
+			break;
+		}
+	}
+	__println("*** for continue ***");
+	for( i=-2; i<10; i++ )
+	{
+		if( i==7 )
+		{
+			continue;
+		}
+		// the printout for i=7 is missing !
+		__println( _CONVERT "for i=" + i );
+	}
+
+	__println( "*** main step ***" );
+}
+
+void IfTesten()
+{
+	bool bOk = false;
+
+	__println( "#### if " );
+
+	// --> else
+	if( bOk )
+		__println( "then selected." );
+	else
+		__println( "else selected." );
+	
+	// --> then
+	bOk = true;	
+	if( bOk )
+	{
+		__println( "then selected." );
+	}
+	else {
+		__println( "else selected." );
+	}
+		
+	int i = 9;
+	int j = 8;
+
+	// --> else
+	if( (i == j) && bOk )
+	{
+		__println( "then selected." );
+	}
+	else 
+	{
+		__println( "else selected." );
+	}
+
+	j = i;
+	bOk = !bOk;
+	// --> else
+	if( (i == j) && bOk )
+	{
+		__println( "then selected." );
+	}
+	else 
+	{
+		__println( "else selected." );
+	}
+
+	bOk = (i==j);
+	// --> then
+	if( (i != j) || bOk || false )
+	{
+		__println( "then selected." );
+	}
+	else 
+	{
+		__println( "else selected." );
+	}
+
+	__println( _CONVERT "i="+i+" j="+j+" bOk="+bOk);
+}
+
+void WhileTesten( void )
+{
+	int i = 0;
+	bool bOk = true;
+
+	__println( "#### while " );
+
+	while( i<10 )
+	{
+		int j = (i*i+5-5)/2;
+		__println( _CONVERT "while loop i=" + i +" j="+j );
+		i++;
+	}
+	__println( "while (2)" );
+	i = -5;
+	while( (i<=10) && bOk )
+	{
+		int j = (2*i-4)*(i*(i-1)+2);
+		__println( _CONVERT"while loop i=" + i +" j="+j );
+		i++;
+	}
+	__println( "while (3)" );
+	i = 6;
+	while( (i-->0) )
+		__println( _CONVERT "while loop i="+i );
+}
+
+void DoWhileTesten()
+{
+	int n = 0;
+	bool bOk = true;
+
+	__println( "#### do-while " );
+
+	do
+	{
+		__println( _CONVERT "do-while loop n="+n );
+		n = n+1;
+	} while( n<8 );
+	__println( "do-while (2)" );
+	n = 12;
+	do
+	{
+		__println( _CONVERT "do-while loop n="+n );
+		n = n-1;
+	} while( (n>-4) && bOk );
+}
+
+void SwitchTesten()
+{
+#ifdef _with_switch
+	__println( "#### switch" );
+
+	char ch = 'e';
+
+	switch( ch )
+	{
+		case 'a':
+			break;
+		default:
+			__println( "default" );
+	};
+#endif
+}
+
+void GotoTesten()
+{
+#ifdef _with_goto
+	__println( "#### goto" );
+
+	goto jump_mark;
+
+  jump_mark:
+	_println( "after jump_mark" );
+#endif
+}
+
+void SwitchTest( char ch )
+{
+	switch( ch )
+	{
+		case '0':
+		case 'a': 
+			__println( "case 'a'" );
+			break;
+		case 'b': 
+			__println( "case 'b'" );
+			break;
+		case 'c': 
+			__println( "case 'c'" );
+			__println( "second statement" );
+			break;
+		
+		default:
+			__println( "default" );
+
+	};
+}
+
+const int c_gTest1 = 12;
+
+void SwitchTestInt( int i )
+{
+	switch( i )
+	{
+		case 0:
+		case 1: 
+		case 2: 
+			__println( "small" );
+			break;
+		case 3: 
+			__println( "medium" );
+			break;
+		case 4: 
+			__println( "large" );
+			break;
+		case c_gTest1:
+			__println( "very large" );
+			break;
+		
+		default:
+			__println( "unknown" );
+	};
+}
+
+void SwitchTesten2()
+{
+	SwitchTest( 'a' );
+	__println( "******" );
+	SwitchTest( 'b' );
+	__println( "******" );
+	SwitchTest( 'c' );
+	__println( "******" );
+	SwitchTest( '0' );
+	__println( "******" );
+	SwitchTest( '1' );
+	__println( "******" );
+
+	SwitchTestInt( 123 );
+	__println( "******" );
+	SwitchTestInt( -1 );
+	__println( "******" );
+	SwitchTestInt( 0 );
+	__println( "******" );
+	SwitchTestInt( 1 );
+	__println( "******" );
+	SwitchTestInt( 2 );
+	__println( "******" );
+	SwitchTestInt( 3 );
+	__println( "******" );
+	SwitchTestInt( 4 );
+	__println( "******" );
+	SwitchTestInt( 12 );
+	__println( "******" );
+	SwitchTestInt( c_gTest1 );
+	__println( "******" );
+}
+
+// die Hauptfunktion
+int main()
+{
+	__println( "Test for control statements:" );
+
+	IfTesten();
+
+	ForTesten();
+
+	WhileTesten();
+
+	DoWhileTesten();
+
+	SwitchTesten();
+	SwitchTesten2();
+
+	GotoTesten();
+
+	return 0;
+}
+
+#ifdef __MINSCRIPT__
+main();
+#endif

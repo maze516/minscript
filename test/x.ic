@@ -1,0 +1,60 @@
+
+#define gulp  "abc"
+#define gulp "hallo Welt"
+
+#include <inctest.h>
+//#include "sys/hallo.h"
+//#include <x11/x11.h>
+
+// hallo
+int * pi;
+
+{
+pi = new int(9);
+int * ppi;
+ppi = pi;
+PrintLn( "*pi=" + *pi );
+
+//delete ppi;
+PrintLn( "*ppi="+*ppi );
+//delete ppi;
+
+delete pi;		// BUG: dieser Zeiger und ppi wird NICHT korrekt geloescht ! 
+			// 	---> Wohl haengende Referenzen
+
+//*pi = 4;
+}
+//*pi = 4;
+//delete pi;
+
+#ifdef gulp
+PrintLn( "delete done." );
+#else
+PrintLn( gulp );
+#endif
+
+#define MAX 12
+#define MIN 10
+
+//#if (MAX>MIN) && defined( gulpd )
+
+//#error gulp-error asdf 
+
+#if (MAX>MIN) && defined(gulpd)
+PrintLn( "#if" );
+#elif 11>44
+PrintLn( "#elif 1" );
+#elif 11>4
+PrintLn( "#elif 2" );
+#else
+PrintLn( "#if#else" );
+#endif
+
+PrintLn( __FILE__ + __LINE__ );
+
+#define my_strg "hallo michael"
+#define min_max(a,b) ((a)>(b))+my_strg*#b / a##b
+
+min_max( 3+2, 8 );
+
+PrintLn( "done." );

@@ -1,0 +1,13 @@
+{
+int i = 9;
+int j;
+++i;
+
+//i = 6;
+
+__println( "i="+i );
+__println( "i="+(&i) );
+}
+
+// statements 14
+// expressions 2

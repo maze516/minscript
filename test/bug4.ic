@@ -1,0 +1,78 @@
+int ff()
+{
+//	return g();
+	return 4;
+}
+
+
+int f( int i )
+{
+	println( "function f( int ) " + i );
+	return i*i;
+}
+
+void f( void )
+{
+	println( "function f( ) " );
+	return;
+}
+
+
+int f( string s )
+{
+	println( "function f( string ) " + s );
+	return 0;
+}
+
+
+class MyBaseClass
+{
+public:
+	int f()
+	{
+		println( "method MyBaseClass::f()" );
+		return 2;
+	}
+	int h()
+	{
+		println( "method MyBaseClass::h()" );
+		return 2;
+	}
+};
+
+class MyClass : public MyBaseClass
+{
+public:
+	int f()
+	{
+		string s;
+
+		println( "method MyClass::f()" );
+		return 0;
+	}
+	int g()
+	{
+		int i = 8;
+
+		println( "method MyClass::g()" );
+
+		int j = f();
+		ff();
+
+		return 1;
+	}
+};
+
+
+MyBaseClass aBaseObj;
+MyClass aObj;
+
+aBaseObj.f();
+aObj.g();
+aObj.h();
+
+f();
+f( "abc" );
+f( 2 );
+
+ff();

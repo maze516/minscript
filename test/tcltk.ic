@@ -1,0 +1,425 @@
+/*
+ * tcl.h --
+ *
+ *	This header file describes the externally-visible facilities
+ *	of the Tcl interpreter.
+ *
+ * Copyright (c) 1987-1994 The Regents of the University of California.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1993-1996 Lucent Technologies.
+ * Copyright (c) 1998-1999 Scriptics Corporation.
+ *
+ * See the file "license.terms" for information on usage and redistribution
+ * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+ *
+ * RCS: @(#) $Id: tcltk.ic,v 1.1.1.1 2003-06-22 09:31:22 min Exp $
+ */
+
+#define __STDC__
+
+#ifndef _TCL
+#define _TCL
+
+/*
+ * When version numbers change here, must also go into the following files
+ * and update the version numbers:
+ *
+ * README
+ * library/init.tcl	(only if major.minor changes, not patchlevel)
+ * unix/configure.in
+ * win/makefile.bc	(only if major.minor changes, not patchlevel)
+ * win/makefile.vc	(only if major.minor changes, not patchlevel)
+ * win/README
+ * win/README.binary
+ * mac/README
+ *
+ * The release level should be  0 for alpha, 1 for beta, and 2 for
+ * final/patch.  The release serial value is the number that follows the
+ * "a", "b", or "p" in the patch level; for example, if the patch level
+ * is 7.6b2, TCL_RELEASE_SERIAL is 2.  It restarts at 1 whenever the
+ * release level is changed, except for the final release which is 0
+ * (the first patch will start at 1).
+ */
+
+#define TCL_MAJOR_VERSION   8
+#define TCL_MINOR_VERSION   0
+#define TCL_RELEASE_LEVEL   2
+#define TCL_RELEASE_SERIAL  5
+
+#define TCL_VERSION	    "8.0"
+#define TCL_PATCH_LEVEL	    "8.0.5"
+
+/*
+ * The following definitions set up the proper options for Windows
+ * compilers.  We use this method because there is no autoconf equivalent.
+ */
+
+#ifndef __WIN32__
+#   if defined(_WIN32) || defined(WIN32)
+#	define __WIN32__
+#   endif
+#endif
+
+#ifdef __WIN32__
+#   ifndef STRICT
+#	define STRICT
+#   endif
+#   ifndef USE_PROTOTYPE
+#	define USE_PROTOTYPE 1
+#   endif
+#   ifndef HAS_STDARG
+#	define HAS_STDARG 1
+#   endif
+#   ifndef USE_PROTOTYPE
+#	define USE_PROTOTYPE 1
+#   endif
+
+/*
+ * Under Windows we need to call Tcl_Alloc in all cases to avoid competing
+ * C run-time library issues.
+ */
+
+#   ifndef USE_TCLALLOC
+#	define USE_TCLALLOC 1
+#   endif
+#endif /* __WIN32__ */
+
+/*
+ * The following definitions set up the proper options for Macintosh
+ * compilers.  We use this method because there is no autoconf equivalent.
+ */
+
+#ifdef MAC_TCL
+#   ifndef HAS_STDARG
+#	define HAS_STDARG 1
+#   endif
+#   ifndef USE_TCLALLOC
+#	define USE_TCLALLOC 1
+#   endif
+#   ifndef NO_STRERROR
+#	define NO_STRERROR 1
+#   endif
+#endif
+
+/*
+ * Utility macros: STRINGIFY takes an argument and wraps it in "" (double
+ * quotation marks), JOIN joins two arguments.
+ */
+
+#define VERBATIM(x) x
+#ifdef _MSC_VER
+# define STRINGIFY(x) STRINGIFY1(x)
+# define STRINGIFY1(x) #x
+# define JOIN(a,b) JOIN1(a,b)
+# define JOIN1(a,b) a##b
+#else
+# ifdef RESOURCE_INCLUDED
+#  define STRINGIFY(x) STRINGIFY1(x)
+#  define STRINGIFY1(x) #x
+#  define JOIN(a,b) JOIN1(a,b)
+#  define JOIN1(a,b) a##b
+# else
+#  ifdef __STDC__
+#   define STRINGIFY(x) #x
+#   define JOIN(a,b) a##b
+#  else
+#   define STRINGIFY(x) "x"
+#   define JOIN(a,b) VERBATIM(a)VERBATIM(b)
+#  endif
+# endif
+#endif
+
+/* 
+ * A special definition used to allow this header file to be included 
+ * in resource files so that they can get obtain version information from
+ * this file.  Resource compilers don't like all the C stuff, like typedefs
+ * and procedure declarations, that occur below.
+ */
+
+#ifndef RESOURCE_INCLUDED
+
+#ifndef BUFSIZ
+//#include <stdio.h>
+#endif
+
+/*
+ * Definitions that allow Tcl functions with variable numbers of
+ * arguments to be used with either varargs.h or stdarg.h.  TCL_VARARGS
+ * is used in procedure prototypes.  TCL_VARARGS_DEF is used to declare
+ * the arguments in a function definiton: it takes the type and name of
+ * the first argument and supplies the appropriate argument declaration
+ * string for use in the function definition.  TCL_VARARGS_START
+ * initializes the va_list data structure and returns the first argument.
+ */
+
+#if defined(__STDC__) || defined(HAS_STDARG)
+#   define TCL_VARARGS(type, name) (type name, ...)
+#   define TCL_VARARGS_DEF(type, name) (type name, ...)
+#   define TCL_VARARGS_START(type, name, list) (va_start(list, name), name)
+#else
+#   ifdef __cplusplus
+#	define TCL_VARARGS(type, name) (type name, ...)
+#	define TCL_VARARGS_DEF(type, name) (type va_alist, ...)
+#   else
+#	define TCL_VARARGS(type, name) ()
+#	define TCL_VARARGS_DEF(type, name) (va_alist)
+#   endif
+#   define TCL_VARARGS_START(type, name, list) \
+	(va_start(list), va_arg(list, type))
+#endif
+
+/*
+ * Macros used to declare a function to be exported by a DLL.
+ * Used by Windows, maps to no-op declarations on non-Windows systems.
+ * The default build on windows is for a DLL, which causes the DLLIMPORT
+ * and DLLEXPORT macros to be nonempty. To build a static library, the
+ * macro STATIC_BUILD should be defined.
+ * The support follows the convention that a macro called BUILD_xxxx, where
+ * xxxx is the name of a library we are building, is set on the compile line
+ * for sources that are to be placed in the library. See BUILD_tcl in this
+ * file for an example of how the macro is to be used.
+ */
+
+#ifdef __WIN32__
+# ifdef STATIC_BUILD
+#  define DLLIMPORT
+#  define DLLEXPORT
+# else
+#  if defined(_MSC_VER) || (defined(__GNUC__) && defined(__declspec))
+#   define DLLIMPORT __declspec(dllimport)
+#   define DLLEXPORT __declspec(dllexport)
+#  else
+#   define DLLIMPORT
+#   define DLLEXPORT
+#  endif
+# endif
+#else
+# define DLLIMPORT
+# define DLLEXPORT
+#endif
+
+#ifdef TCL_STORAGE_CLASS
+# undef TCL_STORAGE_CLASS
+#endif
+#ifdef BUILD_tcl
+# define TCL_STORAGE_CLASS DLLEXPORT
+#else
+# define TCL_STORAGE_CLASS DLLIMPORT
+#endif
+
+/*
+ * Definitions that allow this header file to be used either with or
+ * without ANSI C features like function prototypes.
+ */
+
+#undef _ANSI_ARGS_
+#undef CONST
+
+#if ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus) || defined(USE_PROTOTYPE)
+#   define _USING_PROTOTYPES_ 1
+#   define _ANSI_ARGS_(x)	x
+#   define CONST const
+//#message _ANSI_ARGS_ 1
+#else
+#   define _ANSI_ARGS_(x)	()
+#message _ANSI_ARGS_ 2
+#   define CONST
+#endif
+
+#ifdef __cplusplus
+#   define EXTERN extern "C" TCL_STORAGE_CLASS
+#else
+#   define EXTERN extern TCL_STORAGE_CLASS
+#endif
+
+/*
+ * Macro to use instead of "void" for arguments that must have
+ * type "void *" in ANSI C;  maps them to type "char *" in
+ * non-ANSI systems.
+ */
+#ifndef __WIN32__
+#ifndef VOID
+#   ifdef __STDC__
+#       define VOID void
+#   else
+#       define VOID char
+#   endif
+#endif
+#else /* __WIN32__ */
+/*
+ * The following code is copied from winnt.h
+ */
+#ifndef VOID
+#define VOID void
+typedef char CHAR;
+typedef short SHORT;
+typedef long LONG;
+#endif
+#endif /* __WIN32__ */
+
+/*
+ * Miscellaneous declarations.
+ */
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef _CLIENTDATA
+#   if defined(__STDC__) || defined(__cplusplus)
+    typedef void *ClientData;
+#   else
+    typedef int *ClientData;
+#   endif /* __STDC__ */
+#define _CLIENTDATA
+#endif
+
+/*
+ * Data structures defined opaquely in this module. The definitions below
+ * just provide dummy types. A few fields are made visible in Tcl_Interp
+ * structures, namely those used for returning a string result from
+ * commands. Direct access to the result field is discouraged in Tcl 8.0.
+ * The interpreter result is either an object or a string, and the two
+ * values are kept consistent unless some C code sets interp->result
+ * directly. Programmers should use either the procedure Tcl_GetObjResult()
+ * or Tcl_GetStringResult() to read the interpreter's result. See the
+ * SetResult man page for details.
+ * 
+ * Note: any change to the Tcl_Interp definition below must be mirrored
+ * in the "real" definition in tclInt.h.
+ *
+ * Note: Tcl_ObjCmdProc procedures do not directly set result and freeProc.
+ * Instead, they set a Tcl_Obj member in the "real" structure that can be
+ * accessed with Tcl_GetObjResult() and Tcl_SetObjResult().
+ */
+
+typedef struct Tcl_Interp {
+    char *result;		/* If the last command returned a string
+				 * result, this points to it. */
+    void (*freeProc) _ANSI_ARGS_((char *blockPtr));
+				/* Zero means the string result is
+				 * statically allocated. TCL_DYNAMIC means
+				 * it was allocated with ckalloc and should
+				 * be freed with ckfree. Other values give
+				 * the address of procedure to invoke to
+				 * free the result. Tcl_Eval must free it
+				 * before executing next command. */
+    int errorLine;              /* When TCL_ERROR is returned, this gives
+                                 * the line number within the command where
+                                 * the error occurred (1 if first line). */
+} Tcl_Interp;
+
+typedef struct Tcl_AsyncHandler_ *Tcl_AsyncHandler;
+typedef struct Tcl_Channel_ *Tcl_Channel;
+typedef struct Tcl_Command_ *Tcl_Command;
+typedef struct Tcl_Event Tcl_Event;
+typedef struct Tcl_Pid_ *Tcl_Pid;
+typedef struct Tcl_RegExp_ *Tcl_RegExp;
+typedef struct Tcl_TimerToken_ *Tcl_TimerToken;
+typedef struct Tcl_Trace_ *Tcl_Trace;
+typedef struct Tcl_Var_ *Tcl_Var;
+
+/*
+ * When a TCL command returns, the interpreter contains a result from the
+ * command. Programmers are strongly encouraged to use one of the
+ * procedures Tcl_GetObjResult() or Tcl_GetStringResult() to read the
+ * interpreter's result. See the SetResult man page for details. Besides
+ * this result, the command procedure returns an integer code, which is 
+ * one of the following:
+ *
+ * TCL_OK		Command completed normally; the interpreter's
+ *			result contains	the command's result.
+ * TCL_ERROR		The command couldn't be completed successfully;
+ *			the interpreter's result describes what went wrong.
+ * TCL_RETURN		The command requests that the current procedure
+ *			return; the interpreter's result contains the
+ *			procedure's return value.
+ * TCL_BREAK		The command requests that the innermost loop
+ *			be exited; the interpreter's result is meaningless.
+ * TCL_CONTINUE		Go on to the next iteration of the current loop;
+ *			the interpreter's result is meaningless.
+ */
+
+#define TCL_OK		0
+#define TCL_ERROR	1
+#define TCL_RETURN	2
+#define TCL_BREAK	3
+#define TCL_CONTINUE	4
+
+#define TCL_RESULT_SIZE 200
+
+/*
+ * Argument descriptors for math function callbacks in expressions:
+ */
+
+typedef enum {TCL_INT, TCL_DOUBLE, TCL_EITHER} Tcl_ValueType;
+typedef struct Tcl_Value {
+    Tcl_ValueType type;		/* Indicates intValue or doubleValue is
+				 * valid, or both. */
+    long intValue;		/* Integer value. */
+    double doubleValue;		/* Double-precision floating value. */
+} Tcl_Value;
+
+/*
+ * Forward declaration of Tcl_Obj to prevent an error when the forward
+ * reference to Tcl_Obj is encountered in the procedure types declared 
+ * below.
+ */
+
+struct Tcl_Obj;
+
+/*
+ * Procedure types defined by Tcl:
+ */
+
+typedef int (Tcl_AppInitProc) _ANSI_ARGS_((Tcl_Interp *interp));
+typedef int (Tcl_AsyncProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int code));
+typedef void (Tcl_ChannelProc) _ANSI_ARGS_((ClientData clientData, int mask));
+typedef void (Tcl_CloseProc) _ANSI_ARGS_((ClientData data));
+typedef void (Tcl_CmdDeleteProc) _ANSI_ARGS_((ClientData clientData));
+typedef int (Tcl_CmdProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]));
+typedef void (Tcl_CmdTraceProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int level, char *command, Tcl_CmdProc *proc,
+	ClientData cmdClientData, int argc, char *argv[]));
+typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *srcPtr, 
+        struct Tcl_Obj *dupPtr));
+typedef int (Tcl_EventProc) _ANSI_ARGS_((Tcl_Event *evPtr, int flags));
+typedef void (Tcl_EventCheckProc) _ANSI_ARGS_((ClientData clientData,
+	int flags));
+typedef int (Tcl_EventDeleteProc) _ANSI_ARGS_((Tcl_Event *evPtr,
+        ClientData clientData));
+typedef void (Tcl_EventSetupProc) _ANSI_ARGS_((ClientData clientData,
+	int flags));
+typedef void (Tcl_ExitProc) _ANSI_ARGS_((ClientData clientData));
+typedef void (Tcl_FileProc) _ANSI_ARGS_((ClientData clientData, int mask));
+typedef void (Tcl_FileFreeProc) _ANSI_ARGS_((ClientData clientData));
+typedef void (Tcl_FreeInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
+typedef void (Tcl_FreeProc) _ANSI_ARGS_((char *blockPtr));
+typedef void (Tcl_IdleProc) _ANSI_ARGS_((ClientData clientData));
+typedef void (Tcl_InterpDeleteProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp));
+typedef int (Tcl_MathProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, Tcl_Value *args, Tcl_Value *resultPtr));
+typedef void (Tcl_NamespaceDeleteProc) _ANSI_ARGS_((ClientData clientData));
+typedef int (Tcl_ObjCmdProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, struct Tcl_Obj * CONST objv[]));
+typedef int (Tcl_PackageInitProc) _ANSI_ARGS_((Tcl_Interp *interp));
+typedef void (Tcl_TcpAcceptProc) _ANSI_ARGS_((ClientData callbackData,
+        Tcl_Channel chan, char *address, int port));
+typedef void (Tcl_TimerProc) _ANSI_ARGS_((ClientData clientData));
+typedef int (Tcl_SetFromAnyProc) _ANSI_ARGS_((Tcl_Interp *interp,
+	struct Tcl_Obj *objPtr));
+typedef void (Tcl_UpdateStringProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
+typedef char *(Tcl_VarTraceProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, char *part1, char *part2, int flags));
+
+/*
+ * The following structure represents a type of object, which is a
+ * particular internal representation for an object plus a set of
+ * procedures that provide standard operations on objects of that type.
+ */
+
+
+#endif /* _TCL */

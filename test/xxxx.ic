@@ -1,0 +1,32 @@
+/*
+#define gulp x
+#define DLLIMPORT
+#define STORAGECLASS DLLIMPORT
+#define EXTERN extern STORAGECLASS
+
+EXTERN int f(int);
+
+PrintLn( "done." );
+*/
+
+#undef CONST
+
+#define __STDC__
+
+#if ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus) || defined(USE_PROTOTYPE)
+#   define _USING_PROTOTYPES_ 1
+#   define _ANSI_ARGS_(x)	x
+#   define CONST const
+#message _ANSI_ARGS_ 1
+#else
+#   define _ANSI_ARGS_(x)	()
+#message _ANSI_ARGS_ 2
+#   define CONST
+#endif
+
+CONST int i;
+
+typedef int (Tcl_ObjCmdProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, struct Tcl_Obj * CONST objv[]));
+
+//#define STORAGECLASS d

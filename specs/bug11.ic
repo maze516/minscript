@@ -1,0 +1,44 @@
+
+class _test
+{
+public:
+	_test()
+	{
+		m_i = 41;
+	}
+	void dump()
+	{
+		__println( "_test::dump "+m_i );
+	}
+	int m_i;
+};
+
+int * pInt;
+
+pInt = new int(8);
+
+__println( "*pInt=" + *pInt );
+
+delete pInt;
+
+//__println( "*pInt=" + *pInt );
+
+_test * pObj;
+
+pObj = new _test;
+
+__println( "pObj=" + pObj );
+
+pObj->dump();
+
+pObj->m_i = 5;
+__println( "pObj=" + pObj->m_i );
+
+delete pObj;
+
+int i = pObj->m_i;
+
+pObj->m_i = 5;
+
+//pObj->dump();
+
