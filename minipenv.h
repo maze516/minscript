@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/minipenv.h,v $
+ *  $Source: e:\\home\\cvsroot/minscript/minipenv.h,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: minipenv.h,v $
+ *	Revision 1.2  2004/01/04 15:49:06  min
+ *	New Method to add native functions implemented (in an own interface)
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:21  min
  *	Initial checkin
  *	
@@ -243,6 +246,7 @@ public:
 	minInterpreterValue( bool bVal );
 #endif
 	minInterpreterValue( int iVal );
+	minInterpreterValue( long lVal );
 	minInterpreterValue( char cVal );
 	minInterpreterValue( const string & sVal );
 	minInterpreterValue( const char * sVal );
@@ -594,7 +598,7 @@ public:
 
 	string GetInfoString() const;
 
-	// ´*** implement the interfaces ***
+	// ï¿½*** implement the interfaces ***
 	virtual bool AddNativeFunction( NativeFcnWrapperBase * pNativeFunc );
 
 	// zum Testen

@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/minscript.cpp,v $
+ *  $Source: e:\\home\\cvsroot/minscript/minscript.cpp,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: minscript.cpp,v $
+ *	Revision 1.2  2004/01/04 15:41:20  min
+ *	neue Option --makemakefile, Bugfixes bei Stubfile Erzeugung
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:22  min
  *	Initial checkin
  *	
@@ -1223,11 +1226,11 @@ int main( int argc, char *argv[] )
 	string sArgCode;
 	char sBuffer[c_iMaxBuffer];
 
-	sprintf( sBuffer, "int argc = %d;\n", aArgs.m_aArgumentList.size() ); 
+	sprintf( sBuffer, "int argc = %ld;\n", aArgs.m_aArgumentList.size() ); 
 	sArgCode += sBuffer;
 	if( aArgs.m_aArgumentList.size()>0 )
 	{
-		sprintf( sBuffer, "string argv[%d];\n", aArgs.m_aArgumentList.size() ); 
+		sprintf( sBuffer, "string argv[%ld];\n", aArgs.m_aArgumentList.size() ); 
 		sArgCode += sBuffer;
 
 		int nCount = 0;

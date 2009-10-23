@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/minip.cpp,v $
+ *  $Source: e:\\home\\cvsroot/minscript/minip.cpp,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: minip.cpp,v $
+ *	Revision 1.2  2004/01/04 15:44:15  min
+ *	string_read(), splitpath() added, new, improved native functioninterface implemented
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:21  min
  *	Initial checkin
  *	
@@ -533,7 +536,7 @@ string string_read()
 
 int string_npos()
 {
-	return string::npos;
+	return (int)string::npos;
 }
 
 int string_find( const char * sString, const char * sSearchText )
@@ -615,11 +618,11 @@ string my_getenv( const char * s )
 	return sRet;
 }
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 
 static char _GetDirectorySeparator()
 {
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 	return '/';
 #else
 	return '\\';
@@ -656,10 +659,11 @@ bool SplitPath( const char * sPath, string & sDrive, string & sDir, string & sFi
 	char sDirBuf[512];
 	char sNameBuf[512];
 	char sExtBuf[512];
-#ifndef __linux__
+#if !(defined( __linux__ ) || defined( __APPLE__ ))
 	_splitpath( /*(CHAR_CAST)*/sPath, sDriveBuf, sDirBuf, sNameBuf, sExtBuf );
 #else
 	// Simuliere _splitpath fuer Linux...
+// TODO --> dirname() basename()    
 	strcpy( sDriveBuf, "" );
 	strcpy( sDirBuf, "" );
 	strcpy( sNameBuf, "" );
@@ -928,8 +932,8 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	// buildin functions
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int PrintLn( string s );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
-	//pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int println( string s );" );
-	//m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int println( string s );" );
+    m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintFcn, "int __print( string s );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int __println( string s );" );

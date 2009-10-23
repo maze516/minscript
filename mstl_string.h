@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/mstl_string.h,v $
+ *  $Source: e:\\home\\cvsroot/minscript/mstl_string.h,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: mstl_string.h,v $
+ *	Revision 1.2  2004/01/04 15:31:55  min
+ *	Homepage link updated
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:22  min
  *	Initial checkin
  *	
@@ -47,8 +50,8 @@
 #include <string>
 #endif
 
-#ifdef _WIN32
+//#ifdef _WIN32
 using namespace std;
-#endif
+//#endif
 
 #endif // _STL_STRING_H

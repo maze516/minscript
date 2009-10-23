@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/minipenv.cpp,v $
+ *  $Source: e:\\home\\cvsroot/minscript/minipenv.cpp,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: minipenv.cpp,v $
+ *	Revision 1.2  2004/01/04 15:49:28  min
+ *	New Method to add native functions implemented (in an own interface)
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:21  min
  *	Initial checkin
  *	
@@ -286,6 +289,16 @@ minInterpreterValue::minInterpreterValue( int iVal )
 	m_aType = Int;
 	m_aValue.m_dValue = 0;		// damit diese Variable vernuenftig initialisiert wird !
 	m_aValue.m_lValue = (long)iVal; 
+}
+
+minInterpreterValue::minInterpreterValue( long lVal )
+{
+    MEMORY_DBG_OUT( cout << "minInterpreterValue 4 this=0x" << (void *)this << endl; )
+    MEMORY_DBG( g_cValueCount++; )
+	//m_bIsOwner = true;
+	m_aType = Int;
+	m_aValue.m_dValue = 0;		// damit diese Variable vernuenftig initialisiert wird !
+	m_aValue.m_lValue = lVal; 
 }
 
 minInterpreterValue::minInterpreterValue( char cVal )						
@@ -747,12 +760,12 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				{
 					char sBuffer[c_iMaxBuffer];
 
-					sprintf( sBuffer, "0x%x", (int)(*(m_aValue.m_pPointer)).GetRepAddr() );
+					sprintf( sBuffer, "0x%lx", (unsigned long int)(*(m_aValue.m_pPointer)).GetRepAddr() );
 					return minInterpreterValue( sBuffer );
 				}
 				break;
 			case Double : 
-				return minInterpreterValue( (int)(*(m_aValue.m_pPointer)).GetRepAddr() );
+				return minInterpreterValue( (long)(*(m_aValue.m_pPointer)).GetRepAddr() );
 			case Bool :
 				if( m_aValue.m_pPointer==0 )
 					return minInterpreterValue( 0 );
@@ -760,7 +773,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					return minInterpreterValue( 1 );
 			case CharTT :
 			case Int : 
-				return minInterpreterValue( (int)(*(m_aValue.m_pPointer)).GetRepAddr() );
+				return minInterpreterValue( (long)(*(m_aValue.m_pPointer)).GetRepAddr() );
 			case Object :
 				// nur Zuweisungen von Obj-Pointer nach Obj-Pointer sind zulaessig !
 				if( aToType.IsPointer() )
@@ -830,7 +843,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					{
 						char sBuffer[c_iMaxBuffer];
 
-						sprintf( sBuffer, "%d", m_aValue.m_lValue );
+						sprintf( sBuffer, "%ld", m_aValue.m_lValue );
 						return minInterpreterValue( sBuffer );
 					}
 					break;
@@ -894,7 +907,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				case String :
 					{
 						char sBuffer[c_iMaxBuffer];
-						sprintf( sBuffer, "object 0x%x", m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0 );					
+						sprintf( sBuffer, "object 0x%lx", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0) );					
 						return minInterpreterValue( /*"object"*/sBuffer );
 					}
 				case Double : 
@@ -915,7 +928,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				case String :
 					{
 						char sBuffer[c_iMaxBuffer];
-						sprintf( sBuffer, "Array 0x%x", m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0 );					
+						sprintf( sBuffer, "Array 0x%lx", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0) );					
 						return minInterpreterValue( /*"object"*/sBuffer );
 					}
 				case Double : 
@@ -1194,7 +1207,7 @@ string minCallStackItem::GetInfoString() const
 	if( GetUserName().length()>0 )
 	{
 		char sBuffer[c_iMaxBuffer];
-		sprintf( sBuffer, "0x%x", this );
+		sprintf( sBuffer, "0x%lx", (unsigned long int)this );
 		sResult += "{"+GetUserName()+" "+sBuffer+"}";
 	}
 	sResult += ": ";
@@ -1435,7 +1448,7 @@ string minInterpreterEnvironment::GetInfoString() const
 	{
 		minHandle<minCallStackItem> hStackItem = *aIter;
 		++nCount;
-		sprintf( sBuffer, "%d 0x%x", nMaxCount-nCount+1, (int)hStackItem.GetPtr() );
+		sprintf( sBuffer, "%d 0x%lx", nMaxCount-nCount+1, (unsigned long int)hStackItem.GetPtr() );
 		sResult += "\t" + string( sBuffer ) + " " + hStackItem->GetInfoString() + "\n";
 		++aIter;
 	}

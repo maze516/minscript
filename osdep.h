@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/osdep.h,v $
+ *  $Source: e:\\home\\cvsroot/minscript/osdep.h,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: osdep.h,v $
+ *	Revision 1.2  2004/01/04 15:31:22  min
+ *	Homepage link updated
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:22  min
  *	Initial checkin
  *	
@@ -50,7 +53,7 @@ int MySystem( const char * sCmd );
 #define _DIRECTORY_SEPARATOR	'\\'
 #endif
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 #define _DIRECTORY_SEPARATOR	'/'
 #endif
 

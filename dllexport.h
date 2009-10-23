@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/dllexport.h,v $
+ *  $Source: e:\\home\\cvsroot/minscript/dllexport.h,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: dllexport.h,v $
+ *	Revision 1.2  2004/01/04 15:34:57  min
+ *	Homepage link updated
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:21  min
  *	Initial checkin
  *	
@@ -74,7 +77,7 @@
 #define _with_preproc
 #endif
 
-#if defined( __linux__ ) || defined( __MINGW32__ )
+#if defined( __linux__ ) || defined( __MINGW32__ ) || defined( __APPLE__ )
 #define CPPDLLEXPORT		
 #define MINDLLEXPORT
 #define MINPREDLLEXPORT

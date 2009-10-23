@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/osdep.cpp,v $
+ *  $Source: e:\\home\\cvsroot/minscript/osdep.cpp,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: osdep.cpp,v $
+ *	Revision 1.2  2004/01/04 15:31:40  min
+ *	Homepage link updated
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:22  min
  *	Initial checkin
  *	
@@ -44,7 +47,7 @@
 #include <os2.h>
 #endif
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 #include <unistd.h>			// fuer: usleep(), execvp(), vfork()
 #include <stdlib.h>			// fuer: system()
 #include <time.h>			// fuer: clock()
@@ -63,7 +66,7 @@ unsigned long GetCurrentTickCount()
 	::DosQuerySysInfo( QSV_MS_COUNT, QSV_MS_COUNT, &nRet, sizeof(nRet) );
 	return nRet;
 #endif
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 	//static time_t g_nStartTime = time( 0 );
 	//return g_nStartTime+clock();
 	return (unsigned long)clock();	// siehe auch CLK_TCK und CLOCKS_PER_SEC
@@ -80,7 +83,7 @@ int WaitFcn( int nDelay )
 #ifdef __OS2__
 	::DosSleep( nDelay );
 #endif
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 	::usleep( nDelay*1000 );	// delay in micro seconds
 #endif
 	return nDelay;
@@ -112,7 +115,7 @@ long minLoadLibrary( const char * sDllName )
 	//cout << "Load Lib " << sDllName << " == " << sNameBuf << " nRet=" << rc << endl;
 	return (long)hModule;
 #endif
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 	return (long)dlopen( sDllName, RTLD_LAZY );
 #endif
 }
@@ -127,7 +130,7 @@ bool minFreeLibrary( long hDllModule )
 #ifdef __IBMCPP__
 	return DosFreeModule( (HMODULE)hDllModule )==0;
 #endif
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 	return dlclose( (void *)hDllModule );
 #endif
 }
@@ -144,7 +147,7 @@ void * minGetProcAddress( long hDllModule, const char * sProcName )
 	APIRET rc = DosQueryProcAddr( (HMODULE)hDllModule, 0L, sProcName, &pProc );
 	return pProc;
 #endif
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 	return (void *)dlsym( (void *)hDllModule, sProcName );
 #endif
 }

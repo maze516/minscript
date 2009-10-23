@@ -34,6 +34,15 @@ linux:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(
 #linux:    $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT)
 endif
 
+ifdef mac
+include mac.mak
+OUTDIR	= ./
+#OBJEXT	= .o
+MININTERPRETERDLLDEFNAME	=
+linux:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT)
+#linux:    $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT)
+endif
+
 ifdef zaurus
 include zaurus.mak
 CC	=	arm-linux-gcc

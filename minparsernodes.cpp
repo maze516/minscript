@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/minparsernodes.cpp,v $
+ *  $Source: e:\\home\\cvsroot/minscript/minparsernodes.cpp,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: minparsernodes.cpp,v $
+ *	Revision 1.2  2004/01/04 15:54:31  min
+ *	Updates for the new, optimized way to add native functions implemented
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:22  min
  *	Initial checkin
  *	
@@ -2492,7 +2495,7 @@ bool minArrayElementNode::Execute( int nAccessModus, minInterpreterValue & aRetu
 				if( m_pRightNode->Execute( /*nAccessModus*/0, aIndexOut, aEnv ) )
 				{
 					char sBuffer[c_iMaxBuffer];
-					sprintf( sBuffer, "%d", aIndexOut.GetInt() );
+					sprintf( sBuffer, "%ld", aIndexOut.GetInt() );
 					sTempIndexName = sBuffer;
 				}
 

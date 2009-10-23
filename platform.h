@@ -6,11 +6,14 @@
  *
  * ------------------------------------------------------------------------
  *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/platform.h,v $
+ *  $Source: e:\\home\\cvsroot/minscript/platform.h,v $
  *
  *  $Revision: 1.2 $
  *
- *	$Log: not supported by cvs2svn $
+ *	$Log: platform.h,v $
+ *	Revision 1.2  2004/01/04 15:31:08  min
+ *	Homepage link updated
+ *	
  *	Revision 1.1.1.1  2003/06/22 09:31:22  min
  *	Initial checkin
  *	
@@ -54,7 +57,7 @@
 #define SMALL(x)	x
 #define USEBIG
 
-#elif defined( __linux__ ) && !defined( __ZAURUS__ )
+#elif (defined( __linux__ ) || defined(__APPLE__)) && !defined( __ZAURUS__ )
 
 #define OUTPUT(x)	x
 #define SMALL(x)	x
