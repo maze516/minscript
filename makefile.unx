@@ -34,13 +34,22 @@ MININTERPRETERDLLDEFNAME	=
 linux:    $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT)
 endif
 
+ifdef android
+include android.mak
+OUTDIR	= ./
+#OBJEXT	= .o
+MININTERPRETERDLLDEFNAME	=
+#linux:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT)
+android:    $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT)
+endif
+
 ifdef mac
 include mac.mak
 OUTDIR	= ./
 #OBJEXT	= .o
 MININTERPRETERDLLDEFNAME	=
-#linux:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT)
-linux:    $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT)
+linux:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT)
+#linux:    $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT)
 endif
 
 ifdef zaurus
@@ -76,11 +85,13 @@ minipfullexe:
 $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT): $(OUTDIR)minscript$(OBJEXT) $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
 		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minparsernodes$(OBJEXT) \
 		$(OUTDIR)minparser$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT)
-	$(MYCC) $(EXEOPT) $(STDLIBS) $(LINKOPT) $(ADDOPT) $(INCLUDES) $(DEBUG) $(EXEOUTOPT)$(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) \
+	$(CC) $(EXEOPT) $(LINKOPT) $(ADDOPT) $(INCLUDES) $(DEBUG) $(EXEOUTOPT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) \
 		$(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
 		$(OUTDIR)minparsernodes$(OBJEXT) $(OUTDIR)minparser$(OBJEXT) \
 		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT) \
-		$(OUTDIR)minscript$(OBJEXT)
+		$(OUTDIR)minscript$(OBJEXT) $(STDLIBS) 
+
+# remark (3.2.2013): $(STDLIBS) must follow object files (for android) otherwise we get link errors !
 
 minip:
 $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT):  $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \

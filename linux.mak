@@ -3,17 +3,19 @@
 #
 #DEFINES = -Dgulp
 DEFINES =
-MYCC = gcc
-CCOPT = -fexceptions -c
+MYCC = g++
+CCOPT = -fexceptions -c 
+#-fPIC
 #-I/usr/X11R6/include -I/home/root/lesstif-0.75a/include
 #STDLIBS =  -lm -lgcc -lg++ -lpthread -ldl
-STDLIBS =  -lm -lgcc -lg++ -ldl
+#STDLIBS =  -lm -lgcc -lg++ -ldl
+STDLIBS =  -lm -lstdc++ -ldl
 #-L/usr/X11/lib -L/home/root/lesstif-0.75a/lib -lXm -lX11 -lXt -lICE -lSM -lXext
 # -lncurses
 EXEOPT =
 DLLOPT = -fPIC -shared
-INCLUDES = -I.
-DORELEASE = -O -D_MIN_RELEASE
+INCLUDES = -I. 
+DORELEASE = -O2 -D_MIN_RELEASE
 DODEBUG = -g -D_MIN_DEBUG
 DOPROFILE = -g
 DOPROFILEOBJ = 
