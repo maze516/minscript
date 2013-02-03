@@ -40,6 +40,10 @@
  ***************************************************************************/
 
 #define _USE_DLL
+
+#include "mstl_string.h"
+#include "mstl_iostream.h"
+
 #include "dllexport.h"
 
 #include "platform.h"
@@ -47,11 +51,8 @@
 #include "minparsernodes.h"
 #include "minip.h"
 
-#include "mstl_string.h"
-#include "mstl_iostream.h"
-
 #include <stdio.h>			// fuer: sprintf()
-#include <stdlib.h>         // fuer: exit()
+#include <stdlib.h>
 
 #define _MINSCRIPT_VERSION	"1.2.2"
 
