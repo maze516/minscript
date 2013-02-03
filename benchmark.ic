@@ -1,0 +1,28 @@
+
+double f(double x)
+{
+	return x*x;
+}
+
+int main()
+{
+	int i,j;
+	double d = 0.0;
+	__println("hallo welt");
+	for( i =0; i<50000; i++)
+	{
+		j = i*i;
+		d = f(1.234);
+	}
+	__println("hallo welt done");
+}
+
+main();
+
+/*
+	pandaboard:
+real	0m11.870s
+user	0m11.641s
+sys	0m0.031s
+
+*/
