@@ -51,6 +51,7 @@
 #include "mstl_iostream.h"
 
 #include <stdio.h>			// fuer: sprintf()
+#include <stdlib.h>         // fuer: exit()
 
 #define _MINSCRIPT_VERSION	"1.2.2"
 

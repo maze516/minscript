@@ -50,6 +50,8 @@
 #include <string>
 #endif
 
+#include <string.h>
+
 //#ifdef _WIN32
 using namespace std;
 //#endif
