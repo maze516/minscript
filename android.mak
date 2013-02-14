@@ -14,7 +14,7 @@ STDLIBS =  -L $$MY_LIBS -lm -lstdc++ -lgnustl_static
 # -lncurses
 EXEOPT =
 DLLOPT = -fPIC -shared
-INCLUDES = -I. -I $$MY_INCLUDES -I $$MY_INCLUDES2
+INCLUDES = -I $$MY_INCLUDES -I $$MY_INCLUDES2 -I.
 DORELEASE = -O2 -D_MIN_RELEASE
 DODEBUG = -g -D_MIN_DEBUG
 DOPROFILE = -g

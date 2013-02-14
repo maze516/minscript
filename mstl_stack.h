@@ -38,8 +38,8 @@
 
 // Datei zum 'mappen' von STL-Header-Dateien
 
-#ifndef _STL_STACK_H
-#define _STL_STACK_H
+#ifndef _MYSTL_STACK_H
+#define _MYSTL_STACK_H
 
 #include <stack>
 

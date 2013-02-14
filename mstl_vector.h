@@ -38,8 +38,8 @@
 
 // Datei zum 'mappen' von STL-Header-Dateien
 
-#ifndef _STL_VECTOR_H
-#define _STL_VECTOR_H
+#ifndef _MYSTL_VECTOR_H
+#define _MYSTL_VECTOR_H
 
 #include <vector>
 

@@ -38,8 +38,8 @@
 
 // Datei zum 'mappen' von STL-Header-Dateien
 
-#ifndef _STL_LIST_H
-#define _STL_LIST_H
+#ifndef _MYSTL_LIST_H
+#define _MYSTL_LIST_H
 
 #include <list>
 

@@ -116,7 +116,7 @@ long minLoadLibrary( const char * sDllName )
 	return (long)hModule;
 #endif
 #if defined( __linux__ ) || defined( __APPLE__ )
-	return (long)dlopen( sDllName, RTLD_LAZY );
+	return (long)0; //dlopen( sDllName, RTLD_LAZY );
 #endif
 }
 
@@ -131,7 +131,7 @@ bool minFreeLibrary( long hDllModule )
 	return DosFreeModule( (HMODULE)hDllModule )==0;
 #endif
 #if defined( __linux__ ) || defined( __APPLE__ )
-	return dlclose( (void *)hDllModule );
+	return 0; //dlclose( (void *)hDllModule );
 #endif
 }
 
@@ -148,6 +148,6 @@ void * minGetProcAddress( long hDllModule, const char * sProcName )
 	return pProc;
 #endif
 #if defined( __linux__ ) || defined( __APPLE__ )
-	return (void *)dlsym( (void *)hDllModule, sProcName );
+	return 0; //(void *)dlsym( (void *)hDllModule, sProcName );
 #endif
 }

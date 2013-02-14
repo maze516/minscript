@@ -38,8 +38,8 @@
 
 // Datei zum 'mappen' von STL-Header-Dateien
 
-#ifndef _STL_MAP_H
-#define _STL_MAP_H
+#ifndef _MYSTL_MAP_H
+#define _MYSTL_MAP_H
 
 #include <map>
 
