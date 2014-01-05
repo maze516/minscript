@@ -1796,7 +1796,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 		string sClassName;
 		return ParseClass( /*bIsStruct*/nId==STRUCT_ID, pNodeOut, sClassName );
 	}
-	else if( (nId == CONST_ID) )
+	else if( nId == CONST_ID )
 	{
 		// gepeektes (continue) Token lesen
 		m_pTokenizer->ReadNextToken();
@@ -1804,7 +1804,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 		// dann muss es eine Variable oder Funktion sein !
 		return ParseVarDeclarationOrFunction( pNodeOut, /*bIsConst*/true, /*bIsVirtual*/false );
 	}	
-	else if( (nId == VIRTUAL_ID) )				// Bugfix 30.1.2003
+	else if( nId == VIRTUAL_ID )				// Bugfix 30.1.2003
 	{
 		// gepeektes (continue) Token lesen
 		m_pTokenizer->ReadNextToken();
@@ -1821,12 +1821,12 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 		// dann muss es eine Variable oder Funktion sein !
 		return ParseVarDeclarationOrFunction( pNodeOut, /*bIsConst*/false, /*bIsVirtual*/true, psClassName, bIsDestructor );
 	}
-	else if( (nId == THIS_ID) )		// neu seit 9.1.2003
+	else if( nId == THIS_ID )		// neu seit 9.1.2003
 	{
 		// this wie eine Expression behandeln !
 		return ParseExpression( pNodeOut );
 	}
-	else if( (nId == TEMPLATE_ID) )		// neu seit 14.2.2003
+	else if( nId == TEMPLATE_ID )		// neu seit 14.2.2003
 	{
 		// this wie eine Expression behandeln !
 		return ParseTemplate( pNodeOut );

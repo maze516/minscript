@@ -7,7 +7,8 @@ MYCC = gcc
 CCOPT = -fexceptions -c
 #-I/usr/X11R6/include -I/home/root/lesstif-0.75a/include
 #STDLIBS =  -lm -lgcc -lg++ -lpthread -ldl
-STDLIBS =  -lm -lgcc -lstdc++ -ldl
+#STDLIBS =  -lm -lgcc -lstdc++ -ldl
+STDLIBS =  -lm -lstdc++ -ldl
 #-L/usr/X11/lib -L/home/root/lesstif-0.75a/lib -lXm -lX11 -lXt -lICE -lSM -lXext
 # -lncurses
 EXEOPT =

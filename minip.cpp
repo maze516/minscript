@@ -588,7 +588,7 @@ string string_replace( const char * s, int iPos, int iLength, const char * sRepl
     return string( s ).replace( iPos, iLength, sReplace );
 }
 
-int my_fgets( string & s, int hFile )
+int my_fgets( string & s, long hFile )
 {
 	FILE * pFile = (FILE *)hFile;
 
@@ -912,7 +912,7 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper2<int, const char *, int>( (NativeFcnWrapper2<int, const char *, int>::MyFcnType2)fputs, "int fputs( string sFileName, int hFile );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
-	pFcn = new RefNativeFcnWrapper2<int, _Ref<string>, _Val<int> >( (RefNativeFcnWrapper2<int, _Ref<string>, _Val<int> >::MyFcnType2)my_fgets, "int fgets( string & sText, int hFile );" );
+	pFcn = new RefNativeFcnWrapper2<int, _Ref<string>, _Val<int> >( (RefNativeFcnWrapper2<int, _Ref<string>, _Val<int> >::MyFcnType2)my_fgets, "int fgets( string & sText, long hFile );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 
 	// stdlib.h

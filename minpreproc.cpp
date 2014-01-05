@@ -881,7 +881,7 @@ bool minPreProcessor::ProcessIf( bool bDoEvaluation )
 		sTempScript += (*aIter).first + " = ";
 
 		// falls notwendig noch die String-Konstanten mit "" versehen
-		if( bIsNumber || sValue.size()>0 && sValue.at(0)=='"' )
+		if( bIsNumber || (sValue.size()>0 && sValue.at(0)=='"') )
 			sTempScript += sValue;
 		else
 			sTempScript += "\"" + sValue + "\"";

@@ -507,8 +507,9 @@ static bool MakeClassWrapper( const string & sDllName, string & sWrapperCode, co
 								sWrapperCode += "protected:\n";
 								break;
 							case Private:
+							default:
 								sWrapperCode += "private:\n";
-								break;
+								break;								
 						}
 						aClassScope = aNewClassScope;
 					}

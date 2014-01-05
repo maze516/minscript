@@ -780,6 +780,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				{
 					return minInterpreterValue( aToType, m_aValue.m_pPointer );
 				}
+			default:
+				throw minCastError( "can not convert into pointer" );
 // min todo gulp --> was ist mit Array Behandlung ?
 		}
 	}
@@ -814,6 +816,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				case Int : 
 					// interpretiere den String als eine Zahl und weise diese zu !
 					return minInterpreterValue( (int)atol( m_aValue.m_psValue->c_str() ) );
+				default:
+					throw minCastError( "can not convert into string" );
 			}
 		}
 		if( m_aType.GetType() == Double )
@@ -833,6 +837,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					return minInterpreterValue( (char)m_aValue.m_dValue );
 				case Int : 
 					return minInterpreterValue( (int)m_aValue.m_dValue );
+				default:
+					throw minCastError( "can not convert into double" );
 			}
 		}
 		if( m_aType.GetType() == Int )
@@ -853,6 +859,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					return minInterpreterValue( (char)m_aValue.m_lValue );
 				case Bool :
 					return minInterpreterValue( (bool)m_aValue.m_lValue );
+				default:
+					throw minCastError( "can not convert into int" );
 			}
 		}
 		if( m_aType.GetType() == CharTT )
@@ -872,6 +880,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					return minInterpreterValue( (bool)m_aValue.m_lValue );
 				case Int : 
 					return minInterpreterValue( (int)m_aValue.m_lValue );
+				default:
+					throw minCastError( "can not convert into char" );
 			}
 		}
 		if( m_aType.GetType() == Bool )
@@ -886,6 +896,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					return minInterpreterValue( (char)m_aValue.m_lValue );
 				case Int : 
 					return minInterpreterValue( (int)m_aValue.m_lValue );
+				default:
+					throw minCastError( "can not convert into bool" );
 			}
 		}
 		if( m_aType.GetType() == Void )
@@ -898,6 +910,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				case CharTT :
 				case Int : 
 					return minInterpreterValue( 0 );
+				default:
+					throw minCastError( "can not convert into void" );
 			}
 		}
 		if( m_aType.GetType() == Object )
@@ -919,6 +933,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				case Object:
 					throw minCastError( "can not convert objects into other objects" );
 					//return minInterpreterValue( minInterpreterType( aToType ) );
+				default:
+					throw minCastError( "can not convert into object" );
 			}
 		}
 		if( m_aType.GetType() == Array )
@@ -940,6 +956,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				case Object:
 					throw minCastError( "can not convert arrrays into objects" );
 					//return minInterpreterValue( minInterpreterType( aToType ) );
+				default:
+					throw minCastError( "can not convert into array" );
 			}
 		}
 		if( m_aType.GetType() == Function )
@@ -954,6 +972,8 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					return minInterpreterValue( (char)-1 );
 				case Int : 
 					return minInterpreterValue( (int)-1 );
+				default:
+					throw minCastError( "can not convert into function" );
 			}
 		}
 	}
