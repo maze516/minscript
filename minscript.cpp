@@ -1047,10 +1047,17 @@ void RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptI
 	sPredefinedSymbols += "#define __cplusplus 1\n";
 #if defined( _WIN32 )
 	sPredefinedSymbols += "#define _WIN32 1\n";
+#elif defined( __MINGW32__ )
+	sPredefinedSymbols += "#define __MINGW32__ 1\n";
 #elif defined( __OS2__ )
 	sPredefinedSymbols += "#define __OS2__ 1\n";
+#elif defined( __ANDROID__ ) || defined( ANDROID )
+	sPredefinedSymbols += "#define __ANDROID__ 1\n";
+	sPredefinedSymbols += "#define __linux__ 1\n";
 #elif defined( __linux__ )
 	sPredefinedSymbols += "#define __linux__ 1\n";
+#elif defined( __APPLE__ )
+	sPredefinedSymbols += "#define __APPLE__ 1\n";
 #elif defined( __ZAURUS__ )
 	sPredefinedSymbols += "#define __linux__ 1\n";
 	sPredefinedSymbols += "#define __ZAURUS__ 1\n";
