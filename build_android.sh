@@ -14,6 +14,7 @@ export MY_LIBS="$NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi"
 
 make -f makefile.unx -e android=1 release=1
 cp minscript minscript_O2_android
+arm-linux-androideabi-strip minscript_O2_android
 rm *.o
 make -f makefile.unx -e android=1 debug=1
 cp minscript minscript_d_android
