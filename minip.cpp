@@ -842,6 +842,11 @@ bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnWrapperBaseAdapter * p
 	int __unloaddll( int hDll )
 */
 
+long _GetCurrentTickCount()
+{
+	return (long)GetCurrentTickCount();
+}
+
 void minScriptInterpreter::InitRuntimeEnvironment()
 {
 	NativeFcnWrapperBase * pFcn = 0;
@@ -934,6 +939,8 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int println( string s );" );
     m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper1<int,const char *>( PrintFcn, "int print( string s );" );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintFcn, "int __print( string s );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,const char *>( PrintLnFcn, "int __println( string s );" );
@@ -943,6 +950,8 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	//pFcn = new NativeFcnWrapper2<int, const char *, int>( PrintLnFcn2, "void PrintLn( string s, int i );" );
 	//m_aEnvironment.AddNativeFunction( pFcn );
 
+	pFcn = new NativeFcnWrapper0<long>( _GetCurrentTickCount, "long clockms();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper1<int,int>( WaitFcn, "void __sleep( int iDelay );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 
