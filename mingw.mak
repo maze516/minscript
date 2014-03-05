@@ -4,11 +4,11 @@
 #DEFINES = -Dgulp
 DEFINES =
 #DEFINES = -D__linux__ -D__MINGW__
-CCOPT = -fexceptions -c
+CCOPT = -fexceptions -c -static
 #-I/usr/X11R6/include -I/home/root/lesstif-0.75a/include
 #STDLIBS =  -lm -lgcc -lstdc++ -lpthread
 #STDLIBS =  -lm -lgcc -lstdc++
-STDLIBS =
+STDLIBS = -static-libstdc++ -static-libgcc -static 
 #-L/usr/X11/lib -L/home/root/lesstif-0.75a/lib -lXm -lX11 -lXt -lICE -lSM -lXext
 # -lncurses
 EXEOPT =
