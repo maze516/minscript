@@ -140,7 +140,7 @@ bool minFreeLibrary( long hDllModule )
 void * minGetProcAddress( long hDllModule, const char * sProcName )
 {
 #ifdef _WIN32
-	return GetProcAddress( (HMODULE)hDllModule, sProcName );
+	return (void *)GetProcAddress( (HMODULE)hDllModule, sProcName );
 #endif
 #ifdef __IBMCPP__
 	minGenDllProcT pProc = 0;
