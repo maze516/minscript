@@ -54,7 +54,7 @@
 #include <stdio.h>			// fuer: sprintf()
 #include <stdlib.h>
 
-#define _MINSCRIPT_VERSION	"1.2.2"
+#define _MINSCRIPT_VERSION	"1.2.3"
 
 #define _REGISTER_FCN_NAME	"minRegisterNativeFunctions"
 
@@ -71,6 +71,7 @@ struct minArgumentsHelper
 		m_bShowVersion = false;
 		m_bShowHelp = false;
 		m_bShowDebug = false;
+		m_bShowDoc = false;
 		//m_bVerbose = false;
 		m_bShowLicense = false;
 		m_bDump = false;
@@ -96,6 +97,7 @@ struct minArgumentsHelper
 
 	bool				m_bShowVersion;
 	bool				m_bShowHelp;
+	bool				m_bShowDoc;
 
 	bool				m_bShowDebug;
 	//bool				m_bVerbose;
@@ -181,6 +183,10 @@ static bool minParseArgs( int argc, char * argv[], minArgumentsHelper & aArgs )
 		else if( sActArg=="--license" )
 		{
 			aArgs.m_bShowLicense = true;
+		}
+		else if( sActArg=="--doc" )
+		{
+			aArgs.m_bShowDoc = true;
 		}
 		/*else if( sActArg=="--verbose" )
 		{
@@ -271,7 +277,7 @@ static void ShowArgumentHelp( ostream & aStream )
 	aStream << "  -?, -h, --help                  : show help for the program" << endl;
 	aStream << "  -v, --ver, --version            : show program version" << endl;
 	aStream << "  -d definesymbol                 : define a symbol for preprocessor" << endl;
-	aStream << "  -i directory                    : sets an aditional path for include files" << endl;
+	aStream << "  -i directory                    : sets an additional path for include files" << endl;
 	aStream << "  -g                              : enable debug execution" << endl;
 	aStream << "  -s \"script\", --script \"script\"  : script to execute" << endl;
 	aStream << "  -o output, --output output      : write output to file with name output" << endl;
@@ -287,6 +293,7 @@ static void ShowArgumentHelp( ostream & aStream )
 	aStream << "  --onlypreproc                   : run only preprocessor" << endl;
 	aStream << "  --profile                       : profile script execution" << endl;
 	aStream << "  --dump                          : show processing information" << endl;
+	aStream << "  --doc                           : show available functions and classes" << endl;
 	//aStream << "  --verbose                       : show more processing information" << endl;
 	SMALL( aStream << "  --debug                         : show debugging output" << endl; )
 	aStream << "  --license                       : show license information" << endl;
@@ -297,8 +304,9 @@ static void ShowLicense( ostream & aStream )
 {
 	aStream << endl << "License for minscript: free for non-commercial use." << endl;
 	aStream << "Contact the author if you want to use minscript commercially." << endl << endl;
-	aStream << "Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html" << endl;
-	aStream << "Author:   michael.neuroth@freenet.de" << endl << endl;
+	aStream << "WARNING: Use minscript at your own risk ! NO WARRANTY !" << endl << endl;
+	aStream << "Homepage: http://www.mneuroth.de/projects/Minscript.html" << endl;
+	aStream << "Author:   michael.neuroth.de@googlemail.com" << endl << endl;
 }
 
 //*************************************************************************
@@ -1153,10 +1161,16 @@ int main( int argc, char *argv[] )
 		ShowLicense( cout );
 		return 0;
 	}
+	if( aArgs.m_bShowDoc )
+	{
+		aIp.InitRuntimeEnvironment();
+		aIp.DumpAllFunctionPrototypes( cout );
+		return 0;
+	}
 	if( aArgs.m_bShowVersion )
 	{
 		cout << "minscript, version " << _MINSCRIPT_VERSION << " from " << __DATE__ /*<< endl*/;
-		cout << ", (c) by Michael Neuroth, 1999-2004" << endl;
+		cout << ", (c) by Michael Neuroth, 1999-20014" << endl;
 		return 0;
 	}
 #ifdef USEBIG
@@ -1366,6 +1380,6 @@ int main( int argc, char *argv[] )
 	}	// Block zum Speicherleck Testen
  	MEMORY_DBG( cerr << "count = " << GetValueCount() << endl; )
 	MEMORY_DBG( cerr << "items = " << GetItemCount() << endl; )
-
+	
 	return nRet;
 }

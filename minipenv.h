@@ -574,6 +574,7 @@ public:
 	bool RemoveFunction( minHandle<minFunctionDeclarationNode> hFunction );
 	void RemoveAllFunctions();
 	void DumpAllFunctions( ostream & aStream ) const;
+	void DumpAllFunctionPrototypes( ostream & aStream ) const;
 
 	// Methoden zum Verwalten von User-Datentypen wie class und struct (neu seit 16.11.1999)
 	minHandle<minClassDeclarationNode> GetClass( const string & sName ) const;
@@ -598,7 +599,7 @@ public:
 
 	string GetInfoString() const;
 
-	// �*** implement the interfaces ***
+	// *** implement the interfaces ***
 	virtual bool AddNativeFunction( NativeFcnWrapperBase * pNativeFunc );
 
 	// zum Testen

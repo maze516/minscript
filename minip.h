@@ -247,9 +247,11 @@ public:
     void SetDebugModus( bool bDebug );
     bool GetDebugModus() const;
 
+	void InitRuntimeEnvironment();
+	void DumpAllFunctionPrototypes( ostream & aStream ) const;
+
 private:
 	bool GetAllNodes( const string & sNodeName, minParserItemList & aItemListOut );
-	void InitRuntimeEnvironment();
 	void InitTokenizer();
 	void ShowErrorPosition();
 	minInterpreterNode * const GetProgramNodeForScript( const string & sScript );

@@ -199,6 +199,11 @@ bool minScriptInterpreter::GetDebugModus() const
     return m_bDebug;
 }
 
+void minScriptInterpreter::DumpAllFunctionPrototypes( ostream & aStream ) const
+{
+	m_aEnvironment.DumpAllFunctionPrototypes( aStream );
+}
+
 bool minScriptInterpreter::Run( const string & sScript, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime, unsigned long * pParseTime, const minTokenizer::TokenContainerT & aParsedTokens )
 {
 	if( aParsedTokens.size()>0 )

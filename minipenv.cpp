@@ -1767,6 +1767,20 @@ void minInterpreterEnvironment::DumpAllFunctions( ostream & aStream ) const
 	}
 }
 
+void minInterpreterEnvironment::DumpAllFunctionPrototypes( ostream & aStream ) const
+{
+	FunctionContainerT::const_iterator aFuncIter = m_aFunctionContainer.begin();
+
+	while( aFuncIter != m_aFunctionContainer.end() )
+	{
+		minHandle<minFunctionDeclarationNode> hFunction = *aFuncIter;
+
+		aStream << hFunction->GetPrototypeString() << endl;
+
+		++aFuncIter;
+	}
+}
+
 minHandle<minClassDeclarationNode> minInterpreterEnvironment::GetClass( const string & sName ) const
 {
 	ClassContainerT::const_iterator aIter = m_aClassContainer.begin();
