@@ -54,6 +54,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 //*************************************************************************
 
@@ -835,6 +836,13 @@ bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnWrapperBaseAdapter * p
 	string string_erase( string s, int iPos, int iLength )
 	string string_replace( string s, int iPos, int iLength, string sReplace )
 
+    int current_time_hour()
+    int current_time_minute()
+    int current_time_second()
+    int current_date_year()
+    int current_date_month()
+    int current_date_day()
+
 	string getenv( string sName )
 	int putenv( string sNameValue )
 	void exit( int iValue ) int system( string sCmd )
@@ -845,11 +853,72 @@ bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnWrapperBaseAdapter * p
 	void __sleep( int iDelay )
 	int __loaddll( string s )
 	int __unloaddll( int hDll )
+    long clockms()
 */
 
 long _GetCurrentTickCount()
 {
 	return (long)GetCurrentTickCount();
+}
+
+int CurrentTimeHour()
+{
+    time_t aTime;
+    time(&aTime);
+    
+    struct tm * tm_struct = localtime(&aTime);
+
+    return tm_struct->tm_hour;
+}
+
+int CurrentTimeMinute()
+{
+    time_t aTime;
+    time(&aTime);
+    
+    struct tm * tm_struct = localtime(&aTime);
+
+    return tm_struct->tm_min;
+}
+
+int CurrentTimeSecond()
+{
+    time_t aTime;
+    time(&aTime);
+    
+    struct tm * tm_struct = localtime(&aTime);
+
+    return tm_struct->tm_sec;
+}
+
+int CurrentDateYear()
+{
+    time_t aTime;
+    time(&aTime);
+    
+    struct tm * tm_struct = localtime(&aTime);
+
+    return tm_struct->tm_year;
+}
+
+int CurrentDateMonth()
+{
+    time_t aTime;
+    time(&aTime);
+    
+    struct tm * tm_struct = localtime(&aTime);
+
+    return tm_struct->tm_mon;
+}
+
+int CurrentDateDay()
+{
+    time_t aTime;
+    time(&aTime);
+    
+    struct tm * tm_struct = localtime(&aTime);
+
+    return tm_struct->tm_mday;
 }
 
 void minScriptInterpreter::InitRuntimeEnvironment()
@@ -966,6 +1035,18 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	pFcn = new NativeFcnWrapper1<int,int>( UnLoadInterpreterModule, "int __unloaddll( int hDll );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 
+	pFcn = new NativeFcnWrapper0<int>( CurrentTimeHour, "int current_time_hour();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper0<int>( CurrentTimeMinute, "int current_time_minute();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper0<int>( CurrentTimeSecond, "int current_time_second();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper0<int>( CurrentDateYear, "int current_date_year();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper0<int>( CurrentDateMonth, "int current_date_month();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper0<int>( CurrentDateDay, "int current_date_day();" );
+	m_aEnvironment.AddNativeFunction( pFcn );
 
 	// test
 	//pFcn = new RefNativeFcnWrapper1<int, _Ref<int> >( (RefNativeFcnWrapper1<int, _Ref<int> >::MyFcnType1)my_ref_test, "int my_ref_test( int & iInOut );" );
