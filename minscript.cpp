@@ -54,7 +54,7 @@
 #include <stdio.h>			// fuer: sprintf()
 #include <stdlib.h>
 
-#define _MINSCRIPT_VERSION	"1.2.3"
+#define _MINSCRIPT_VERSION	"1.3.0"
 
 #define _REGISTER_FCN_NAME	"minRegisterNativeFunctions"
 
@@ -77,6 +77,7 @@ struct minArgumentsHelper
 		m_bDump = false;
 		m_bProfile = false;
 		m_bDebugModus = false;
+        m_bDbgModus = false;
 		m_bRunScript = true;			// default: immer script ausfuehren
 		m_bParseOnly = !m_bRunScript;
 		m_bRunPreprocessor = true;		// default: immer script mit preprocessor verarbeiten (vor script ausfuehrung)
@@ -105,6 +106,7 @@ struct minArgumentsHelper
 	bool				m_bDump;
 	bool				m_bProfile;
 	bool				m_bDebugModus;
+    bool                m_bDbgModus;
 
 	bool				m_bRunScript;
 	bool				m_bParseOnly;
@@ -200,6 +202,10 @@ static bool minParseArgs( int argc, char * argv[], minArgumentsHelper & aArgs )
 		{
 			aArgs.m_bDebugModus = true;
 		}
+        else if( sActArg=="-b" || sActArg=="--dbg" )
+        {
+            aArgs.m_bDbgModus = true;
+        }
 		else if( sActArg=="-s" || sActArg=="--script" )
 		{
 			i++;
@@ -278,7 +284,8 @@ static void ShowArgumentHelp( ostream & aStream )
 	aStream << "  -v, --ver, --version            : show program version" << endl;
 	aStream << "  -d definesymbol                 : define a symbol for preprocessor" << endl;
 	aStream << "  -i directory                    : sets an additional path for include files" << endl;
-	aStream << "  -g                              : enable debug execution" << endl;
+    aStream << "  -g                              : enable debug execution" << endl;
+	aStream << "  -b, --dbg                       : execute script in command line debuger" << endl;
 	aStream << "  -s \"script\", --script \"script\"  : script to execute" << endl;
 	aStream << "  -o output, --output output      : write output to file with name output" << endl;
 	aStream << "  -c, --check, --parse            : do only syntax check for script (parsing)" << endl;
@@ -1339,16 +1346,28 @@ int main( int argc, char *argv[] )
 		MakeMakefile( aArgs );
 #endif
 	}
+/*
+    else if( aArgs.m_bDbgModus )
+    {
+        // TODO
+        cerr << "running debugger..." << endl;
+        string sInput;
+//        getline( cin, sInput )
+        cin >> sInput;
+        cout << "Input: " << sInput << endl;
+    }
+*/
 	else if( aArgs.m_bRunScript )
 	{
 		minInterpreterValue aVal;
 		unsigned long nExecutionTime;
 		unsigned long nParseTime;
+        aIp.SetDbgModus( aArgs.m_bDbgModus );
 		bool bOk = aIp.Run( sScript, aVal, &nExecutionTime, &nParseTime, aParsedTokens );
 		if( bOk )
 		{
 			// Returnwert zuweisen
-			nRet = aVal.GetInt();
+			nRet = (int)aVal.GetInt();
 
 			if( aArgs.m_bProfile || aArgs.m_bShowDebug )
 			{

@@ -58,6 +58,7 @@ class minFunctionDeclarationNode;
 class minClassDeclarationNode;
 class minCreatorInterface;
 class minNativeFcnWrapperBaseAdapter;
+class minInterpreterNode;
 class NativeFcnWrapperBase;
 
 //*************************************************************************
@@ -515,14 +516,18 @@ public:
 	minInterpreterEnvironment();
 	~minInterpreterEnvironment();
 
-	void SetDebugMode( bool bDebug )	{ m_bDebug = bDebug; }
+    // Flag to indicate comand line debugger
+    void SetDbgMode( bool bDebug )	{ m_bDbg = bDebug; }
+    bool IsDbgMode() const			{ return m_bDbg; }
+
+    void SetDebugMode( bool bDebug )	{ m_bDebug = bDebug; }
 	bool IsDebugMode() const			{ return m_bDebug; }
 
 	void SetSilentMode( bool bSilent )	{ m_bIsSilent = bSilent; }
 	bool IsSilentMode() const			{ return m_bIsSilent; }
 
 	// Groesse des aktuellen Call-Stacks liefern
-	int GetCallStackSize() const				{ return m_aCallStack.size(); }
+	int GetCallStackSize() const				{ return (int)m_aCallStack.size(); }
 	// den gerade aktuellen Call-Stack Eintrag liefern (Spize des Stacks)
 	minHandle<minCallStackItem> GetActCallStackItem();
 	// der unter dem gerade aktuellen Call-Stack Eintrag liegenden Eintrag liefern (Spize des Stacks - 1), fuer this-Implementation
@@ -602,6 +607,9 @@ public:
 	// *** implement the interfaces ***
 	virtual bool AddNativeFunction( NativeFcnWrapperBase * pNativeFunc );
 
+    // Implement command line debugger
+    void ProcessDbg( minInterpreterNode * pCurrentNode );
+    
 	// zum Testen
 	void Dump() const;
 
@@ -613,6 +621,7 @@ private:
 	int						m_nLastErrorCode;
 	string					m_sLastErrorMsg;
 	bool					m_bDebug;
+    bool                    m_bDbg;
 	bool					m_bIsSilent;
 };
 

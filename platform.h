@@ -57,7 +57,7 @@
 #define SMALL(x)	x
 #define USEBIG
 
-#elif (defined( __linux__ ) || defined(__APPLE__) || defined( __MINGW32 )) && !defined( __ZAURUS__ )
+#elif (defined( __linux__ ) || defined(__APPLE__) || defined( __MINGW32__ )) && !defined( __ZAURUS__ )
 
 #define OUTPUT(x)	x
 #define SMALL(x)	x

@@ -200,6 +200,16 @@ bool minScriptInterpreter::GetDebugModus() const
     return m_bDebug;
 }
 
+void minScriptInterpreter::SetDbgModus( bool bDebug )
+{
+    m_bDbg = bDebug;
+}
+
+bool minScriptInterpreter::GetDbgModus() const
+{
+    return m_bDbg;
+}
+
 void minScriptInterpreter::DumpAllFunctionPrototypes( ostream & aStream ) const
 {
 	m_aEnvironment.DumpAllFunctionPrototypes( aStream );
@@ -229,6 +239,7 @@ bool minScriptInterpreter::Run( const string & sScript, minInterpreterValue & aR
 			// Callstack-Eintrag erzeugen, ausfuehren und Callstack-Eintrag wieder loeschen
 			m_aEnvironment.PushCallStackItem( "__main()" );
 			m_aEnvironment.SetDebugMode( m_bDebug );
+            m_aEnvironment.SetDbgMode( m_bDbg );
 			unsigned long nStartTime = minGetCurrentTickCount();
 			try {
 				m_bRunOk = pNode->Execute( /*bGetLValue*/false, aReturnValueOut, m_aEnvironment );
@@ -434,10 +445,10 @@ void minScriptInterpreter::ShowErrorPosition()
 		cout << "Script until Error:  " << string( m_aTokenizer.GetText(), 0, m_aTokenizer.GetErrorPos() ) << endl;
 		cout << endl;
 	}
-	else
-	{
-		cout << "NO ERROR !" << endl;
-	}
+	//else
+	//{
+	//	cout << "NO ERROR !" << endl;
+	//}
 }
 
 //*************************************************************************
@@ -549,7 +560,7 @@ int string_find( const char * sString, const char * sSearchText )
 {
 	string s( sString );
 
-	return s.find( sSearchText );
+	return (int)s.find( sSearchText );
 }
 
 string string_substr( const char * s, int iStartPos, int iLength )
@@ -559,7 +570,7 @@ string string_substr( const char * s, int iStartPos, int iLength )
 
 int string_length( const char * s )
 {
-    return strlen( s );
+    return (int)strlen( s );
 }
 
 char string_at( const char * s, int iPos )
@@ -604,7 +615,7 @@ int my_fgets( string & s, long hFile )
 	if( fgets( sBuffer, c_iMAX, pFile ) )
 	{
 		s = sBuffer;
-		return s.length();
+		return (int)s.length();
 	}
 
 	return 0;
@@ -638,7 +649,7 @@ static char _GetDirectorySeparator()
 // Hilfsfunktion fuer SplitPath()
 static void _InsertChar( char * sBuffer, char ch )
 {
-	int nLen = strlen( sBuffer );
+	size_t nLen = strlen( sBuffer );
 	sBuffer[ nLen ] = ch;
 	sBuffer[ nLen+1 ] = 0;
 }
@@ -648,7 +659,7 @@ static void _InsertChar( char * sBuffer, char ch )
 static void _RotateString( char * sBuffer )
 {
 	char sBuf[512];
-	int nLen = strlen( sBuffer );
+	size_t nLen = strlen( sBuffer );
 	for( int i=0; i<nLen; i++ )
 	{
 		sBuf[ nLen-i-1 ] = sBuffer[i];
@@ -679,7 +690,7 @@ bool SplitPath( const char * sPath, string & sDrive, string & sDir, string & sFi
 	strcpy( sBuffer, "" );
 	bool bFoundExt = false;
 	bool bFoundFile = false;
-	for( int i=strlen( sPath )-1; i>=0; i-- )
+	for( int i=(int)strlen( sPath )-1; i>=0; i-- )
 	{
 		if( !bFoundExt && sPath[i]=='.' )
 		{

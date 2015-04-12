@@ -45,6 +45,8 @@
 #include "mstl_vector.h"
 #include "mstl_iostream.h"
 
+#include "platform.h"
+
 //*************************************************************************
 #include "dllexport.h"
 #include "minhandle.h"
@@ -124,7 +126,7 @@ public:
 	virtual ~minNativeFcnWrapperBaseAdapter();
 
 	const string &						GetFunctionName() const { return m_sFcnName; }
-	int									GetFunctionTyp() const	{ return m_aVarList.size(); }
+	int									GetFunctionTyp() const	{ return (int)m_aVarList.size(); }
 	minInterpreterType					GetReturnType() const	{ return m_aReturnType; }
 	const minVariableDeclarationList &	GetArgumentList() const { return m_aVarList; }
 
@@ -174,14 +176,19 @@ public:
 	// liefert die Wertigkeit des Operators
 	virtual int  GetOperatorLevel() const						{ return -1; }
 
-	virtual bool Execute( int nAccessModus, /*0==Value, 1==L-Value, 2==Testen_fuer_L-Value(keine Fehlermeldung erzeugen)*/
-						  minInterpreterValue & aReturnValOut,
-						  minInterpreterEnvironment & aEnv );
+    bool Execute( int nAccessModus, /*0==Value, 1==L-Value, 2==Testen_fuer_L-Value(keine Fehlermeldung erzeugen)*/
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut )	{ return false; } )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
 	static long & GetCountRef()									{ return m_nCount; }
 
+protected:
+    virtual bool DoExecute( int nAccessModus, /*0==Value, 1==L-Value, 2==Testen_fuer_L-Value(keine Fehlermeldung erzeugen)*/
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
+    
 private:
 	string		m_sTypeName;
 	// zum Debuggen
@@ -212,10 +219,12 @@ class minEmptyNode : public minInterpreterNode
 public:
 	minEmptyNode() : minInterpreterNode( _EMPTYNODE ) {}
 
-	virtual bool Execute( int nAccessModus, 
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv )	{ return true; }
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut )	{ sCodeOut = ";"; return true; } )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv )	{ return true; }
 };
 
 //*************************************************************************
@@ -227,10 +236,12 @@ public:
 		  m_sCommentStrg( sCommentStrg ) 
 	{}
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv )	{ return true; }
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut )	{ sCodeOut = m_sCommentStrg; return true; } )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv )	{ return true; }
 
 private:
 	string					m_sCommentStrg;
@@ -245,11 +256,13 @@ public:
 		  m_aValue( aValue ) 
 	{}
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterValue		m_aValue;
@@ -266,11 +279,13 @@ public:
 
 	virtual string	GetInfo() const								{ return m_sName; }	
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 
 private:
 	string					m_sName;
@@ -292,9 +307,6 @@ public:
 
 	virtual bool NeedStackItem() const							{ return true; }
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
@@ -315,6 +327,11 @@ public:
 
 	virtual const StringListT &	GetAllTemplateTypes() const		{ return m_aTemplateTypes; }
 
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
+    
 private:
 	bool IsArray() const										{ return m_nArraySize!=-1; }
 
@@ -358,11 +375,13 @@ public:
 	const minTemplateNode * GetTemplate() const					{ return m_pTemplate; }
 	minInterpreterType GetTemplateType( const string & sTypeName, const StringListT & aRealTypes, const minInterpreterEnvironment & aEnv, int iStackDelta ) const;
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 
 private:
 	string						m_sName;
@@ -381,9 +400,6 @@ public:
 	minClassBlockNode( const minParserItemList & aMethodList, const minParserItemList & aVariableList, const minParserItemList & aConstructorList, minHandle<minInterpreterNode> hDestructorNode );
 	virtual ~minClassBlockNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
@@ -397,6 +413,11 @@ public:
 	SMALL( const minParserItemList	&			GetMethods() const		{ return m_aMethodNodeContainer; } )
 	SMALL( const minParserItemList	&			GetConstructors() const	{ return m_aConstructorNodeContainer; } )
 	SMALL( const minHandle<minInterpreterNode>	GetDestructor() const	{ return m_hDestructorNode; } )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 
 private:
 	minParserItemList				m_aMethodNodeContainer;
@@ -412,13 +433,15 @@ public:
 	minTemplateNode( const StringListT & aTemplateTypes, minInterpreterNode * pClass );
 	virtual ~minTemplateNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 //	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
 	minInterpreterType GetTemplateType( const string & sTypeName, const StringListT & aRealTypes, const minInterpreterEnvironment & aEnv, int iStackDelta ) const;
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 
 private:
 	StringListT						m_aTemplateTypes;
@@ -516,9 +539,6 @@ public:
 	{}
 	virtual ~minInterpreterFunctionDeclarationNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
@@ -526,6 +546,11 @@ public:
 	virtual bool DoExecuteFcnBlock( minInterpreterValue & aReturnValOut, 
 									minInterpreterEnvironment & aEnv );
 	virtual minParserItemList GetInitList() const;
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterNode *			m_pCode;		// ist Eigentuemer
@@ -573,13 +598,15 @@ public:
 
 	virtual string	GetInfo() const								{ return "call="+m_sName+"()"; }	
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
 	const string &	GetName() const								{ return m_sName; }
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                         minInterpreterValue & aReturnValOut,
+                         minInterpreterEnvironment & aEnv );
 
 private:
 	bool	IsManglingNameCacheOk() const						{ return m_sManglingNameCache!=string( _CACHE_NOT_INIT ); }
@@ -631,7 +658,8 @@ public:
 		: minInterpreterNode( "ThisNode" )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -644,7 +672,8 @@ public:
 		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, pNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -658,7 +687,8 @@ public:
 		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -671,7 +701,8 @@ public:
 		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -684,7 +715,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -700,10 +732,6 @@ public:
 	{}
 	virtual ~minNewOperatorNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut,
-						  minInterpreterEnvironment & aEnv );
-
 	void SetType( minInterpreterType aType )							{ m_aType = aType; }
 	void SetConstructorCall( minInterpreterNode * pConstructorCall )	{ m_pConstructorCall = pConstructorCall; }
 
@@ -711,6 +739,11 @@ public:
 
 	virtual const StringListT &	GetAllTemplateTypes() const				{ return m_aTemplateTypes; }
 
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
+    
 private:
 	minInterpreterType		m_aType;
 	minInterpreterNode *	m_pConstructorCall;
@@ -725,7 +758,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -739,7 +773,8 @@ public:
 		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -752,7 +787,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -765,7 +801,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -778,7 +815,8 @@ public:
 		: minOperatorNode( sOperator, HIGHEST_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -791,7 +829,8 @@ public:
 		: minOperatorNode( sOperator, HIGHEST_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -805,7 +844,8 @@ public:
 		: minOperatorNode( sOperator, ASSIGN_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -818,7 +858,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -831,7 +872,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -844,7 +886,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -857,7 +900,8 @@ public:
 		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -870,7 +914,8 @@ public:
 		: minOperatorNode( sOperator, COMMA_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -883,7 +928,8 @@ public:
 		: minOperatorNode( sOperator, ADD_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -896,7 +942,8 @@ public:
 		: minOperatorNode( sOperator+string("sign"), UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -909,7 +956,8 @@ public:
 		: minOperatorNode( sOperator, SUB_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -922,7 +970,8 @@ public:
 		: minOperatorNode( sOperator+string("sign"), UNARY_OPERATOR_LEVEL, 0, 0 )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -935,7 +984,8 @@ public:
 		: minOperatorNode( sOperator, MULT_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -948,7 +998,8 @@ public:
 		: minOperatorNode( sOperator, DIV_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -961,7 +1012,8 @@ public:
 		: minOperatorNode( sOperator, DIV_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -975,7 +1027,8 @@ public:
 		  m_bLeftShift( bLeftShift )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 
@@ -992,7 +1045,8 @@ public:
 		  m_bLessEqual( bLessEqual )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 
@@ -1009,7 +1063,8 @@ public:
 		  m_bMoreEqual( bMoreEqual )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 
@@ -1025,7 +1080,8 @@ public:
 		: minOperatorNode( sOperator, EQUAL_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -1038,7 +1094,8 @@ public:
 		: minOperatorNode( sOperator, EQUAL_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -1051,7 +1108,8 @@ public:
 		: minOperatorNode( sOperator, LOG_AND_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -1064,7 +1122,8 @@ public:
 		: minOperatorNode( sOperator, LOG_OR_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -1076,8 +1135,9 @@ public:
 	minBinAndOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
 		: minOperatorNode( sOperator, BIN_AND_LEVEL, pLeftNode, pRightNode )
 	{}
-
-	virtual bool Execute( int nAccessModus,
+    
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -1090,7 +1150,8 @@ public:
 		: minOperatorNode( sOperator, BIN_OR_LEVEL, pLeftNode, pRightNode )
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 };
@@ -1105,11 +1166,13 @@ public:
 	{}
 	virtual ~minParenthisNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterNode * 	m_pNode;		// ist Eigentuemer
@@ -1125,14 +1188,16 @@ public:
 	{}
 	virtual ~minBlockNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
 	// eigenes Interface:
 	const minParserItemList & GetAllNodes() const;
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 
 private:
 	bool NeedElementsStackItem() const;
@@ -1153,10 +1218,12 @@ public:
 	{}
 	virtual ~minTypedefNode();
 
-	virtual bool Execute( int nAccessModus,
+    SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut, 
 						  minInterpreterEnvironment & aEnv );
-	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 
 private:
 	minInterpreterType		m_aOldType;
@@ -1175,14 +1242,16 @@ public:
 	{}
 	virtual ~minCaseLabelNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
 	int		GetConstantValue( minInterpreterEnvironment & aEnv ) const;
 	bool	IsDefaultLabel() const;
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterNode *	m_pConstExpressionNode;	// ist Eigentuemer
@@ -1200,11 +1269,13 @@ public:
 	{}
 	virtual ~minSwitchNode();
 
-	virtual bool Execute( int nAccessModus,
+    SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
+    SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut, 
 						  minInterpreterEnvironment & aEnv );
-	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
-	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
 private:
 	minInterpreterNode * 	m_pExpressionNode;	// ist Eigentuemer
@@ -1222,11 +1293,13 @@ public:
 	{}
 	virtual ~minWhileNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterNode * 	m_pExpressionNode;	// ist Eigentuemer
@@ -1244,10 +1317,12 @@ public:
 	{}
 	virtual ~minDoNode();
 
-	virtual bool Execute( int nAccessModus,
+    SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut, 
 						  minInterpreterEnvironment & aEnv );
-	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 
 private:
 	minInterpreterNode * 	m_pExpressionNode;	// ist Eigentuemer
@@ -1270,10 +1345,12 @@ public:
 	{}
 	virtual ~minForNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterNode * 	m_pInitExpressionNode;	// ist Eigentuemer
@@ -1296,10 +1373,12 @@ public:
 	{}
 	virtual ~minIfNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterNode * 	m_pExpressionNode;		// ist Eigentuemer
@@ -1317,10 +1396,12 @@ public:
 	{}
 	virtual ~minSizeofNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
+
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 
 private:
 	minInterpreterNode *	m_pExpressionNode;		// ist Eigentuemer
@@ -1336,11 +1417,12 @@ public:
 	{}
 	virtual ~minReturnNode();
 
-	virtual bool Execute( int nAccessModus,
-						  minInterpreterValue & aReturnValOut, 
-						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
 
+protected:
+    virtual bool DoExecute( int nAccessModus,
+                           minInterpreterValue & aReturnValOut,
+                           minInterpreterEnvironment & aEnv );
 private:
 	minInterpreterNode *	m_pExpressionNode;		// ist Eigentuemer
 };
@@ -1353,7 +1435,8 @@ public:
 		: minInterpreterNode( "BreakNode" ) 
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut, 
 						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
@@ -1367,7 +1450,8 @@ public:
 		: minInterpreterNode( "ContinueNode" ) 
 	{}
 
-	virtual bool Execute( int nAccessModus,
+protected:
+	virtual bool DoExecute( int nAccessModus,
 						  minInterpreterValue & aReturnValOut,
 						  minInterpreterEnvironment & aEnv );
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
@@ -1445,7 +1529,7 @@ typedef list<minInterpreterValue> _InterpreterValueContainer;
 
 // Vorausdeklaration (ehemals inline)
 static string FindClassForMethod( const minInterpreterEnvironment & aEnv, const string & sClassScope, const string & sClassName, const string & sMethodName, bool bIsSearchInBaseClass, bool bTestVirtual );
-static bool ExecuteConstructorHelper( const string & sClassName, minInterpreterValue & aReturnValOut, minInterpreterNode * pConstructorCall, minInterpreterEnvironment & aEnv );
+static bool DoExecuteConstructorHelper( const string & sClassName, minInterpreterValue & aReturnValOut, minInterpreterNode * pConstructorCall, minInterpreterEnvironment & aEnv );
 static void ExecuteDestructorHelper( minInterpreterValue & aVar, minInterpreterEnvironment & aEnv );
 static void ExecuteElementOperatorHelper( int nAccessModus, minInterpreterValue & aLeftVal, minInterpreterValue & aReturnValOut, minInterpreterNode * pRightNode, minInterpreterEnvironment & aEnv );
 

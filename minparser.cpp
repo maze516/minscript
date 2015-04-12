@@ -912,12 +912,12 @@ bool minParser::ParseConstructorInitList( const string & sClassName, minParserIt
 
 			string sBaseClass = aToken.GetString();
 
-			if( false /*!IsBaseClass( sClassName, aToken.GetString() )*/ )
-			{
-				// ERROR
-				SetError( ERROR_IN_BASECLASS_INIT );
-				return false;
-			}
+			//if( false /*!IsBaseClass( sClassName, aToken.GetString() )*/ )
+			//{
+			//	// ERROR
+			//	SetError( ERROR_IN_BASECLASS_INIT );
+			//	return false;
+			//}
 
 			// jetzt muss eine Klammer mit einer Liste von Ausdruecken folgen:
 			if( PeekRealToken( aToken ) && aToken.IsParenthisOpen() )
@@ -1566,7 +1566,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 							aEnv.SetSilentMode( true );
 							if( pArraySizeExpression->Execute( /*bGetLValue*/false, aSizeVal, aEnv ) )
 							{
-								nArraySize = aSizeVal.GetInt();
+								nArraySize = (int)aSizeVal.GetInt();
 							}
 							delete pArraySizeExpression;
 							pArraySizeExpression = 0;
@@ -2029,7 +2029,7 @@ bool minParser::IsBuildInType( const minToken & aPeekedToken ) const
 
 bool minParser::IsTokenValidType( const minToken & aPeekedToken ) const
 {
-	int nId = aPeekedToken.GetId();
+	//int nId = (int)aPeekedToken.GetId();
 	if( IsBuildInType( aPeekedToken ) || 
 		IsUserType( aPeekedToken.GetString() ) ||
 		IsTemplateType( aPeekedToken.GetString() ) ||			// neu seit 14.2.2003
@@ -2316,12 +2316,12 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				{
 					pLeft = new minVariableNode( aLastToken.GetString()/*, aIpType*/ );
 				}
-				else
-				{
-					// Variable ist nicht bekannt !!!
-					SetError( UNKNOWN_VARIABLE );
-					return false;
-				}
+				//else
+				//{
+				//	// Variable ist nicht bekannt !!!
+				//	SetError( UNKNOWN_VARIABLE );
+				//	return false;
+				//}
 			}
 		}
 		else if( aToken.IsConstant() )

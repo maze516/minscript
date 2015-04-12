@@ -467,9 +467,18 @@ bool minInterpreterNode::Dump( ostream & aStream, const string & sSpace ) const
 }
 #endif
 
-bool minInterpreterNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )	
-{ 
-	return false; 
+bool minInterpreterNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+{
+    if( aEnv.IsDbgMode() )
+    {
+        aEnv.ProcessDbg( this );
+    }
+	return DoExecute( nAccessModus, aReturnValOut, aEnv );
+}
+
+bool minInterpreterNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+{
+    return false;
 }
 
 //*************************************************************************
@@ -482,7 +491,7 @@ minForkNode::~minForkNode()
 
 //*************************************************************************
 
-bool minConstantNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )	
+bool minConstantNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )	
 { 
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -509,7 +518,7 @@ bool minConstantNode::Dump( ostream & aStream, const string & sSpace ) const
 
 //*************************************************************************
 
-bool minVariableNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minVariableNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	minHandle<minInterpreterValue> hValue = aEnv.GetValueForVariable( m_sName );
 
@@ -614,7 +623,7 @@ bool minVariableDeclarationNode::IsValidMemberDeclaration() const
 }
 
 // Bem.: diese Methode und FunctionCallNode sind die einzigen Stellen im Programm in dem Variablen angelegt und am Environment registriert werden !!!
-bool minVariableDeclarationNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minVariableDeclarationNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -689,7 +698,7 @@ bool minVariableDeclarationNode::Execute( int nAccessModus, minInterpreterValue 
 
 							if( m_pInitArrayExpression && m_pInitArrayExpression->Execute( /*bGetLValue*/false, aSizeVal, aEnv ) )
 							{
-								m_nArraySize = aSizeVal.GetInt();
+								m_nArraySize = (int)aSizeVal.GetInt();
 							}
 							else
 							{
@@ -880,7 +889,7 @@ bool minClassDeclarationNode::ExecuteDestructor( minInterpreterEnvironment & aEn
 		minFunctionCallNode aBaseDestructor( "~"+(*aIter), /*keine Argumente*/minParserItemList() );
 
 		minInterpreterValue aTempVal;
-		bool bOk = aBaseDestructor.Execute( /*nAccessModus*/0, aTempVal, aEnv );
+		/*bool bOk =*/ aBaseDestructor.Execute( /*nAccessModus*/0, aTempVal, aEnv );
 
 		++aIter;
 	}
@@ -888,7 +897,7 @@ bool minClassDeclarationNode::ExecuteDestructor( minInterpreterEnvironment & aEn
 	return bOk;
 }
 
-bool minClassDeclarationNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minClassDeclarationNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -952,7 +961,7 @@ minClassBlockNode::~minClassBlockNode()
 {
 }
 
-bool minClassBlockNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minClassBlockNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	// hier ist nichts zu tun !
 	return true;
@@ -1113,7 +1122,7 @@ minInterpreterType minTemplateNode::GetTemplateType( const string & sTypeName, c
 	return minInterpreterType();
 }
 
-bool minTemplateNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minTemplateNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	// Aufruf an die eigentliche Klasse weiterreichen
 	if( m_pClass )
@@ -1270,7 +1279,7 @@ minInterpreterFunctionDeclarationNode::~minInterpreterFunctionDeclarationNode()
 	delete m_pCode;
 }
 
-bool minInterpreterFunctionDeclarationNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minInterpreterFunctionDeclarationNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -1660,7 +1669,7 @@ minFunctionCallNode::~minFunctionCallNode()
 		b) gibt es mehrere, dann fuehre Name-Mangling durch, merke den Mangling-String fue den naechsen Aufruf
 		   (Mangling-Cache, der durch erstmaliges ausfuehren von Execute aktualisiert wird)
 */
-bool minFunctionCallNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -2107,7 +2116,7 @@ bool minOperatorNode::Dump( ostream & aStream, const string & sSpace ) const
 
 //*************************************************************************
 
-bool minThisNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minThisNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -2147,7 +2156,7 @@ bool minThisNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut
 //*************************************************************************
 
 // fuer Pre-Processor Implementation: existiert ein Symobl ?
-bool minExistsOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minExistsOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -2176,7 +2185,7 @@ bool minExistsOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRe
 #ifdef USEBIG
 
 // fuer Pre-Processor Implementation: existiert ein Symobl ?
-bool minDereferenceExistsOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minDereferenceExistsOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -2201,7 +2210,7 @@ bool minDereferenceExistsOperatorNode::Execute( int nAccessModus, minInterpreter
 
 //*************************************************************************
 
-bool minTypeofOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minTypeofOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -2220,7 +2229,7 @@ bool minTypeofOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRe
 
 //*************************************************************************
 
-bool minDebugHaltNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minDebugHaltNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( m_pRightNode )
 	{
@@ -2251,7 +2260,7 @@ minNewOperatorNode::~minNewOperatorNode()
 		delete m_pConstructorCall;
 }
 
-bool minNewOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minNewOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -2296,7 +2305,7 @@ bool minNewOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minDeleteOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minDeleteOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pRightNode )
 	{
@@ -2337,7 +2346,7 @@ bool minDeleteOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRe
 
 //*************************************************************************
 
-bool minPointerDereferenceOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minPointerDereferenceOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( m_pLeftNode && m_pRightNode )
 	{
@@ -2374,7 +2383,7 @@ bool minPointerDereferenceOperatorNode::Execute( int nAccessModus, minInterprete
 
 //*************************************************************************
 
-bool minDereferenceOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minDereferenceOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( m_pRightNode )
 	{
@@ -2418,7 +2427,7 @@ bool minDereferenceOperatorNode::Execute( int nAccessModus, minInterpreterValue 
 
 //*************************************************************************
 
-bool minAddressOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minAddressOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( m_pRightNode )
 	{
@@ -2447,7 +2456,7 @@ bool minAddressOperatorNode::Execute( int nAccessModus, minInterpreterValue & aR
 
 //*************************************************************************
 
-bool minObjectElementNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minObjectElementNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( m_pLeftNode && m_pRightNode )
 	{
@@ -2475,7 +2484,7 @@ bool minObjectElementNode::Execute( int nAccessModus, minInterpreterValue & aRet
 
 //*************************************************************************
 
-bool minArrayElementNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minArrayElementNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( m_pLeftNode && m_pRightNode )
 	{
@@ -2489,7 +2498,7 @@ bool minArrayElementNode::Execute( int nAccessModus, minInterpreterValue & aRetu
 				minHandle<minCallStackItem> hCallStack = *aLeftVal.GetObjectCallStackItem();
 
 				// TODO: ggf. kann der Zugriff auf den Index verbessert/verschnellert werden !!!
-				minInterpreterVariable * pVariableOut = 0;
+				//minInterpreterVariable * pVariableOut = 0;
 				string sTempIndexName = "";
 				minInterpreterValue aIndexOut;
 				if( m_pRightNode->Execute( /*nAccessModus*/0, aIndexOut, aEnv ) )
@@ -2547,7 +2556,7 @@ bool minArrayElementNode::Execute( int nAccessModus, minInterpreterValue & aRetu
 
 //*************************************************************************
 
-bool minAssignOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minAssignOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( m_pLeftNode && m_pRightNode )
 	{
@@ -2586,7 +2595,7 @@ bool minAssignOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRe
 
 //*************************************************************************
 
-bool minIncOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minIncOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && (m_pRightNode || m_pLeftNode) )
 	{
@@ -2619,7 +2628,7 @@ bool minIncOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minDecOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minDecOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && (m_pRightNode || m_pLeftNode) )
 	{
@@ -2649,7 +2658,7 @@ bool minDecOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minNotOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minNotOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pRightNode )
 	{
@@ -2666,7 +2675,7 @@ bool minNotOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minInvertOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minInvertOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pRightNode )
 	{
@@ -2683,7 +2692,7 @@ bool minInvertOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRe
 
 //*************************************************************************
 
-bool minCommaOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minCommaOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2701,7 +2710,7 @@ bool minCommaOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRet
 
 //*************************************************************************
 
-bool minAddOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minAddOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2736,7 +2745,7 @@ bool minAddOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minPlusOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minPlusOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pRightNode )
 	{
@@ -2762,7 +2771,7 @@ bool minPlusOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetu
 
 //*************************************************************************
 
-bool minSubOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minSubOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2787,7 +2796,7 @@ bool minSubOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minMinusOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minMinusOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pRightNode )
 	{
@@ -2816,7 +2825,7 @@ bool minMinusOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRet
 
 //*************************************************************************
 
-bool minMultOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minMultOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2841,7 +2850,7 @@ bool minMultOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetu
 
 //*************************************************************************
 
-bool minDivOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minDivOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2875,7 +2884,7 @@ bool minDivOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minModOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minModOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2892,7 +2901,7 @@ bool minModOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 
 //*************************************************************************
 
-bool minShiftOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minShiftOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2916,7 +2925,7 @@ bool minShiftOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRet
 
 //*************************************************************************
 
-bool minLessOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minLessOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2941,7 +2950,7 @@ bool minLessOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetu
 
 //*************************************************************************
 
-bool minMoreOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minMoreOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2965,7 +2974,7 @@ bool minMoreOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRetu
 
 //*************************************************************************
 
-bool minEqualOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minEqualOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2982,7 +2991,7 @@ bool minEqualOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRet
 
 //*************************************************************************
 
-bool minNotEqualOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minNotEqualOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -2999,7 +3008,7 @@ bool minNotEqualOperatorNode::Execute( int nAccessModus, minInterpreterValue & a
 
 //*************************************************************************
 
-bool minLogAndOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minLogAndOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -3030,7 +3039,7 @@ bool minLogAndOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRe
 
 //*************************************************************************
 
-bool minLogOrOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minLogOrOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -3060,7 +3069,7 @@ bool minLogOrOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRet
 
 //*************************************************************************
 
-bool minBinAndOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minBinAndOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -3077,7 +3086,7 @@ bool minBinAndOperatorNode::Execute( int nAccessModus, minInterpreterValue & aRe
 
 //*************************************************************************
 
-bool minBinOrOperatorNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minBinOrOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) && m_pLeftNode && m_pRightNode )
 	{
@@ -3099,7 +3108,7 @@ minParenthisNode::~minParenthisNode()
 	delete m_pNode;
 }
 
-bool minParenthisNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minParenthisNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	return m_pNode->Execute( nAccessModus, aReturnValOut, aEnv );
 }
@@ -3138,7 +3147,7 @@ minBlockNode::~minBlockNode()
 	m_aNodeContainer.erase( m_aNodeContainer.begin(), m_aNodeContainer.end() );
 }
 
-bool minBlockNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minBlockNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3275,7 +3284,7 @@ minTypedefNode::~minTypedefNode()
 		delete m_pClassDeclarationNode;
 }
 
-bool minTypedefNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minTypedefNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	// hier ist nichts zu tun, da alles schon im Parser erledigt wird (Typedef-Ersetzungs-Liste)
 	// Ausnahme: es ist eine struct/class-Deklaration enthalten, diese muss nun ausgefuehrt werden !
@@ -3315,7 +3324,7 @@ minCaseLabelNode::~minCaseLabelNode()
 	delete m_pConstExpressionNode;
 }
 
-bool minCaseLabelNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minCaseLabelNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3362,7 +3371,7 @@ int minCaseLabelNode::GetConstantValue( minInterpreterEnvironment & aEnv ) const
 
 		m_pConstExpressionNode->Execute( /*nAccessModus*/0, aVal, aEnv );
 
-		return aVal.GetInt();
+		return (int)aVal.GetInt();
 	}
 	return -1;
 }
@@ -3379,7 +3388,7 @@ minSwitchNode::~minSwitchNode()
 	delete m_pExpressionNode;
 }
 
-bool minSwitchNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minSwitchNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3391,7 +3400,7 @@ bool minSwitchNode::Execute( int nAccessModus, minInterpreterValue & aReturnValO
 			try {
 				minHandle<minInterpreterNode> hDefaultNode;
 				bool bFound = false;
-				int iValue	= aExprVal.GetInt();
+				int iValue	= (int)aExprVal.GetInt();
 
 
 				minParserItemList::iterator aIter = m_aCaseLabelList.begin();
@@ -3489,7 +3498,7 @@ minWhileNode::~minWhileNode()
 	delete m_pStatementNode;
 }
 
-bool minWhileNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minWhileNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3558,7 +3567,7 @@ minDoNode::~minDoNode()
 	delete m_pStatementNode;
 }
 
-bool minDoNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minDoNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3612,7 +3621,7 @@ minForNode::~minForNode()
 	delete m_pStatementNode;
 }
 
-bool minForNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minForNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3678,7 +3687,7 @@ minIfNode::~minIfNode()
 	delete m_pElseStatementNode;
 }
 
-bool minIfNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minIfNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3730,7 +3739,7 @@ minSizeofNode::~minSizeofNode()
 	delete m_pExpressionNode;
 }
 
-bool minSizeofNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minSizeofNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3761,7 +3770,7 @@ minReturnNode::~minReturnNode()
 	delete m_pExpressionNode;
 }
 
-bool minReturnNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minReturnNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3797,7 +3806,7 @@ bool minReturnNode::GenerateCppCode( string & sCodeOut )
 
 //*************************************************************************
 
-bool minBreakNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minBreakNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{
@@ -3819,7 +3828,7 @@ bool minBreakNode::GenerateCppCode( string & sCodeOut )
 
 //*************************************************************************
 
-bool minContinueNode::Execute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
+bool minContinueNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValOut, minInterpreterEnvironment & aEnv )
 {
 	if( CheckLValueNode( nAccessModus, aEnv ) )
 	{

@@ -128,7 +128,7 @@ public:
 	// Ueberpruefung auf Fehlerzustand und Fehlerposition
 	bool IsError() const							{ return m_bIsError; }
 	int  GetErrorCode() const						{ return m_nErrorCode; }
-	int  GetErrorPos() const						{ return m_sProgram.size()-m_sParserString.size(); }
+	int  GetErrorPos() const						{ return (int)(m_sProgram.size()-m_sParserString.size()); }
 
 	// Abfrage des naechsten Tokens
 	bool ReadNextToken();

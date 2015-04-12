@@ -246,7 +246,9 @@ public:
 
     void SetDebugModus( bool bDebug );
     bool GetDebugModus() const;
-
+    void SetDbgModus( bool bDebug );
+    bool GetDbgModus() const;
+    
 	void InitRuntimeEnvironment();
 	void DumpAllFunctionPrototypes( ostream & aStream ) const;
 
@@ -265,6 +267,7 @@ private:
 	minParser					m_aParser;
 	bool						m_bRunOk;
 	bool						m_bDebug;
+    bool                        m_bDbg;
 
 	minInterpreterOutputInterface *	m_pOutputInterface;	// not an owner !
 };

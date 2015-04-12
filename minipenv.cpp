@@ -1316,7 +1316,7 @@ static bool GetFirstType( string & sNameInOut, string & sTypeOut )
 		if( sNameInOut.substr( 0, nSeparatorLen )==g_sManglingSeparator )
 		{
 			sNameInOut = sNameInOut.substr( nSeparatorLen, sNameInOut.length()-nSeparatorLen );
-			int nFound = sNameInOut.find( g_sManglingSeparator );
+			size_t nFound = sNameInOut.find( g_sManglingSeparator );
 
 			if( nFound==string::npos )
 			{
@@ -1390,6 +1390,7 @@ static bool IsManglingNameCompatible( const string & sName1, const string & sNam
 minInterpreterEnvironment::minInterpreterEnvironment()
 {
 	m_bDebug = false;
+    m_bDbg = false;
 	m_bIsSilent = false;
 }
 
@@ -1462,7 +1463,7 @@ string minInterpreterEnvironment::GetInfoString() const
 	char	sBuffer[c_iMaxBuffer];
 	string	sResult;
 	int		nCount = 0;
-	int		nMaxCount = m_aCallStack.size();
+	int		nMaxCount = (int)m_aCallStack.size();
 	CallStackContainerT::const_reverse_iterator aIter = m_aCallStack.rbegin();
 	while( aIter != m_aCallStack.rend() )
 	{
@@ -1473,6 +1474,18 @@ string minInterpreterEnvironment::GetInfoString() const
 		++aIter;
 	}
 	return sResult;
+}
+
+void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
+{
+    cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
+    //pCurrentNode->Dump( cout );
+    cout << "(Mdb) > ";
+    string sInput;
+    //        getline( cin, sInput )
+    cin >> sInput;
+    cout << "Input: " << sInput << endl;
+
 }
 
 void minInterpreterEnvironment::Dump() const
@@ -1530,7 +1543,7 @@ string minInterpreterEnvironment::GetLatestClassScopeForLatestObject() const
 
 		if( (sItemName.length()>1) && (sItemName.substr(0,strlen(g_sFunctionCallStart))==g_sFunctionCallStart) )
 		{
-			int iFound = sItemName.find( g_sClassMethodSeparator );
+			size_t iFound = sItemName.find( g_sClassMethodSeparator );
 			if( iFound != string::npos )
 			{
 				return sItemName.substr( 1, iFound-1 );
