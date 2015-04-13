@@ -460,13 +460,13 @@ protected:
 			minInterpreterType aReturnType, 
 			const minVariableDeclarationList & aArgumentDeclarationList )
 		: minInterpreterNode( _FUNCTIONDECLARATIONNODE ),
-		  m_sName( sName ), 
+          m_aReturnType( aReturnType ),
+          m_aClassScope( None ),
+          m_aArgumentDeclarationList( aArgumentDeclarationList ),
+          m_sName( sName ),
 		  m_bIsConstant( bIsConstant ),
-		  m_bIsVirtual( bIsVirtual ),
-		  m_aReturnType( aReturnType ), 
-		  m_aClassScope( None ),
-		  m_aArgumentDeclarationList( aArgumentDeclarationList )
-	{
+          m_bIsVirtual( bIsVirtual )
+    {
 		UpdateArgumentList();
 	}
 

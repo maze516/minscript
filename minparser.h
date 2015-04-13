@@ -145,7 +145,7 @@ public:
 	// Diese Liste kann von einem minCodeProcessor abgearbeitet werden.
 	bool Parse();
 	// liefert den Parser-Knoten, der das Programm raepraesentiert
-	minInterpreterNode * const GetProgramNode() const	{ return m_pProgramNode; }
+    minInterpreterNode * const GetProgramNode() const	{ return m_pProgramNode; }
 
 	bool IsError() const						{ return m_bIsError; }
 	int GetErrorCode() const					{ return m_nErrorCode; }

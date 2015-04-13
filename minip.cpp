@@ -172,9 +172,9 @@ minScriptInterpreter *	g_pActualGlobalInterpreter = 0;
 
 
 minScriptInterpreter::minScriptInterpreter( bool bDebug )
-	: m_aTokenizer(),
-      m_aParser( &m_aTokenizer ),
-	  m_aEnvironment(),
+    : m_aEnvironment(),
+      m_aTokenizer(),
+      m_aParser( &m_aTokenizer ),	  
       m_bRunOk( false ),
       m_bDebug( bDebug ),
 	  m_pOutputInterface( 0 )
@@ -660,7 +660,7 @@ static void _RotateString( char * sBuffer )
 {
 	char sBuf[512];
 	size_t nLen = strlen( sBuffer );
-	for( int i=0; i<nLen; i++ )
+    for( size_t i=0; i<nLen; i++ )
 	{
 		sBuf[ nLen-i-1 ] = sBuffer[i];
 	}

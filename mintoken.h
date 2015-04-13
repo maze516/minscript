@@ -186,9 +186,9 @@ class MINDLLEXPORT minToken
 public:
 	minToken( minTokenType aType = Empty, const string & sText = "", int nId = 0, int iLineNo = 0 )
 		: m_aType(aType), 
-		  m_sText(sText), 
 		  m_nId(nId), 
-		  m_iLineNo(iLineNo)
+          m_sText(sText),
+          m_iLineNo(iLineNo)
 	{}
 
 	// diverse Operatoren
