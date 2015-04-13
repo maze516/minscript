@@ -125,7 +125,7 @@ long minLoadLibrary( const char * sDllName )
 bool minFreeLibrary( long hDllModule )
 {
 #ifdef _WIN32
-	return FreeLibrary( (HMODULE)hDllModule );
+	return FreeLibrary( (HMODULE)hDllModule )==TRUE;
 #endif
 #ifdef __IBMCPP__
 	return DosFreeModule( (HMODULE)hDllModule )==0;

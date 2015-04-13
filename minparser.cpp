@@ -100,6 +100,8 @@ bool minParser::ParseFunction()
 {
 	m_pTokenizer->InitProcessing();
 
+	SkipWhitespaces();
+
 	minInterpreterNode * pNode = 0;
 	if( ParseVarDeclarationOrFunction( pNode, /*bIsConst*/false, /*bIsVirtual*/false ) )
 	{
@@ -129,7 +131,9 @@ bool minParser::ParseStatement( minInterpreterNode * & pNodeOut, const string * 
 	minToken aToken;
 	bool bOk = true;
 
-	if( bOk && !m_pTokenizer->IsError() && PeekRealToken( aToken ) )
+	SkipWhitespaces();
+
+	if (bOk && !m_pTokenizer->IsError() && PeekRealToken(aToken))
 	{
 		//cout << aToken.GetString() << endl;
 
@@ -204,9 +208,33 @@ bool minParser::ParseStatement( minInterpreterNode * & pNodeOut, const string * 
 	return bOk && !m_pTokenizer->IsError();
 }
 
+void minParser::SkipWhitespaces()
+{
+	// skip whitespace tokens
+	bool bContinue = true;
+	while (bContinue)
+	{
+		minToken aToken;
+		if (PeekRealToken(aToken))
+		{
+			if (aToken.IsWhitespace())
+			{
+				ReadToken();
+			}
+			else
+			{
+				bContinue = false;
+			}
+		}
+
+	}
+}
+
 bool minParser::ParseBlock( minInterpreterNode * & pNodeOut, bool bNoBlockIsError )
 {
 	minInterpreterNode * pNode = 0;
+
+	SkipWhitespaces();
 
 	if( ParseForStringToken( "{" ) )
 	{

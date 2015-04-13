@@ -54,7 +54,7 @@ void RunPreProcessing( const char * sScriptStrg )
 
 	string sScript( sScriptStrg );
 	string sPreProcedScript;
-	aIp.RunPreProcessor( sScript, sPreProcedScript );
+	aIp.RunPreProcessor( true, sScript, sPreProcedScript );
 	cout << sPreProcedScript << endl;
 }
 

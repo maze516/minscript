@@ -575,7 +575,7 @@ int string_length( const char * s )
 
 char string_at( const char * s, int iPos )
 {
-    if( iPos>=0 && iPos<strlen( s ) )
+    if( iPos>=0 && iPos<(int)strlen( s ) )
         return s[iPos];
     return 0;
 }
@@ -583,7 +583,7 @@ char string_at( const char * s, int iPos )
 string string_setchar( const char * s, int iPos, char ch )
 {
     string sTemp( s );
-    if( iPos>=0 && iPos<sTemp.length() )
+    if( iPos>=0 && iPos<(int)sTemp.length() )
         sTemp[iPos] = ch;
     else
         sTemp += ch;
@@ -1008,7 +1008,7 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	// stdlib.h
 	pFcn = new NativeFcnWrapper1<string, const char *>( (NativeFcnWrapper1<string, const char *>::MyFcnType1)my_getenv, "string getenv( string sName );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
-	pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)putenv, "int putenv( string sNameValue );" );
+    pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)putenv, "int putenv( string sNameValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeVoidFcnWrapper1<int>( (NativeVoidFcnWrapper1<int>::MyFcnType1)exit, "void exit( int iValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );

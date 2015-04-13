@@ -184,11 +184,11 @@ const int TEMPLATE_ID			= 133;
 class MINDLLEXPORT minToken
 {
 public:
-	minToken()
-		: m_aType( Empty ), m_sText( "" ), m_nId( 0 )
-	{}
-	minToken( minTokenType aType, const string & sText, int nId = 0 )
-		: m_aType( aType ), m_sText( sText ), m_nId( nId )
+	minToken( minTokenType aType = Empty, const string & sText = "", int nId = 0, int iLineNo = 0 )
+		: m_aType(aType), 
+		  m_sText(sText), 
+		  m_nId(nId), 
+		  m_iLineNo(iLineNo)
 	{}
 
 	// diverse Operatoren
@@ -244,10 +244,15 @@ public:
 		return s+m_sText+s; 
 	}
 
+	int				GetLineNo() const				 { return m_iLineNo; }
+	void			SetLineNo( int iLineNo )		 { m_iLineNo = iLineNo; }
+
 private:
 	minTokenType	m_aType;
 	int				m_nId;
 	string			m_sText;
+
+	int				m_iLineNo;
 };
 
 #endif

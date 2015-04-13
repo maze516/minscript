@@ -451,7 +451,7 @@ bool minInterpreterValue::GetBool() const
 	}
 	if( m_aType.GetType()==Bool )
 	{
-		return (bool)m_aValue.m_lValue;
+		return m_aValue.m_lValue!=0;
 	}
 	return ConvertTo( Bool ).GetBool();
 }
@@ -832,7 +832,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 						return minInterpreterValue( sBuffer );
 					}
 				case Bool :
-					return minInterpreterValue( (bool)m_aValue.m_dValue );
+					return minInterpreterValue( ((int)m_aValue.m_dValue)!=0 );
 				case CharTT :
 					return minInterpreterValue( (char)m_aValue.m_dValue );
 				case Int : 
@@ -858,7 +858,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 				case CharTT :
 					return minInterpreterValue( (char)m_aValue.m_lValue );
 				case Bool :
-					return minInterpreterValue( (bool)m_aValue.m_lValue );
+					return minInterpreterValue( m_aValue.m_lValue!=0 );
 				default:
 					throw minCastError( "can not convert into int" );
 			}
@@ -877,7 +877,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					return minInterpreterValue( (double)m_aValue.m_lValue );
 					break;
 				case Bool :
-					return minInterpreterValue( (bool)m_aValue.m_lValue );
+					return minInterpreterValue( m_aValue.m_lValue!=0 );
 				case Int : 
 					return minInterpreterValue( (int)m_aValue.m_lValue );
 				default:
@@ -1351,7 +1351,7 @@ static bool IsCompatible( const string & sName1, const string & sName2 )
 
 	// Referenz muss immer am Ende des Strings stehen, wird durch die Mangling-Methoden gewaehrleistet
 	// d.h. int***&  oder double&
-	int nSeparatorLen = strlen( g_sReferenceSeparator );
+	size_t nSeparatorLen = strlen( g_sReferenceSeparator );
 	string sName1Temp = sName1;
 	string sName2Temp = sName2;	
 	if( sName1Temp.length()>=nSeparatorLen && sName1Temp.substr( sName1Temp.length()-1, nSeparatorLen )==g_sReferenceSeparator )
@@ -1391,6 +1391,7 @@ minInterpreterEnvironment::minInterpreterEnvironment()
 {
 	m_bDebug = false;
     m_bDbg = false;
+    m_bRunDbg = false;
 	m_bIsSilent = false;
 }
 
@@ -1478,14 +1479,63 @@ string minInterpreterEnvironment::GetInfoString() const
 
 void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
+    if( m_bRunDbg )
+    {
+        return;
+    }
+    
+// TODO --> script-name und line-no an token / interpreterNode dran haengen
     cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
     //pCurrentNode->Dump( cout );
-    cout << "(Mdb) > ";
-    string sInput;
-    //        getline( cin, sInput )
-    cin >> sInput;
-    cout << "Input: " << sInput << endl;
-
+    bool bContinue = true;
+    while( bContinue )
+    {
+        cout << endl << "(mdb) > ";
+        string sInput;
+        //        getline( cin, sInput )
+        cin >> sInput;
+        if( sInput=="n" )
+        {
+            cout << "next step" << endl;
+            bContinue = false;
+        }
+        else if( sInput=="c" )
+        {
+            cout << "run..." << endl;
+            bContinue = false;
+            m_bRunDbg = true;
+        }
+        else if( sInput=="w")
+        {
+            cout << "show stack size=" << GetCallStackSize() << endl;
+            CallStackContainerT::const_iterator iter = m_aCallStack.begin();
+            int i = 1;
+            while( iter!=m_aCallStack.end() )
+            {
+                cout << i << " " << (*iter)->GetInfoString() << endl;
+                ++iter;
+                ++i;
+            }
+        }
+        else if( sInput=="q")
+        {
+            cout << "exit debugging..." << endl;
+            exit(-1);
+        }
+        else if( sInput=="h")
+        {
+            cout << "show help:" << endl;
+            cout << "  n : next step" << endl;
+            cout << "  c : run" << endl;
+            cout << "  w : show call stack" << endl;
+            cout << "  h : show help" << endl;
+            cout << "  q : quit debugging" << endl;
+        }
+        else
+        {
+            cout << "Unknwown input: " << sInput << endl;
+        }
+    }
 }
 
 void minInterpreterEnvironment::Dump() const
@@ -1896,7 +1946,7 @@ bool minInterpreterEnvironment::CheckForTemplateType( minInterpreterType & aType
 
 //*************************************************************************
 
-static int g_bDebug = false;
+static bool g_bDebug = false;
 
 bool IsDebugOn()
 {

@@ -412,7 +412,7 @@ static minHandle<minInterpreterNode> CopyFunctionAndSetVoidReturnType( minHandle
 
 static bool SplitFileName( const string & sFileNameWithExt, string & sFileName )
 {
-	int iPos = sFileNameWithExt.find( "." );
+	size_t iPos = sFileNameWithExt.find( "." );
 	if( iPos != string::npos )
 	{
 		sFileName = sFileNameWithExt.substr( 0, iPos );
@@ -536,7 +536,7 @@ static bool MakeClassWrapper( const string & sDllName, string & sWrapperCode, co
 						string sFcnProtoType;
 
 						string sTempName = pFcn->GetName(); 
-						int iFindPos = sTempName.find( sMethodSeparator );
+						size_t iFindPos = sTempName.find( sMethodSeparator );
 						sTempName.replace( iFindPos, sMethodSeparator.length(), "_" );
 
 						string sMethodName = pFcn->GetName(); 
@@ -624,7 +624,7 @@ static bool MakeFunctionRegistration( string & sStubCode, minHandle<minInterpret
 		else
 			sStubCode += "pFcn = new NativeFcnWrapper";
 	}
-	sStubCode += minLTOA( aArgList.size() );
+	sStubCode += minLTOA( (int)aArgList.size() );
 
 	if( !(bIsVoidFcn && aArgList.size()==0) )
 	{
@@ -827,7 +827,7 @@ static bool MakeClassStubs( string & sStubCode, const minParserItemList & aClass
 					if( pFcn->GetClassScope() == Public )
 					{
 						string sTempName = pFcn->GetName(); 
-						int iFindPos = sTempName.find( sMethodSeparator );
+						size_t iFindPos = sTempName.find( sMethodSeparator );
 						sTempName.replace( iFindPos, sMethodSeparator.length(), "_" );
 
 						string sMethodName = pFcn->GetName(); 
@@ -993,7 +993,7 @@ static bool MakeMakefile( const minArgumentsHelper & aArgs )
 #if defined( _WIN32 )
 	sMakefile += "CC = cl\n";
 	sMakefile += "CCFLAGS = -c -GX -GR -LD\n";					// -MDd -ZI
-	sMakefile += "LINKFLAGS = -MDd -LD minscriptdll.lib\n";		// ..\\minscriptdll\\release\\
+	sMakefile += "LINKFLAGS = -MDd -LD minscriptdll.lib\n";		// ..\\minscriptdll\\release\\ 
 	sModuleExt = ".dll";
 	sObjExt = ".obj";
 #elif defined( __OS2__ )

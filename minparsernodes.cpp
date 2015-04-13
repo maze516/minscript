@@ -262,7 +262,7 @@ minNativeFcnWrapperBaseAdapter::minNativeFcnWrapperBaseAdapter( NativeFcnWrapper
 
 			// set the correct infos at the native function wrapper
 			NativeFcnWrapperBase::ReferenceArrayType aArgsReference(m_aVarList.size());
-			for( int i=0; i<m_aVarList.size(); i++ )
+			for( size_t i=0; i<m_aVarList.size(); i++ )
 			{
 				aArgsReference[i] = m_aVarList[i]->IsReference();
 			}
@@ -2666,7 +2666,7 @@ bool minNotOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aRet
 
 		if( m_pRightNode->Execute( /*nAccessModus*/0, aRightVal, aEnv ) )
 		{
-			aReturnValOut = !((bool)aRightVal.GetInt());
+			aReturnValOut = aRightVal.GetInt()==0; // old: !((bool)aRightVal.GetInt());
 			return true;
 		}
 	}

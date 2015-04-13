@@ -622,6 +622,7 @@ private:
 	string					m_sLastErrorMsg;
 	bool					m_bDebug;
     bool                    m_bDbg;
+    bool                    m_bRunDbg;
 	bool					m_bIsSilent;
 };
 

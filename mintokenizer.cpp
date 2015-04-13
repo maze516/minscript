@@ -98,7 +98,9 @@ void minTokenizer::InitCharContainer()
 minTokenizer::minTokenizer()
 	: m_bDoReplace( true ), 
 	  m_bReplayTokens( false ),
-	  m_pParsedTokenContainer( 0 )
+	  m_pParsedTokenContainer( 0 ),
+      m_iCount(0),
+      m_iLineCount(0)
 {
 #ifdef _with_digit_container
 	InitCharContainer();
@@ -122,6 +124,8 @@ bool minTokenizer::InitProcessing()
 		m_aParsedTokenIter = m_pParsedTokenContainer->begin();
 	}
 	m_iCount = 0;
+    m_iLineCount = 0;
+    cout << "PRINT " << m_sProgram << endl;
 	return true;
 }
 
@@ -174,6 +178,7 @@ bool minTokenizer::PeekNextToken( minToken & aTokenOut )
 	}
 
 	minToken aNextToken;
+	aNextToken.SetLineNo( m_iLineCount );
 
 	// ist es ein bekanntes Token	
 	// ACHTUNG: die Reihenfolge der Aufrufe ist WICHTIG (nicht aendern!)
@@ -188,6 +193,15 @@ bool minTokenizer::PeekNextToken( minToken & aTokenOut )
 		// JA
 		aTokenOut = aNextToken;
 		m_aPeekedToken = aNextToken;
+        if( aNextToken.IsNewLine() )
+        {
+            m_iLineCount++;
+            cout << "line count " << m_iLineCount << " " << m_iCount << " " << aNextToken.GetString().size() << " line=" << aNextToken.GetLineNo() << endl;
+        }
+        else
+        {
+            //cout << "TOK: " << aNextToken.GetString() << endl;
+        }
 		m_bTokenAvailable = true;
 		return true;
 	}
@@ -215,7 +229,7 @@ bool minTokenizer::GetRealToken( minToken & aTokenOut, bool bIsNewLineWhitespace
 
 bool minTokenizer::PeekRealToken( minToken & aTokenOut, bool bIsNewLineWhitespace )
 {
-	bool bOk;
+	bool bOk = false;
 
 	// Bugfix: 23.12.1999 IsComment() hinzugefuegt
 	while( !IsError() && (bOk=PeekNextToken( aTokenOut )) && 
@@ -316,7 +330,7 @@ bool minTokenizer::ReadCharIfFound( char ch )
 
 bool minTokenizer::ReadStringIfFound( const string & sString )
 {
-	int nPos = m_sParserString.find( sString.c_str(), 0, sString.size() );
+	size_t nPos = m_sParserString.find( sString.c_str(), 0, sString.size() );
 	if( nPos == 0 )
 	{
 		m_sParserString.erase( 0, sString.size() );	// erase
@@ -592,7 +606,7 @@ bool minTokenizer::CheckForKnownToken( minToken & aTokenOut, bool bRead )
 
 		const minToken &	aTempToken	= *aIter;
 		const string &		sTemp		= aTempToken.GetString();
-		int					nPos		= m_sParserString.find( sTemp.c_str(), 0, sTemp.size() );
+		size_t				nPos		= m_sParserString.find( sTemp.c_str(), 0, sTemp.size() );
 		// BEMERKUNG: BUG bis 5.6.1999 ! 
 		//   Falls der gefundene Teilstring ein Keyword ist, dann darf das auf den Teilstring folgende
 		//   Zeichen KEIN Buchstabe, Ziffer, Underscore sein (d.h. der Zeilstring darf nicht weitergehen) !!!
@@ -849,7 +863,7 @@ string minTokenizer::GetStringEscapeChar( char ch )
 
 bool minTokenizer::ReplaceStringEscapeChars( string & sStringInOut ) const
 {
-	int iPos = sStringInOut.find( g_sEscapeChar );
+	size_t iPos = sStringInOut.find( g_sEscapeChar );
 	if( iPos != string::npos )
 	{
 		while( iPos != string::npos )
@@ -868,7 +882,7 @@ bool minTokenizer::CheckForBoolToken( minToken & aTokenOut )
 	// Format: "true|false"
 
 	string	sTemp	= m_sParserString;
-	int		nSum	= 0;
+	//int		nSum	= 0;
 
 	if( ReadStringIfFound( _TRUE ) )
 	{

@@ -135,8 +135,8 @@ public:
 	bool GetNextToken( minToken & aTokenOut );
 	bool PeekNextToken( minToken & aTokenOut );
 	// liefert das naechste Token, das kein Kommentar, Whitespace, etc. ist
-	bool GetRealToken( minToken & aTokenOut, bool bIsNewLineWhitespace = true );
-	bool PeekRealToken( minToken & aTokenOut, bool bIsNewLineWhitespace = true );
+	bool GetRealToken( minToken & aTokenOut, bool bIsNewLineWhitespace = false );
+	bool PeekRealToken( minToken & aTokenOut, bool bIsNewLineWhitespace = false );
 
 	// zum merken eines Tokenizer-Zustandes
 	minTokenizerState * SaveState();
@@ -190,6 +190,7 @@ private:
 	const TokenContainerT *			m_pParsedTokenContainer;	// falls der Programmtext schon geparsed wurde 
 	TokenContainerT::const_iterator	m_aParsedTokenIter;
 	int								m_iCount;
+    int                             m_iLineCount;
 
 #ifdef _with_digit_container
 	typedef list<char>	CharContainerT;

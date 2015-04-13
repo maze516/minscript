@@ -192,6 +192,8 @@ private:
 	bool ParseTemplate( minInterpreterNode * & pNodeOut );
 	bool ParseTemplateArgumentList( StringListT & aTypeNameListOut );
 
+	void SkipWhitespaces();
+
 	bool RegisterTypedefItem( const minInterpreterType & aOldType, const string & aNewTypeString );
 	bool IsTypedefType( const string & aTypeString ) const;
 	bool GetTypedefSubstitution( const string & aTypeStringIn, minInterpreterType & aOrgTypeOut ) const;

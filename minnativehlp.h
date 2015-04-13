@@ -197,7 +197,7 @@ public:
 
 	bool IsReference( int iArgIndex ) const
 	{
-		if( iArgIndex>=0 && iArgIndex<m_aReferenceArgs.size() )
+		if( iArgIndex>=0 && iArgIndex<(int)m_aReferenceArgs.size() )
 		{
 			return m_aReferenceArgs[iArgIndex];
 		}
