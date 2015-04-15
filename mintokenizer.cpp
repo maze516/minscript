@@ -124,8 +124,8 @@ bool minTokenizer::InitProcessing()
 		m_aParsedTokenIter = m_pParsedTokenContainer->begin();
 	}
 	m_iCount = 0;
-    m_iLineCount = 0;
-    cout << "PRINT " << m_sProgram << endl;
+    m_iLineCount = 1;		// start with line number 1 !
+    //cout << "PRINT " << m_sProgram << endl;
 	return true;
 }
 
@@ -445,28 +445,28 @@ bool minTokenizer::CheckForIntToken( minToken & aTokenInOut )
 
 			if( aTempToken.GetId()==CHAR_ID )
 			{
-				aTokenInOut = minToken( Keyword, _UCHAR, UCHAR_ID );
+				aTokenInOut = minToken( Keyword, _UCHAR, UCHAR_ID, m_iLineCount );
 				bFound = true;
 			}
 			else if( aTempToken.GetId()==INT_ID )
 			{
-				aTokenInOut = minToken( Keyword, _UINT, UINT_ID );
+				aTokenInOut = minToken( Keyword, _UINT, UINT_ID, m_iLineCount );
 				bFound = true;
 			}
 			else if( aTempToken.GetId()==SHORT_ID )
 			{
-				aTokenInOut = minToken( Keyword, _USHORT, USHORT_ID );
+				aTokenInOut = minToken( Keyword, _USHORT, USHORT_ID, m_iLineCount );
 				bFound = true;
 			}
 			else if( aTempToken.GetId()==LONG_ID )
 			{
-				aTokenInOut = minToken( Keyword, _ULONG, ULONG_ID );
+				aTokenInOut = minToken( Keyword, _ULONG, ULONG_ID, m_iLineCount );
 				bFound = true;
 			}
 		}
 		else
 		{
-			aTokenInOut = minToken( Keyword, _UINT, UINT_ID );
+			aTokenInOut = minToken( Keyword, _UINT, UINT_ID, m_iLineCount );
 			bFound = true;
 		}
 	}
@@ -484,7 +484,7 @@ bool minTokenizer::CheckForIntToken( minToken & aTokenInOut )
 		{
 			if( aTempToken.GetId()==INT_ID )
 			{
-				//aTokenInOut = minToken( Keyword, _SHORT, SORT_ID );
+				//aTokenInOut = minToken( Keyword, _SHORT, SORT_ID, m_iLineCount );
 				bFound = true;
 			}
 		}
@@ -503,7 +503,7 @@ bool minTokenizer::CheckForIntToken( minToken & aTokenInOut )
 		{
 			if( aTempToken.GetId()==INT_ID )
 			{
-				//aTokenInOut = minToken( Keyword, _LONG, LONG_ID );
+				//aTokenInOut = minToken( Keyword, _LONG, LONG_ID, m_iLineCount );
 				bFound = true;
 			}
 		}
@@ -589,11 +589,11 @@ public:
 bool minTokenizer::CheckForKnownToken( minToken & aTokenOut, bool bRead )
 {
 	// erzeuge ein Vergleichstoken
-	minToken aTempToken( SpecialChar, m_sParserString.substr( 0, 1 ) );
+	minToken aToken( SpecialChar, m_sParserString.substr( 0, 1 ), 0, m_iLineCount );
 	// fuehre binaere Suche im sortierten Token-Kontainer durch, 
 	// suche vorlaeufig nur nach dem ersten Zeichen im Token !!!
 	pair<TokenContainerT::iterator,TokenContainerT::iterator> aFound 
-			= equal_range( m_aTokenContainer.begin(), m_aTokenContainer.end(), aTempToken, CompareTokensFirstChar() );
+			= equal_range( m_aTokenContainer.begin(), m_aTokenContainer.end(), aToken, CompareTokensFirstChar() );
 
 	// suche von hinten nach vorne, damit z.B. "++" vor "+" gefunden und bearbeitet wird
 	// allerdings steht "+" vor "++" in der sortierten Token-Liste
@@ -622,7 +622,7 @@ bool minTokenizer::CheckForKnownToken( minToken & aTokenOut, bool bRead )
 			}
 			else
 			{
-				aTokenOut = aTempToken;
+				aTokenOut = minToken( aTempToken.GetType(), aTempToken.GetString(), aTempToken.GetId(), m_iLineCount );
 				// nur lesen wenn gewuenscht !
 				if( bRead )
 				{
@@ -735,7 +735,7 @@ bool minTokenizer::CheckForNumberToken( minToken & aTokenOut )
 		//istrstream aStrStream( sNumberString.c_str() );
 		//double dVal;
 		//aStrStream >> dVal;
-		aTokenOut = minToken( Constant, sNumberString, (bIsInt ? INT_NUMBER_ID : FLOAT_NUMBER_ID) );
+		aTokenOut = minToken( Constant, sNumberString, (bIsInt ? INT_NUMBER_ID : FLOAT_NUMBER_ID), m_iLineCount );
 		return true;
 	}
 
@@ -770,7 +770,7 @@ bool minTokenizer::CheckForCharToken( minToken & aTokenOut )
 					strg += g_chEscapeChar;
 				}
 				strg += ch;
-				aTokenOut = minToken( Constant, strg, CHAR_CONST_ID );
+				aTokenOut = minToken( Constant, strg, CHAR_CONST_ID, m_iLineCount );
 				return true;
 			}
 			else
@@ -827,7 +827,7 @@ bool minTokenizer::CheckForStringToken( minToken & aTokenOut )
 		{
 			ReplaceStringEscapeChars( sStringString );
 		}
-		aTokenOut = minToken( Constant, sStringString, STRING_CONST_ID );
+		aTokenOut = minToken( Constant, sStringString, STRING_CONST_ID, m_iLineCount );
 
 		return true;
 	}
@@ -886,12 +886,12 @@ bool minTokenizer::CheckForBoolToken( minToken & aTokenOut )
 
 	if( ReadStringIfFound( _TRUE ) )
 	{
-		aTokenOut = minToken( Constant, string( _TRUE ), BOOL_CONST_ID );
+		aTokenOut = minToken( Constant, string( _TRUE ), BOOL_CONST_ID, m_iLineCount );
 		return true;
 	}
 	else if( ReadStringIfFound( _FALSE ) )
 	{
-		aTokenOut = minToken( Constant, string( _FALSE ), BOOL_CONST_ID );
+		aTokenOut = minToken( Constant, string( _FALSE ), BOOL_CONST_ID, m_iLineCount );
 		return true;
 	}
 
@@ -900,8 +900,8 @@ bool minTokenizer::CheckForBoolToken( minToken & aTokenOut )
 
 bool minTokenizer::CheckForCommentToken( minToken & aTokenOut )
 {
-	string	sTemp	= m_sParserString;
-	int		nSum	= 0;
+	string	sTemp = m_sParserString;
+	int		nSum = 0;
 
 	// C++-Style-Kommentar
 	if( ReadStringIfFound( "//" ) )
@@ -930,7 +930,7 @@ bool minTokenizer::CheckForCommentToken( minToken & aTokenOut )
 		}
 
 		string sCommentString = string( sTemp, 0, nSum );		// noch Kommentar-Ende beachten
-		aTokenOut = minToken( Comment, sCommentString );
+		aTokenOut = minToken( Comment, sCommentString, m_iLineCount );
 	
 		return true;
 	}
@@ -952,7 +952,7 @@ bool minTokenizer::CheckForCommentToken( minToken & aTokenOut )
 		}
 
 		string sCommentString = string( sTemp, 0, nSum+2 );		// noch Kommentar-Ende beachten
-		aTokenOut = minToken( Comment, sCommentString );
+		aTokenOut = minToken( Comment, sCommentString, 0, m_iLineCount );
 	
 		return true;
 	}
@@ -975,7 +975,7 @@ bool minTokenizer::CheckForIdentifierToken( minToken & aTokenOut )
 		}
 
 		string sStringString = string( sTemp, 0, nSum );
-		aTokenOut = minToken( Identifier, sStringString );
+		aTokenOut = minToken( Identifier, sStringString, 0, m_iLineCount );
 
 		return true;
 	}

@@ -161,7 +161,7 @@ public:
 class MINDLLEXPORT minInterpreterNode
 {
 public:
-	minInterpreterNode( const string & sTypeName );
+	minInterpreterNode( const string & sTypeName, minHandle<minDebuggerInfo> hDebuggerInfo = 0 );
 	minInterpreterNode( const minInterpreterNode & aOther );
 	virtual ~minInterpreterNode();		// WICHTIG: virtueller Destruktor !
 
@@ -182,6 +182,8 @@ public:
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut )	{ return false; } )
 	SMALL( virtual bool Dump( ostream & aStream, const string & sSpace = "" ) const; )
 
+	int GetLineNumber() const;
+
 	static long & GetCountRef()									{ return m_nCount; }
 
 protected:
@@ -190,9 +192,11 @@ protected:
                            minInterpreterEnvironment & aEnv );
     
 private:
-	string		m_sTypeName;
+	string						m_sTypeName;
+	minHandle<minDebuggerInfo>	m_hDebuggerInfo;
+
 	// zum Debuggen
-	static long	m_nCount;
+	static long					m_nCount;
 };
 
 //*************************************************************************
@@ -231,8 +235,8 @@ protected:
 class minCommentNode : public minInterpreterNode
 {
 public:
-	minCommentNode( const string & sCommentStrg ) 
-		: minInterpreterNode( "CommentNode" ), 
+	minCommentNode( const string & sCommentStrg, minHandle<minDebuggerInfo> hDebuggerInfo ) 
+		: minInterpreterNode( "CommentNode", hDebuggerInfo ), 
 		  m_sCommentStrg( sCommentStrg ) 
 	{}
 
@@ -251,8 +255,8 @@ private:
 class minConstantNode : public minInterpreterNode
 {
 public:
-	minConstantNode( const minInterpreterValue & aValue ) 
-		: minInterpreterNode( "ConstantNode" ), 
+	minConstantNode( const minInterpreterValue & aValue, minHandle<minDebuggerInfo> hDebuggerInfo ) 
+		: minInterpreterNode( "ConstantNode", hDebuggerInfo ), 
 		  m_aValue( aValue ) 
 	{}
 
@@ -272,8 +276,8 @@ private:
 class minVariableNode : public minInterpreterNode
 {
 public:
-	minVariableNode( const string & sName, minInterpreterType aType = Unknown )
-		: minInterpreterNode( _VARIABLENODE ), 
+	minVariableNode( const string & sName, minInterpreterType aType /*= Unknown*/, minHandle<minDebuggerInfo> hDebuggerInfo )
+		: minInterpreterNode( _VARIABLENODE, hDebuggerInfo ), 
 		  m_sName( sName )
 	{}
 
@@ -300,7 +304,8 @@ public:
 								minInterpreterNode * pInitArrayExpression,	
 								minInterpreterNode * pInitExpression /*= 0*/,
 								minInterpreterNode * pConstructorCall /*= 0*/,
-								const StringListT & aTemplateTypes /*= StringListT()*/ );
+								const StringListT & aTemplateTypes /*= StringListT()*/, 
+								minHandle<minDebuggerInfo> hDebuggerInfo = 0 );			// TODO gulp working 
 	virtual ~minVariableDeclarationNode();
 
 	virtual string	GetInfo() const								{ return "name="+m_sName; }	

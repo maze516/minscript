@@ -435,8 +435,9 @@ public:
 };
 MyNodeCounterDumper g_aNodeDumper;
 
-minInterpreterNode::minInterpreterNode( const string & sTypeName )
-	: m_sTypeName( sTypeName )
+minInterpreterNode::minInterpreterNode( const string & sTypeName, minHandle<minDebuggerInfo> hDebuggerInfo )
+	: m_sTypeName( sTypeName ),
+	  m_hDebuggerInfo( hDebuggerInfo )
 {
 	++m_nCount;
 }
@@ -445,6 +446,7 @@ minInterpreterNode::minInterpreterNode( const minInterpreterNode & aOther )
 {
 	++m_nCount;
 	m_sTypeName = aOther.m_sTypeName;
+	m_hDebuggerInfo = aOther.m_hDebuggerInfo;
 }
 
 minInterpreterNode::~minInterpreterNode()
@@ -457,6 +459,15 @@ minInterpreterNode::~minInterpreterNode()
 			OUTPUT( GetDebugStream() << "DEBUG: minInterpreterNode-Count == 0 !!!" << endl; )
 		}
 	}
+}
+
+int minInterpreterNode::GetLineNumber() const
+{
+	if (m_hDebuggerInfo.IsOk())
+	{
+		return m_hDebuggerInfo->iLineNo;
+	}
+	return 0;
 }
 
 #ifdef USEBIG
@@ -591,8 +602,9 @@ minVariableDeclarationNode::minVariableDeclarationNode( const string & sName, mi
 							minInterpreterNode * pInitArrayExpression,
 							minInterpreterNode * pInitExpression,
 							minInterpreterNode * pConstructorCall,
-							const StringListT & aTemplateTypes )
-	: minInterpreterNode( _VARIABLEDECLARATIONNODE ),
+							const StringListT & aTemplateTypes, 
+							minHandle<minDebuggerInfo> hDebuggerInfo )
+	: minInterpreterNode( _VARIABLEDECLARATIONNODE, hDebuggerInfo ),
 	  m_sName( sName ), 
 	  m_aType( aType ), 
 	  m_nArraySize( nArraySize ), 

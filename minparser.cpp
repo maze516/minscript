@@ -200,7 +200,7 @@ bool minParser::ParseStatement( minInterpreterNode * & pNodeOut, const string * 
 		else if( aToken.IsComment() || aToken.IsWhitespace() )
 		{
 			ReadToken();
-			pNodeOut = new minCommentNode( aToken.GetString() );
+			pNodeOut = new minCommentNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo( aToken.GetLineNo() ) );
 			return true;
 		}
 	}
@@ -2265,7 +2265,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				if( PeekRealToken( aTempToken ) /*&& aTempToken.IsIdentifier()*/ )
 				{
 					ReadToken();
-					pLeft = new minExistsOperatorNode( /*sOperator*/"__exists", new minVariableNode( aTempToken.GetString() ) );
+					pLeft = new minExistsOperatorNode( /*sOperator*/"__exists", new minVariableNode( aTempToken.GetString(), Unknown,  minDebuggerInfo::CreateDebuggerInfo( aTempToken.GetLineNo() ) ) );
 				}
 				//ggf. bei Identifier Ueberpruefeung else --> ERROR
 
@@ -2316,7 +2316,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 					if( PeekRealToken( aToken ) && aToken.IsArrayStop() )
 					{
 						ReadToken();
-						pLeft = new minArrayElementNode( aToken.GetString(), new minVariableNode( aLastToken.GetString() ), pIndexExpr );
+						pLeft = new minArrayElementNode( aToken.GetString(), new minVariableNode( aLastToken.GetString(), Unknown, minDebuggerInfo::CreateDebuggerInfo( aLastToken.GetLineNo() ) ), pIndexExpr );
 // TODO: hier ggf. rekursiv aufsetzten...
 					}
 					else
@@ -2342,7 +2342,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				//		 erst zur Laufzeit !!!
 				if( true/*GetVariableInfo( aLastToken.GetString(), aIpType )*/ )
 				{
-					pLeft = new minVariableNode( aLastToken.GetString()/*, aIpType*/ );
+					pLeft = new minVariableNode( aLastToken.GetString(), /*aIpType*/Unknown, minDebuggerInfo::CreateDebuggerInfo(aLastToken.GetLineNo()) );
 				}
 				//else
 				//{
@@ -2388,7 +2388,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 			{
 				aVal = minInterpreterValue( aToken.GetString() );
 			}
-			pLeft = new minConstantNode( aVal );
+			pLeft = new minConstantNode( aVal, minDebuggerInfo::CreateDebuggerInfo( aToken.GetLineNo() ) );
 			ReadToken();
 		}
 		else if( aToken.IsOperator() )

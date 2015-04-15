@@ -1220,6 +1220,18 @@ bool minCallStackItem::AddNewVariable( const string & sName, minHandle<minInterp
 	return false;
 }
 
+void minCallStackItem::DumpVariables(ostream & stream)
+{
+	stream << "Dump variables:" << endl;
+
+	VariableContainerT::iterator iter = m_aVariableContainer.begin();
+	while (iter != m_aVariableContainer.end())
+	{
+		stream << (*iter).GetName() << "\t" << (*iter).GetValue()->GetString() << "\t" << (*iter).GetValue()->GetTypeString() << endl;
+		++iter;
+	}
+}
+
 string minCallStackItem::GetInfoString() const
 {
 	string sResult = GetItemName();
@@ -1477,23 +1489,55 @@ string minInterpreterEnvironment::GetInfoString() const
 	return sResult;
 }
 
+minHandle<minDebuggerInfo> minDebuggerInfo::CreateDebuggerInfo( int iLineNo )
+{
+	minDebuggerInfo * pDebuggerInfo = new minDebuggerInfo();
+	pDebuggerInfo->iLineNo = iLineNo;
+	return minHandle<minDebuggerInfo>( pDebuggerInfo );
+}
+
+bool minInterpreterEnvironment::IsAtBreakpoint( minInterpreterNode * pCurrentNode ) const
+{
+	int iLineNo = pCurrentNode->GetLineNumber();
+	BreakpointContainerT::const_iterator iter = m_aBreakpointContainer.begin();
+	while( iter!=m_aBreakpointContainer.end() )
+	{
+		if ((*iter).iLineNo == iLineNo)
+		{
+			return true;
+		}
+		++iter;
+	}
+	return false;
+}
+
 void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
-    if( m_bRunDbg )
+	bool bIsAtBreakpoint = IsAtBreakpoint( pCurrentNode );
+	if (bIsAtBreakpoint)
+	{
+		cout << "Hit breakpoint !" << endl;
+	}
+
+    if( !bIsAtBreakpoint && m_bRunDbg )
     {
         return;
     }
     
 // TODO --> script-name und line-no an token / interpreterNode dran haengen
     cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
+
+	cout << "Line number=" << pCurrentNode->GetLineNumber() << endl;
+
     //pCurrentNode->Dump( cout );
+
     bool bContinue = true;
     while( bContinue )
     {
         cout << endl << "(mdb) > ";
         string sInput;
-        //        getline( cin, sInput )
-        cin >> sInput;
+		getline( cin, sInput );
+        //cin >> sInput;
         if( sInput=="n" )
         {
             cout << "next step" << endl;
@@ -1505,7 +1549,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             bContinue = false;
             m_bRunDbg = true;
         }
-        else if( sInput=="w")
+        else if( sInput=="w" )
         {
             cout << "show stack size=" << GetCallStackSize() << endl;
             CallStackContainerT::const_iterator iter = m_aCallStack.begin();
@@ -1517,19 +1561,48 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
                 ++i;
             }
         }
-        else if( sInput=="q")
+		else if( sInput=="l" )
+		{
+// gulp working
+			minHandle<minCallStackItem> aCurrentCallStackItem = GetActCallStackItem();
+			cout << "local variables: " << aCurrentCallStackItem->GetInfoString() << endl;
+			aCurrentCallStackItem->DumpVariables(cout);
+		}
+		else if( sInput.length()>0 && sInput[0]=='b' )
+		{
+// TODO --> DbgInfo an minInterpreterNode setzen, Struktur mit lineNo, FileName --> Diese Debug Infos ggf. auch in anderem Container verwalten?
+			string sLineNo = sInput.substr(2);
+			minBreakpointInfo aBreakpoint;
+			aBreakpoint.iLineNo = atoi( sLineNo.c_str() );
+			m_aBreakpointContainer.push_back( aBreakpoint );
+			cout << "set breakpoint at line " << sLineNo << " number total breakpoints=" << m_aBreakpointContainer.size() << endl;
+		}
+		else if( sInput == "clear" )
+		{
+			int iSize = m_aBreakpointContainer.size();
+			m_aBreakpointContainer.clear();
+			cout << "Cleared " << iSize << " breakpoints" << endl;
+		}
+        else if( sInput=="s" )
+        {
+        }
+        else if( sInput=="q" )
         {
             cout << "exit debugging..." << endl;
             exit(-1);
         }
-        else if( sInput=="h")
+        else if( sInput=="h" )
         {
             cout << "show help:" << endl;
-            cout << "  n : next step" << endl;
-            cout << "  c : run" << endl;
-            cout << "  w : show call stack" << endl;
-            cout << "  h : show help" << endl;
-            cout << "  q : quit debugging" << endl;
+            cout << "  n        : next step" << endl;
+            cout << "  c        : run" << endl;
+			cout << "  b lineno : set breakpoint at line" << endl;
+			cout << "  clear    : clear all breakpoins" << endl;
+			cout << "  w        : show call stack" << endl;
+			cout << "  l        : show local variables" << endl;
+            cout << "  s        : show source code" << endl;
+            cout << "  h        : show help" << endl;
+            cout << "  q        : quit debugging" << endl;
         }
         else
         {

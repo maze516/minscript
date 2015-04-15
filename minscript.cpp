@@ -1177,7 +1177,7 @@ int main( int argc, char *argv[] )
 	if( aArgs.m_bShowVersion )
 	{
 		cout << "minscript, version " << _MINSCRIPT_VERSION << " from " << __DATE__ /*<< endl*/;
-		cout << ", (c) by Michael Neuroth, 1999-20014" << endl;
+        cout << ", (c) by Michael Neuroth, 1999-2015" << endl;
 		return 0;
 	}
 #ifdef USEBIG
@@ -1221,8 +1221,8 @@ int main( int argc, char *argv[] )
 			}
 			if( ReadScript( (*aIter).c_str(), sScriptTemp ) )
 			{
-				sScript += sScriptTemp;
-			}
+                sScript += sScriptTemp;
+            }
 			else
 			{
 				cerr << "script file " << (*aIter).c_str() << " not found." << endl;
@@ -1250,8 +1250,8 @@ int main( int argc, char *argv[] )
 	// (OHNE den Argumenten-Code) den Preprocessor aufrufen
 	if( aArgs.m_bRunPreprocessor && !aArgs.m_bRunScript )
 	{
-		RunPreproc( /*bOnlyPreproc*/true, aArgs, aIp, sScript, aParsedTokens );
-	}
+        RunPreproc( /*bOnlyPreproc*/true, aArgs, aIp, sScript, aParsedTokens );
+    }
 
 	// Code fuer die Argumente erzeugen
 	string sArgCode;
@@ -1276,7 +1276,7 @@ int main( int argc, char *argv[] )
 	}
 
 	// Block um das Script setzen
-	sScript = string( "{ " ) + sArgCode + sScript + string( " }" );
+	sScript = string( "{\n" ) + sArgCode + sScript + string( "\n}" );
 
 	// nur wenn das Skript auch ausgefuehrt werden soll an dieser Stelle
 	// (mit dem Precode und den Argumenten-Code) den Preprocessor aufrufen
@@ -1363,6 +1363,7 @@ int main( int argc, char *argv[] )
 		unsigned long nExecutionTime;
 		unsigned long nParseTime;
         aIp.SetDbgModus( aArgs.m_bDbgModus );
+        cout << "SCRIPT: " << sScript << endl;
 		bool bOk = aIp.Run( sScript, aVal, &nExecutionTime, &nParseTime, aParsedTokens );
 		if( bOk )
 		{

@@ -296,6 +296,7 @@ bool minScriptInterpreter::GenerateCppCode( const string & sScript, string & sCp
 
 bool minScriptInterpreter::RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens )
 {
+    cout << "PREPROCESSOR: " << sScriptIn << endl;
 #ifdef _with_preproc
 	minPreProcessor aPreProc( bOnlyPreproc, m_aTokenizer, sScriptIn, aIncludeDirList, aParsedTokens );
 
@@ -1139,8 +1140,11 @@ bool ReadScript( const char * sFileName, string & sScriptOut, const StringListT 
 
 					strcpy( sBuffer, "" );
 					aFile.getline( sBuffer, 1023 );
-					sScriptOut += sBuffer;
-					sScriptOut += "\n";
+                    if( strlen(sBuffer)>0 )
+                    {
+                        sScriptOut += sBuffer;
+                        sScriptOut += "\n";     // TODO: dieses neue Zeile Zeichen ist manchmal falsch, wenn letzte Zeile im Skript kein new line hat !
+                    }
 				}
 				return true;
 			}

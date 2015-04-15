@@ -481,6 +481,8 @@ public:
 	const minCreatorInterface *	GetCreator() const						{ return m_pVariableCreator; }
 	void SetCreator( const minCreatorInterface * pVariableCreator )		{ m_pVariableCreator = pVariableCreator; }
 
+	void DumpVariables( ostream & stream );
+
 private:
 	// +++ Hilfsmethoden +++
 	void Assign( const minCallStackItem & aOther );
@@ -505,20 +507,39 @@ public:
 };
 
 //*************************************************************************
+struct minBreakpointInfo
+{
+	int		iLineNo;
+	string  sCondition;
+	string  sFileName;
+};
+
+//*************************************************************************
+class minDebuggerInfo
+{
+public:
+	int		iLineNo;
+
+	static minHandle<minDebuggerInfo> CreateDebuggerInfo( int iLineNo );
+};
+
+//*************************************************************************
 // enthaelt z.B. lokale Variablen, Funktionen etc.
 class MINDLLEXPORT minInterpreterEnvironment : public minInterpreterEnvironmentInterface
 {
 	typedef list< minHandle<minCallStackItem> >				CallStackContainerT;				
 	typedef list< minHandle<minFunctionDeclarationNode> >	FunctionContainerT;	
-	typedef list< minHandle<minClassDeclarationNode> >		ClassContainerT;	
+	typedef list< minHandle<minClassDeclarationNode> >		ClassContainerT;
+
+	typedef list< minBreakpointInfo >						BreakpointContainerT;
 
 public:
 	minInterpreterEnvironment();
 	~minInterpreterEnvironment();
 
     // Flag to indicate comand line debugger
-    void SetDbgMode( bool bDebug )	{ m_bDbg = bDebug; }
-    bool IsDbgMode() const			{ return m_bDbg; }
+    void SetDbgMode( bool bDebug )		{ m_bDbg = bDebug; }
+    bool IsDbgMode() const				{ return m_bDbg; }
 
     void SetDebugMode( bool bDebug )	{ m_bDebug = bDebug; }
 	bool IsDebugMode() const			{ return m_bDebug; }
@@ -614,9 +635,12 @@ public:
 	void Dump() const;
 
 private:
+	bool IsAtBreakpoint(minInterpreterNode * pCurrentNode) const;
+		
 	CallStackContainerT		m_aCallStack;
 	FunctionContainerT		m_aFunctionContainer;
 	ClassContainerT			m_aClassContainer;
+	BreakpointContainerT	m_aBreakpointContainer;
 	// Variablen fuer die Fehlerbehandlung
 	int						m_nLastErrorCode;
 	string					m_sLastErrorMsg;
