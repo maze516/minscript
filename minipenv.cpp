@@ -1518,12 +1518,17 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 	{
 		cout << "Hit breakpoint !" << endl;
 	}
+// TODO --> behandeln, dass an der naechsten anweisung gestoppt wird (statement)
+//	bool bContinueUntilNextLine = m_iNextStepLineNo;
 
     if( !bIsAtBreakpoint && m_bRunDbg )
     {
         return;
     }
     
+// TODO --> debugger interface implementieren: fuer anzeige Quellcode, etc.
+//          oder: debugger extern in eigener Klasse implementieren und das InterpreterEnvironment und den node hineinreichen... ?
+
 // TODO --> script-name und line-no an token / interpreterNode dran haengen
     cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
 
@@ -1541,6 +1546,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         if( sInput=="n" )
         {
             cout << "next step" << endl;
+// TODO --> alle nodes fuer eine Zeile ausfuehren...
             bContinue = false;
         }
         else if( sInput=="c" )
