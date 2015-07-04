@@ -205,8 +205,8 @@ class minForkNode : public minInterpreterNode
 {
 protected:
 	// Bem.; Uebernimmt Eigentuemerschaft an uebergebenen Zeigern !
-	minForkNode( minInterpreterNode * pLeftNode, minInterpreterNode * pRightNode ) 
-		: minInterpreterNode( "ForkNode" ), 
+    minForkNode( minInterpreterNode * pLeftNode, minInterpreterNode * pRightNode, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "ForkNode", hDebuggerInfo ),
 		  m_pLeftNode( pLeftNode ), 
 		  m_pRightNode( pRightNode )
 	{}
@@ -305,7 +305,7 @@ public:
 								minInterpreterNode * pInitExpression /*= 0*/,
 								minInterpreterNode * pConstructorCall /*= 0*/,
 								const StringListT & aTemplateTypes /*= StringListT()*/, 
-								minHandle<minDebuggerInfo> hDebuggerInfo = 0 );			// TODO gulp working 
+                                minHandle<minDebuggerInfo> hDebuggerInfo );
 	virtual ~minVariableDeclarationNode();
 
 	virtual string	GetInfo() const								{ return "name="+m_sName; }	
@@ -356,13 +356,17 @@ private:
 class minClassDeclarationNode : public minInterpreterNode
 {
 public:
-	minClassDeclarationNode( const string & sName, minClassBlockNode * pCode, minBaseClassList aBaseClassList, minTemplateNode * pTemplate = 0 )
-		: minInterpreterNode( _CLASSNODE ), 
+    minClassDeclarationNode( const string & sName,
+                             minClassBlockNode * pCode,
+                             minBaseClassList aBaseClassList,
+                             minTemplateNode * pTemplate, /* = 0*/
+                             minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( _CLASSNODE, hDebuggerInfo ),
 		  m_sName( sName ), 
 		  m_pCode( pCode ), 
 		  m_aBaseClassList( aBaseClassList ), 
 		  m_pEnv( 0 ),
-		  m_pTemplate( pTemplate )
+          m_pTemplate( pTemplate )
 	{}
 	virtual ~minClassDeclarationNode();
 
@@ -402,7 +406,11 @@ private:
 class minClassBlockNode : public minInterpreterNode
 {
 public:
-	minClassBlockNode( const minParserItemList & aMethodList, const minParserItemList & aVariableList, const minParserItemList & aConstructorList, minHandle<minInterpreterNode> hDestructorNode );
+    minClassBlockNode( const minParserItemList & aMethodList,
+                       const minParserItemList & aVariableList,
+                       const minParserItemList & aConstructorList,
+                       minHandle<minInterpreterNode> hDestructorNode,
+                       minHandle<minDebuggerInfo> hDebuggerInfo );
 	virtual ~minClassBlockNode();
 
 	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
@@ -435,7 +443,7 @@ private:
 class minTemplateNode : public minInterpreterNode
 {
 public:
-	minTemplateNode( const StringListT & aTemplateTypes, minInterpreterNode * pClass );
+    minTemplateNode( const StringListT & aTemplateTypes, minInterpreterNode * pClass, minHandle<minDebuggerInfo> hDebuggerInfo );
 	virtual ~minTemplateNode();
 
 //	SMALL( virtual bool GenerateCppCode( string & sCodeOut ); )
@@ -463,8 +471,9 @@ protected:
 			bool bIsConstant, 
 			bool bIsVirtual,
 			minInterpreterType aReturnType, 
-			const minVariableDeclarationList & aArgumentDeclarationList )
-		: minInterpreterNode( _FUNCTIONDECLARATIONNODE ),
+            const minVariableDeclarationList & aArgumentDeclarationList,
+            minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( _FUNCTIONDECLARATIONNODE, hDebuggerInfo ),
           m_aReturnType( aReturnType ),
           m_aClassScope( None ),
           m_aArgumentDeclarationList( aArgumentDeclarationList ),
@@ -536,8 +545,9 @@ public:
 			minInterpreterType aReturnType, 
 			const minVariableDeclarationList & aArgumentDeclarationList, 
 			minInterpreterNode * pCode, 
-			const minParserItemList & aConstructorInitList )
-		: minFunctionDeclarationNode( sName, bIsConstant, bIsVirtual, aReturnType, aArgumentDeclarationList ), 
+            const minParserItemList & aConstructorInitList,
+            minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minFunctionDeclarationNode( sName, bIsConstant, bIsVirtual, aReturnType, aArgumentDeclarationList, hDebuggerInfo ),
 		  m_pCode( pCode ), 
 		  m_aInitList( aConstructorInitList ),
 		  m_pEnv( 0 )
@@ -571,7 +581,7 @@ class MINDLLEXPORT minNativeFunctionDeclarationNode : public minFunctionDeclarat
 public:
 	minNativeFunctionDeclarationNode( minNativeFcnWrapperBaseAdapter * pFcn )
 		: minFunctionDeclarationNode( pFcn->GetFunctionName(), /*bIsConst*/false, /*bIsVirtual*/false, pFcn->GetReturnType(), 
-  		    /*ACHTUNG: hier wird die Eigentuemerschaft an dem Argument-Zeiger uebernommen !*/ pFcn->GetArgumentList() ), 
+            /*ACHTUNG: hier wird die Eigentuemerschaft an dem Argument-Zeiger uebernommen !*/ pFcn->GetArgumentList(), 0 ),
 		  m_pFcn( pFcn )
 	{}
 	virtual ~minNativeFunctionDeclarationNode();
@@ -592,8 +602,11 @@ private:
 class minFunctionCallNode : public minInterpreterNode
 {
 public:
-	minFunctionCallNode( const string & sName, const minParserItemList & aArgumentExpressionList, minInterpreterNode * pFunctionExpression = 0 )
-		: minInterpreterNode( "FunctionCallNode" ),
+    minFunctionCallNode( const string & sName,
+                         const minParserItemList & aArgumentExpressionList,
+                         minInterpreterNode * pFunctionExpression, /*= 0*/
+                         minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "FunctionCallNode", hDebuggerInfo ),
 		  m_sName( sName ), 
 		  m_sManglingNameCache( _CACHE_NOT_INIT ),
 		  m_aArgumentExpressionList( aArgumentExpressionList ), 
@@ -629,8 +642,12 @@ private:
 class minOperatorNode : public minForkNode
 {
 protected:
-	minOperatorNode( const string & sOperator, int nLevel, minInterpreterNode * pLeftNode, minInterpreterNode * pRightNode ) 
-		: minForkNode( pLeftNode, pRightNode ), 
+    minOperatorNode( const string & sOperator,
+                     int nLevel,
+                     minInterpreterNode * pLeftNode,
+                     minInterpreterNode * pRightNode,
+                     minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minForkNode( pLeftNode, pRightNode, hDebuggerInfo ),
 		  m_nOperatorLevel( nLevel ), 
 		  m_sOperator( sOperator )
 	{}
@@ -673,8 +690,10 @@ protected:
 class minExistsOperatorNode : public minOperatorNode
 {
 public:
-	minExistsOperatorNode( const string & sOperator, minInterpreterNode * pNode = 0 ) 
-		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, pNode )
+    minExistsOperatorNode( const string & sOperator,
+                           minInterpreterNode * pNode, /* = 0*/
+                           minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, HIGHEST_LEVEL, 0, pNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -688,8 +707,8 @@ protected:
 class minTypeofOperatorNode : public minOperatorNode
 {
 public:
-	minTypeofOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0 )
+    minTypeofOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -702,8 +721,8 @@ protected:
 class minDereferenceExistsOperatorNode : public minOperatorNode
 {
 public:
-	minDereferenceExistsOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0 )
+    minDereferenceExistsOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -716,8 +735,8 @@ protected:
 class minDebugHaltNode : public minOperatorNode
 {
 public:
-	minDebugHaltNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minDebugHaltNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -731,8 +750,8 @@ protected:
 class minNewOperatorNode : public minOperatorNode, public minCreatorInterface
 {
 public:
-	minNewOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 ), 
+    minNewOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo ),
 		  m_pConstructorCall( 0 )
 	{}
 	virtual ~minNewOperatorNode();
@@ -759,8 +778,8 @@ private:
 class minDeleteOperatorNode : public minOperatorNode
 {
 public:
-	minDeleteOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minDeleteOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -774,8 +793,8 @@ protected:
 class minPointerDereferenceOperatorNode : public minOperatorNode
 {
 public:
-	minPointerDereferenceOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0 )
+    minPointerDereferenceOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, HIGHEST_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -788,8 +807,8 @@ protected:
 class minDereferenceOperatorNode : public minOperatorNode
 {
 public:
-	minDereferenceOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minDereferenceOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -802,8 +821,8 @@ protected:
 class minAddressOperatorNode : public minOperatorNode
 {
 public:
-	minAddressOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minAddressOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -816,8 +835,11 @@ protected:
 class minObjectElementNode : public minOperatorNode
 {
 public:
-	minObjectElementNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, HIGHEST_LEVEL, pLeftNode, pRightNode )
+    minObjectElementNode( const string & sOperator,
+                          minInterpreterNode * pLeftNode, // = 0,
+                          minInterpreterNode * pRightNode, // = 0
+                          minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, HIGHEST_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -830,8 +852,11 @@ protected:
 class minArrayElementNode : public minOperatorNode
 {
 public:
-	minArrayElementNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, HIGHEST_LEVEL, pLeftNode, pRightNode )
+    minArrayElementNode( const string & sOperator,
+                         minInterpreterNode * pLeftNode, // = 0,
+                         minInterpreterNode * pRightNode, // = 0
+                         minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, HIGHEST_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -845,8 +870,11 @@ class minAssignOperatorNode : public minOperatorNode
 {
 public:
 	// Bem.; Uebernimmt Eigentuemerschaft an uebergebenen Zeigern !
-	minAssignOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, ASSIGN_LEVEL, pLeftNode, pRightNode )
+    minAssignOperatorNode( const string & sOperator,
+                           minInterpreterNode * pLeftNode, // = 0,
+                           minInterpreterNode * pRightNode, // = 0
+                           minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, ASSIGN_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -859,8 +887,8 @@ protected:
 class minIncOperatorNode : public minOperatorNode
 {
 public:
-	minIncOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minIncOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -873,8 +901,8 @@ protected:
 class minDecOperatorNode : public minOperatorNode
 {
 public:
-	minDecOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minDecOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -887,8 +915,8 @@ protected:
 class minNotOperatorNode : public minOperatorNode
 {
 public:
-	minNotOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minNotOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -901,8 +929,8 @@ protected:
 class minInvertOperatorNode : public minOperatorNode
 {
 public:
-	minInvertOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0 )
+    minInvertOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -915,8 +943,11 @@ protected:
 class minCommaOperatorNode : public minOperatorNode
 {
 public:
-	minCommaOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, COMMA_LEVEL, pLeftNode, pRightNode )
+    minCommaOperatorNode( const string & sOperator,
+                          minInterpreterNode * pLeftNode, // = 0,
+                          minInterpreterNode * pRightNode, // = 0
+                          minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, COMMA_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -929,8 +960,11 @@ protected:
 class minAddOperatorNode : public minOperatorNode
 {
 public:
-	minAddOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, ADD_LEVEL, pLeftNode, pRightNode )
+    minAddOperatorNode( const string & sOperator,
+                        minInterpreterNode * pLeftNode, // = 0,
+                        minInterpreterNode * pRightNode, // = 0
+                        minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, ADD_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -943,8 +977,8 @@ protected:
 class minPlusOperatorNode : public minOperatorNode
 {
 public:
-	minPlusOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator+string("sign"), UNARY_OPERATOR_LEVEL, 0, 0 )
+    minPlusOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator+string("sign"), UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -957,8 +991,11 @@ protected:
 class minSubOperatorNode : public minOperatorNode
 {
 public:
-	minSubOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, SUB_LEVEL, pLeftNode, pRightNode )
+    minSubOperatorNode( const string & sOperator,
+                        minInterpreterNode * pLeftNode, // = 0,
+                        minInterpreterNode * pRightNode, // = 0
+                        minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, SUB_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -971,8 +1008,8 @@ protected:
 class minMinusOperatorNode : public minOperatorNode
 {
 public:
-	minMinusOperatorNode( const string & sOperator ) 
-		: minOperatorNode( sOperator+string("sign"), UNARY_OPERATOR_LEVEL, 0, 0 )
+    minMinusOperatorNode( const string & sOperator, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator+string("sign"), UNARY_OPERATOR_LEVEL, 0, 0, hDebuggerInfo )
 	{}
 
 protected:
@@ -985,8 +1022,11 @@ protected:
 class minMultOperatorNode : public minOperatorNode
 {
 public:
-	minMultOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, MULT_LEVEL, pLeftNode, pRightNode )
+    minMultOperatorNode( const string & sOperator,
+                         minInterpreterNode * pLeftNode, // = 0,
+                         minInterpreterNode * pRightNode, // = 0
+                         minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, MULT_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -999,8 +1039,11 @@ protected:
 class minDivOperatorNode : public minOperatorNode
 {
 public:
-	minDivOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, DIV_LEVEL, pLeftNode, pRightNode )
+    minDivOperatorNode( const string & sOperator,
+                        minInterpreterNode * pLeftNode, // = 0,
+                        minInterpreterNode * pRightNode, // = 0
+                        minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, DIV_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -1013,8 +1056,11 @@ protected:
 class minModOperatorNode : public minOperatorNode
 {
 public:
-	minModOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, DIV_LEVEL, pLeftNode, pRightNode )
+    minModOperatorNode( const string & sOperator,
+                        minInterpreterNode * pLeftNode, // = 0,
+                        minInterpreterNode * pRightNode, // = 0
+                        minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, DIV_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -1027,8 +1073,12 @@ protected:
 class minShiftOperatorNode : public minOperatorNode
 {
 public:
-	minShiftOperatorNode( const string & sOperator, bool bLeftShift, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, SHIFT_LEVEL, pLeftNode, pRightNode ),
+    minShiftOperatorNode( const string & sOperator,
+                          bool bLeftShift,
+                          minInterpreterNode * pLeftNode, // = 0,
+                          minInterpreterNode * pRightNode, // = 0
+                          minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, SHIFT_LEVEL, pLeftNode, pRightNode, hDebuggerInfo ),
 		  m_bLeftShift( bLeftShift )
 	{}
 
@@ -1045,8 +1095,12 @@ private:
 class minLessOperatorNode : public minOperatorNode
 {
 public:
-	minLessOperatorNode( const string & sOperator, bool bLessEqual, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, COMPARE_LEVEL, pLeftNode, pRightNode ),
+    minLessOperatorNode( const string & sOperator,
+                         bool bLessEqual,
+                         minInterpreterNode * pLeftNode, // = 0,
+                         minInterpreterNode * pRightNode, // = 0
+                         minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, COMPARE_LEVEL, pLeftNode, pRightNode, hDebuggerInfo ),
 		  m_bLessEqual( bLessEqual )
 	{}
 
@@ -1063,8 +1117,12 @@ private:
 class minMoreOperatorNode : public minOperatorNode
 {
 public:
-	minMoreOperatorNode( const string & sOperator, bool bMoreEqual, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, COMPARE_LEVEL, pLeftNode, pRightNode ),
+    minMoreOperatorNode( const string & sOperator,
+                         bool bMoreEqual,
+                         minInterpreterNode * pLeftNode, // = 0,
+                         minInterpreterNode * pRightNode, // = 0
+                         minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, COMPARE_LEVEL, pLeftNode, pRightNode, hDebuggerInfo ),
 		  m_bMoreEqual( bMoreEqual )
 	{}
 
@@ -1081,8 +1139,11 @@ private:
 class minEqualOperatorNode : public minOperatorNode
 {
 public:
-	minEqualOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, EQUAL_LEVEL, pLeftNode, pRightNode )
+    minEqualOperatorNode( const string & sOperator,
+                          minInterpreterNode * pLeftNode, // = 0,
+                          minInterpreterNode * pRightNode, // = 0
+                          minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, EQUAL_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -1095,8 +1156,11 @@ protected:
 class minNotEqualOperatorNode : public minOperatorNode
 {
 public:
-	minNotEqualOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, EQUAL_LEVEL, pLeftNode, pRightNode )
+    minNotEqualOperatorNode( const string & sOperator,
+                             minInterpreterNode * pLeftNode, // = 0,
+                             minInterpreterNode * pRightNode, // = 0
+                             minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, EQUAL_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -1109,8 +1173,11 @@ protected:
 class minLogAndOperatorNode : public minOperatorNode
 {
 public:
-	minLogAndOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, LOG_AND_LEVEL, pLeftNode, pRightNode )
+    minLogAndOperatorNode( const string & sOperator,
+                           minInterpreterNode * pLeftNode, // = 0,
+                           minInterpreterNode * pRightNode, // = 0
+                           minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, LOG_AND_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -1123,8 +1190,11 @@ protected:
 class minLogOrOperatorNode : public minOperatorNode
 {
 public:
-	minLogOrOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, LOG_OR_LEVEL, pLeftNode, pRightNode )
+    minLogOrOperatorNode( const string & sOperator,
+                          minInterpreterNode * pLeftNode, // = 0,
+                          minInterpreterNode * pRightNode, // = 0
+                          minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, LOG_OR_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -1137,8 +1207,11 @@ protected:
 class minBinAndOperatorNode : public minOperatorNode
 {
 public:
-	minBinAndOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, BIN_AND_LEVEL, pLeftNode, pRightNode )
+    minBinAndOperatorNode( const string & sOperator,
+                           minInterpreterNode * pLeftNode, // = 0,
+                           minInterpreterNode * pRightNode, // = 0
+                           minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, BIN_AND_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
     
 protected:
@@ -1151,8 +1224,11 @@ protected:
 class minBinOrOperatorNode : public minOperatorNode
 {
 public:
-	minBinOrOperatorNode( const string & sOperator, minInterpreterNode * pLeftNode = 0, minInterpreterNode * pRightNode = 0 ) 
-		: minOperatorNode( sOperator, BIN_OR_LEVEL, pLeftNode, pRightNode )
+    minBinOrOperatorNode( const string & sOperator,
+                          minInterpreterNode * pLeftNode, // = 0,
+                          minInterpreterNode * pRightNode, // = 0
+                          minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minOperatorNode( sOperator, BIN_OR_LEVEL, pLeftNode, pRightNode, hDebuggerInfo )
 	{}
 
 protected:
@@ -1165,8 +1241,8 @@ protected:
 class minParenthisNode : public minInterpreterNode
 {
 public:
-	minParenthisNode( minInterpreterNode * pNode ) 
-		: minInterpreterNode( "ParenthisNode" ), 
+    minParenthisNode( minInterpreterNode * pNode, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "ParenthisNode", hDebuggerInfo ),
 		  m_pNode( pNode ) 
 	{}
 	virtual ~minParenthisNode();
@@ -1187,8 +1263,8 @@ private:
 class minBlockNode : public minInterpreterNode
 {
 public:
-	minBlockNode( const minParserItemList & aNodeList ) 
-		: minInterpreterNode( _BLOCKNODE ), 
+    minBlockNode( const minParserItemList & aNodeList, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( _BLOCKNODE, hDebuggerInfo ),
 		  m_aNodeContainer( aNodeList )
 	{}
 	virtual ~minBlockNode();
@@ -1215,8 +1291,11 @@ private:
 class minTypedefNode : public minInterpreterNode
 {
 public:
-	minTypedefNode( const minInterpreterType & aOldType, const string & sNewTokenString, minInterpreterNode * pClassDeclarationNode = 0 )
-		: minInterpreterNode( "TypedefNode" ), 
+    minTypedefNode( const minInterpreterType & aOldType,
+                    const string & sNewTokenString,
+                    minInterpreterNode * pClassDeclarationNode, // = 0
+                    minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "TypedefNode", hDebuggerInfo ),
 		  m_aOldType( aOldType ), 
 		  m_sNewTokenString( sNewTokenString ), 
 		  m_pClassDeclarationNode( pClassDeclarationNode )
@@ -1240,8 +1319,8 @@ private:
 class minCaseLabelNode : public minInterpreterNode
 {
 public:
-	minCaseLabelNode( minInterpreterNode * pConstExpressionNode, const minParserItemList & aStatementList )
-		: minInterpreterNode( "CaseNode" ), 
+    minCaseLabelNode( minInterpreterNode * pConstExpressionNode, const minParserItemList & aStatementList, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "CaseNode", hDebuggerInfo ),
 		  m_pConstExpressionNode( pConstExpressionNode ),
 		  m_aStatementList( aStatementList )
 	{}
@@ -1267,8 +1346,8 @@ private:
 class minSwitchNode : public minInterpreterNode
 {
 public:
-	minSwitchNode( minInterpreterNode * pExpressionNode, const minParserItemList & aCaseLabelList )
-		: minInterpreterNode( "SwitchNode" ), 
+    minSwitchNode( minInterpreterNode * pExpressionNode, const minParserItemList & aCaseLabelList, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "SwitchNode", hDebuggerInfo ),
 		  m_pExpressionNode( pExpressionNode ),
 		  m_aCaseLabelList( aCaseLabelList )
 	{}
@@ -1291,8 +1370,8 @@ private:
 class minWhileNode : public minInterpreterNode
 {
 public:
-	minWhileNode( minInterpreterNode * pExpressionNode, minInterpreterNode * pStatementNode )
-		: minInterpreterNode( "WhileNode" ), 
+    minWhileNode( minInterpreterNode * pExpressionNode, minInterpreterNode * pStatementNode, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "WhileNode", hDebuggerInfo ),
 		  m_pExpressionNode( pExpressionNode ), 
 		  m_pStatementNode( pStatementNode ) 
 	{}
@@ -1315,8 +1394,8 @@ private:
 class minDoNode : public minInterpreterNode
 {
 public:
-	minDoNode( minInterpreterNode * pExpressionNode, minInterpreterNode * pStatementNode )
-		: minInterpreterNode( "DoNode" ),
+    minDoNode( minInterpreterNode * pExpressionNode, minInterpreterNode * pStatementNode, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "DoNode", hDebuggerInfo ),
 		  m_pExpressionNode( pExpressionNode ), 
 		  m_pStatementNode( pStatementNode ) 
 	{}
@@ -1341,8 +1420,9 @@ public:
 	minForNode( minInterpreterNode * pInitExpressionNode, 
 			    minInterpreterNode * pCheckExpressionNode, 
 				minInterpreterNode * pLoopExpressionNode, 
-				minInterpreterNode * pStatementNode )
-		: minInterpreterNode( "ForNode" ),
+                minInterpreterNode * pStatementNode,
+                minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "ForNode", hDebuggerInfo ),
 		  m_pInitExpressionNode( pInitExpressionNode ), 
 		  m_pCheckExpressionNode( pCheckExpressionNode ), 
 		  m_pLoopExpressionNode( pLoopExpressionNode ), 
@@ -1370,8 +1450,9 @@ class minIfNode : public minInterpreterNode
 public:
 	minIfNode( minInterpreterNode * pExpressionNode, 
 			   minInterpreterNode * pThenStatementNode, 
-			   minInterpreterNode * pElseStatementNode )
-		: minInterpreterNode( "IfNode" ),
+               minInterpreterNode * pElseStatementNode,
+               minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "IfNode", hDebuggerInfo ),
 		  m_pExpressionNode( pExpressionNode ), 
 		  m_pThenStatementNode( pThenStatementNode ), 
 		  m_pElseStatementNode( pElseStatementNode )  
@@ -1395,8 +1476,8 @@ private:
 class minSizeofNode : public minInterpreterNode
 {
 public:
-	minSizeofNode( minInterpreterNode *	pExpressionNode )
-		: minInterpreterNode( "SizeofNode" ), 
+    minSizeofNode( minInterpreterNode *	pExpressionNode, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "SizeofNode", hDebuggerInfo ),
 		  m_pExpressionNode( pExpressionNode )
 	{}
 	virtual ~minSizeofNode();
@@ -1416,8 +1497,8 @@ private:
 class minReturnNode : public minInterpreterNode
 {
 public:
-	minReturnNode( minInterpreterNode *	pExpressionNode )
-		: minInterpreterNode( "ReturnNode" ), 
+    minReturnNode( minInterpreterNode *	pExpressionNode, minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "ReturnNode", hDebuggerInfo ),
 		  m_pExpressionNode( pExpressionNode )
 	{}
 	virtual ~minReturnNode();
@@ -1436,8 +1517,8 @@ private:
 class minBreakNode : public minInterpreterNode
 {
 public:
-	minBreakNode() 
-		: minInterpreterNode( "BreakNode" ) 
+    minBreakNode( minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "BreakNode", hDebuggerInfo )
 	{}
 
 protected:
@@ -1451,8 +1532,8 @@ protected:
 class minContinueNode : public minInterpreterNode
 {
 public:
-	minContinueNode() 
-		: minInterpreterNode( "ContinueNode" ) 
+    minContinueNode( minHandle<minDebuggerInfo> hDebuggerInfo )
+        : minInterpreterNode( "ContinueNode", hDebuggerInfo )
 	{}
 
 protected:

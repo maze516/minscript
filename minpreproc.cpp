@@ -904,7 +904,7 @@ bool minPreProcessor::ProcessIf( bool bDoEvaluation )
 	{
 		minScriptInterpreter aIp;
 		minInterpreterValue aReturnValue;
-		if( aIp.Run( sTempScript, aReturnValue ) )
+		if( aIp.Run( sTempScript, sTempScript, aReturnValue ) )
 		{
 			if( aReturnValue.GetBool() )
 			{

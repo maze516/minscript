@@ -885,7 +885,7 @@ bool minClassDeclarationNode::ExecuteDestructor( minInterpreterEnvironment & aEn
 
 	// erst das eigentliche Objekt zerstoeren
 	// baue einen Funktions-Call fuer den Destruktor-Aufruf zusammen und fuehre diesen aus !
-	minFunctionCallNode * pDestructor = new minFunctionCallNode( "~"+m_sName, /*keine Argumente*/minParserItemList() );
+    minFunctionCallNode * pDestructor = new minFunctionCallNode( "~"+m_sName, /*keine Argumente*/minParserItemList(), 0, /*TODO DEBUG*/0 );
 
 	minInterpreterValue aTempVal;
 	bOk = pDestructor->Execute( /*nAccessModus*/0, aTempVal, aEnv );
@@ -898,7 +898,7 @@ bool minClassDeclarationNode::ExecuteDestructor( minInterpreterEnvironment & aEn
 	minBaseClassList::/*const_*/reverse_iterator aIter = m_aBaseClassList.rbegin();
 	while( aIter != m_aBaseClassList.rend() )
 	{
-		minFunctionCallNode aBaseDestructor( "~"+(*aIter), /*keine Argumente*/minParserItemList() );
+        minFunctionCallNode aBaseDestructor( "~"+(*aIter), /*keine Argumente*/minParserItemList(), 0, /*TODO DEBUG*/0 );
 
 		minInterpreterValue aTempVal;
 		/*bool bOk =*/ aBaseDestructor.Execute( /*nAccessModus*/0, aTempVal, aEnv );
@@ -962,8 +962,8 @@ bool minClassDeclarationNode::Dump( ostream & aStream, const string & sSpace ) c
 
 //*************************************************************************
 
-minClassBlockNode::minClassBlockNode( const minParserItemList & aMethodList, const minParserItemList & aVariableList, const minParserItemList & aConstructorList, minHandle<minInterpreterNode> hDestructorNode  )
-	: minInterpreterNode( "ClassBlockNode" ),
+minClassBlockNode::minClassBlockNode( const minParserItemList & aMethodList, const minParserItemList & aVariableList, const minParserItemList & aConstructorList, minHandle<minInterpreterNode> hDestructorNode, minHandle<minDebuggerInfo> hDebuggerInfo )
+    : minInterpreterNode( "ClassBlockNode", hDebuggerInfo ),
 	  m_aMethodNodeContainer( aMethodList ), m_aMemberVariableNodeContainer( aVariableList ),
 	  m_aConstructorNodeContainer( aConstructorList ), m_hDestructorNode( hDestructorNode )
 {
@@ -1096,8 +1096,8 @@ bool minClassBlockNode::UnRegisterConstructorsDestructors( minInterpreterEnviron
 
 //*************************************************************************
 
-minTemplateNode::minTemplateNode( const StringListT & aTemplateTypes, minInterpreterNode * pClass )
-	: minInterpreterNode( "TemplateNode" ),
+minTemplateNode::minTemplateNode( const StringListT & aTemplateTypes, minInterpreterNode * pClass, minHandle<minDebuggerInfo> hDebuggerInfo )
+    : minInterpreterNode( "TemplateNode", hDebuggerInfo ),
 	  m_aTemplateTypes( aTemplateTypes ),
 	  m_pClass( pClass )
 {
@@ -1956,7 +1956,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 						minHandle<minCallStackItem> hBaseObj( new minCallStackItem( (*aBaseIter)+g_sClassMethodSeparator+(*aBaseIter) ) );
 						aEnv.PushCallStackItem( hBaseObj );
 
-						minInterpreterNode * pBaseConstructorCall = new minFunctionCallNode( *aBaseIter, /*leere ArgumentList*/minParserItemList() );
+                        minInterpreterNode * pBaseConstructorCall = new minFunctionCallNode( *aBaseIter, /*leere ArgumentList*/minParserItemList(), 0, /*TODO DEBUG*/0  );
 
 						minInterpreterValue aTempRet;
 						bOk = pBaseConstructorCall->Execute( /*nAccessModus*/0, aTempRet, aEnv );

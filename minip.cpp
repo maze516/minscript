@@ -215,7 +215,7 @@ void minScriptInterpreter::DumpAllFunctionPrototypes( ostream & aStream ) const
 	m_aEnvironment.DumpAllFunctionPrototypes( aStream );
 }
 
-bool minScriptInterpreter::Run( const string & sScript, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime, unsigned long * pParseTime, const minTokenizer::TokenContainerT & aParsedTokens )
+bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string & sScript, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime, unsigned long * pParseTime, const minTokenizer::TokenContainerT & aParsedTokens )
 {
 	if( aParsedTokens.size()>0 )
 	{
@@ -239,6 +239,7 @@ bool minScriptInterpreter::Run( const string & sScript, minInterpreterValue & aR
 			// Callstack-Eintrag erzeugen, ausfuehren und Callstack-Eintrag wieder loeschen
 			m_aEnvironment.PushCallStackItem( "__main()" );
 			m_aEnvironment.SetDebugMode( m_bDebug );
+			m_aEnvironment.SetSourceCode( sScriptWithPredefs );
             m_aEnvironment.SetDbgMode( m_bDbg );
 			unsigned long nStartTime = minGetCurrentTickCount();
 			try {
@@ -296,7 +297,7 @@ bool minScriptInterpreter::GenerateCppCode( const string & sScript, string & sCp
 
 bool minScriptInterpreter::RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens )
 {
-    cout << "PREPROCESSOR: " << sScriptIn << endl;
+    //cout << "PREPROCESSOR: " << sScriptIn << endl;
 #ifdef _with_preproc
 	minPreProcessor aPreProc( bOnlyPreproc, m_aTokenizer, sScriptIn, aIncludeDirList, aParsedTokens );
 

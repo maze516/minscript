@@ -196,7 +196,7 @@ bool minTokenizer::PeekNextToken( minToken & aTokenOut )
         if( aNextToken.IsNewLine() )
         {
             m_iLineCount++;
-            cout << "line count " << m_iLineCount << " " << m_iCount << " " << aNextToken.GetString().size() << " line=" << aNextToken.GetLineNo() << endl;
+            //cout << "line count " << m_iLineCount << " " << m_iCount << " " << aNextToken.GetString().size() << " line=" << aNextToken.GetLineNo() << endl;
         }
         else
         {

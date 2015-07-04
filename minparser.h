@@ -174,7 +174,7 @@ private:
 	bool PeekAndReadClassScope( InterpreterClassScope & aClassScopeInOut );
 	bool ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, string & sClassNameOut );
 	bool ParseClassBlock( const string & sClassName, minClassBlockNode * & pNodeOut, bool bIsStruct );
-	bool ParseForStringToken( const string & sStrg );
+    bool ParseForStringToken( const string & sStrg, minToken * pToken = 0 );
 	bool ParseTypedef( minInterpreterNode * & pNodeOut );
 	bool ParseCaseOrDefaultForSwitch( minInterpreterNode * & pNodeOut, bool & bIsDefaultOut );
 	bool ParseSwitch( minInterpreterNode * & pNodeOut );

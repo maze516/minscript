@@ -220,7 +220,7 @@ public:
 	minScriptInterpreter( bool bDebug = false );
 	~minScriptInterpreter();
 
-	bool Run( const string & sScriptIn, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime = 0, unsigned long * pParseTime = 0, const minTokenizer::TokenContainerT & aParsedTokens = minTokenizer::TokenContainerT() );
+	bool Run( const string & sScriptWithPredefs, const string & sScriptIn, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime = 0, unsigned long * pParseTime = 0, const minTokenizer::TokenContainerT & aParsedTokens = minTokenizer::TokenContainerT());
 	bool ParseOnly( const string & sScriptIn );
 	SMALL( bool GenerateCppCode( const string & sScriptIn, string & sCppCodeOut ); )
 	bool RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens );

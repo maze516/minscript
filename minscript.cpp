@@ -388,7 +388,7 @@ static minHandle<minInterpreterNode> CopyFunctionAndAddThisArg( minHandle<minInt
 	minFunctionDeclarationNode * pFcn = (minFunctionDeclarationNode *)(hFcn.GetPtr());
 	minFunctionDeclarationNode * pNewFcn = new minFunctionDeclarationNode( *pFcn );
 	minVariableDeclarationList aNewArgs = pNewFcn->GetArgumentsList();
-	minHandle<minVariableDeclarationNode> hThisArg( new minVariableDeclarationNode( "pThis", minInterpreterType( Int /*Void, 1*/ ), -1, 0, 0, 0, StringListT() ) );
+	minHandle<minVariableDeclarationNode> hThisArg( new minVariableDeclarationNode( "pThis", minInterpreterType( Int /*Void, 1*/ ), -1, 0, 0, 0, StringListT(), 0 ) );
 	aNewArgs.insert( aNewArgs.begin(), hThisArg );
 	pNewFcn->SetArgumentsList( aNewArgs );
 	return minHandle<minInterpreterNode>( pNewFcn );
@@ -1052,7 +1052,7 @@ static bool MakeMakefile( const minArgumentsHelper & aArgs )
 
 #endif
 
-void RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptInterpreter & aIp, string & sScript, minTokenizer::TokenContainerT & aParsedTokens )
+string RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptInterpreter & aIp, string & sScript, minTokenizer::TokenContainerT & aParsedTokens )
 {
 	// als Parameter vordefinierte Symbole vorbereiten
 	string sPredefinedSymbols;
@@ -1135,6 +1135,7 @@ void RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptI
 			cout << "time for preprocessing [ms]: " << (1000*(nPreprocessingStopTime - nPreprocessingStartTime))/minGetTickCountPerSec() << endl;
 		}
 	}
+	return sPredefinedSymbols + sScript;
 }
 
 //*************************************************************************
@@ -1280,9 +1281,10 @@ int main( int argc, char *argv[] )
 
 	// nur wenn das Skript auch ausgefuehrt werden soll an dieser Stelle
 	// (mit dem Precode und den Argumenten-Code) den Preprocessor aufrufen
+	string sScrpitWithPredefs;
 	if( aArgs.m_bRunPreprocessor && aArgs.m_bRunScript )
 	{
-		RunPreproc( /*bOnlyPreproc*/false, aArgs, aIp, sScript, aParsedTokens );
+		sScrpitWithPredefs = RunPreproc( /*bOnlyPreproc*/false, aArgs, aIp, sScript, aParsedTokens);
 	}
 
 	if( aArgs.m_bRunCodegen )
@@ -1363,8 +1365,8 @@ int main( int argc, char *argv[] )
 		unsigned long nExecutionTime;
 		unsigned long nParseTime;
         aIp.SetDbgModus( aArgs.m_bDbgModus );
-        cout << "SCRIPT: " << sScript << endl;
-		bool bOk = aIp.Run( sScript, aVal, &nExecutionTime, &nParseTime, aParsedTokens );
+		cout << "SCRIPT: " << sScrpitWithPredefs << endl;
+		bool bOk = aIp.Run( sScrpitWithPredefs, sScript, aVal, &nExecutionTime, &nParseTime, aParsedTokens);
 		if( bOk )
 		{
 			// Returnwert zuweisen

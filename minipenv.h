@@ -541,11 +541,14 @@ public:
     void SetDbgMode( bool bDebug )		{ m_bDbg = bDebug; }
     bool IsDbgMode() const				{ return m_bDbg; }
 
+	// Flag to indicate an extended tracing
     void SetDebugMode( bool bDebug )	{ m_bDebug = bDebug; }
 	bool IsDebugMode() const			{ return m_bDebug; }
 
 	void SetSilentMode( bool bSilent )	{ m_bIsSilent = bSilent; }
 	bool IsSilentMode() const			{ return m_bIsSilent; }
+
+	void SetSourceCode( const string & sCode )	{ m_sSourceCode = sCode; }
 
 	// Groesse des aktuellen Call-Stacks liefern
 	int GetCallStackSize() const				{ return (int)m_aCallStack.size(); }
@@ -641,12 +644,15 @@ private:
 	FunctionContainerT		m_aFunctionContainer;
 	ClassContainerT			m_aClassContainer;
 	BreakpointContainerT	m_aBreakpointContainer;
-	// Variablen fuer die Fehlerbehandlung
+    // Variablen fuer die Fehlerbehandlung und Debugging
+    int                     m_nCurrentLineNo;
 	int						m_nLastErrorCode;
 	string					m_sLastErrorMsg;
+	string					m_sSourceCode;
 	bool					m_bDebug;
     bool                    m_bDbg;
     bool                    m_bRunDbg;
+    bool                    m_bStepToNextLine;
 	bool					m_bIsSilent;
 };
 

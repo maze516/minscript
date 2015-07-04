@@ -1401,9 +1401,12 @@ static bool IsManglingNameCompatible( const string & sName1, const string & sNam
 
 minInterpreterEnvironment::minInterpreterEnvironment()
 {
+    m_nCurrentLineNo = 0;
+    m_nLastErrorCode = 0;
 	m_bDebug = false;
     m_bDbg = false;
     m_bRunDbg = false;
+    m_bStepToNextLine = false;
 	m_bIsSilent = false;
 }
 
@@ -1511,6 +1514,31 @@ bool minInterpreterEnvironment::IsAtBreakpoint( minInterpreterNode * pCurrentNod
 	return false;
 }
 
+// http://stackoverflow.com/questions/236129/split-a-string-in-c
+vector<string> split(const string & str, const string & delimiters)
+{
+	vector<string> v;
+	string::size_type start = 0;
+	auto pos = str.find_first_of(delimiters, start);
+	while (pos != string::npos) 
+	{
+		if (pos != start) // ignore empty tokens
+		{
+//			v.emplace_back(str, start, pos - start);
+            v.push_back(str.substr(start, pos - start));
+        }
+		start = pos + 1;
+		pos = str.find_first_of(delimiters, start);
+	}
+	if (start < str.length()) // ignore trailing delimiter
+	{
+//		v.emplace_back(str, start, str.length() - start); // add what's left of the string
+        v.push_back(str.substr(start, str.length() - start));
+	}
+	return v;
+}
+
+
 void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
 	bool bIsAtBreakpoint = IsAtBreakpoint( pCurrentNode );
@@ -1525,35 +1553,54 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
     {
         return;
     }
-    
+
+    int nCurrentLineNo = pCurrentNode->GetLineNumber();
+
+    // process step over next line
+    if( m_bStepToNextLine && nCurrentLineNo==m_nCurrentLineNo )
+    {
+        return;
+    }
+
 // TODO --> debugger interface implementieren: fuer anzeige Quellcode, etc.
 //          oder: debugger extern in eigener Klasse implementieren und das InterpreterEnvironment und den node hineinreichen... ?
 
 // TODO --> script-name und line-no an token / interpreterNode dran haengen
     cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
 
-	cout << "Line number=" << pCurrentNode->GetLineNumber() << endl;
+    cout << "Line number=" << nCurrentLineNo << endl;
 
     //pCurrentNode->Dump( cout );
 
-    bool bContinue = true;
-    while( bContinue )
+    bool bContinueDbgLoop = true;
+    while( bContinueDbgLoop )
     {
         cout << endl << "(mdb) > ";
         string sInput;
 		getline( cin, sInput );
         //cin >> sInput;
-        if( sInput=="n" )
+        if( sInput=="n" )   // step next ast
         {
-            cout << "next step" << endl;
-// TODO --> alle nodes fuer eine Zeile ausfuehren...
-            bContinue = false;
+            cout << "next AST step" << endl;
+// TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
+            bContinueDbgLoop = false;
+            m_bStepToNextLine = false;
         }
+        else if( sInput=="o" )   // step next line
+        {
+            cout << "step over next line" << endl;
+// TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
+            bContinueDbgLoop = false;
+            m_bStepToNextLine = true;
+            m_nCurrentLineNo = nCurrentLineNo;
+        }
+// TODO --> step into implementieren
         else if( sInput=="c" )
         {
             cout << "run..." << endl;
-            bContinue = false;
+            bContinueDbgLoop = false;
             m_bRunDbg = true;
+            m_bStepToNextLine = false;
         }
         else if( sInput=="w" )
         {
@@ -1591,6 +1638,16 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
         else if( sInput=="s" )
         {
+			// dump source code
+			vector<string> lines = split(m_sSourceCode, string("\n"));
+			int iLineNo = 1;
+			vector<string>::const_iterator iter = lines.begin();
+			while( iter != lines.end() )
+			{
+				cout << iLineNo << " " << *iter << endl;
+				iLineNo++;
+				iter++;
+			}			
         }
         else if( sInput=="q" )
         {
@@ -1600,7 +1657,8 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         else if( sInput=="h" )
         {
             cout << "show help:" << endl;
-            cout << "  n        : next step" << endl;
+            cout << "  n        : next AST step" << endl;
+            cout << "  o        : step over next line" << endl;
             cout << "  c        : run" << endl;
 			cout << "  b lineno : set breakpoint at line" << endl;
 			cout << "  clear    : clear all breakpoins" << endl;
@@ -1761,7 +1819,7 @@ int minInterpreterEnvironment::GetNoOfFunctions( const string & sName ) const
 		++aFuncIter;
 	}
 #else
-	minHandle<minFunctionDeclarationNode> hTemp( new minInterpreterFunctionDeclarationNode( sName, false, false, Void, minVariableDeclarationList(), 0, minParserItemList() ) );
+    minHandle<minFunctionDeclarationNode> hTemp( new minInterpreterFunctionDeclarationNode( sName, false, false, Void, minVariableDeclarationList(), 0, minParserItemList(), /*TODO DEBUG*/0 ) );
 
 	pair<FunctionContainerT::const_iterator,FunctionContainerT::const_iterator> aFound 
 			= equal_range( m_aFunctionContainer.begin(), m_aFunctionContainer.end(), hTemp, CompareFunctions() );
@@ -1792,7 +1850,7 @@ minHandle<minFunctionDeclarationNode> minInterpreterEnvironment::GetFunction( co
 		++aFuncIter;
 	}
 #else
-	minHandle<minFunctionDeclarationNode> hTemp( new minInterpreterFunctionDeclarationNode( sName, false, false, Void, minVariableDeclarationList(), 0, minParserItemList() ) );
+    minHandle<minFunctionDeclarationNode> hTemp( new minInterpreterFunctionDeclarationNode( sName, false, false, Void, minVariableDeclarationList(), 0, minParserItemList(), /*TODO DEBUG*/0 ) );
 
 	pair<FunctionContainerT::const_iterator,FunctionContainerT::const_iterator> aFound 
 			= equal_range( m_aFunctionContainer.begin(), m_aFunctionContainer.end(), hTemp, CompareFunctions() );
@@ -1821,7 +1879,7 @@ minHandle<minFunctionDeclarationNode> minInterpreterEnvironment::GetFunctionForM
 	}
 #else
 	// temporare Funktion anlegen, notwendig zur Suche
-	minHandle<minFunctionDeclarationNode> hTemp( new minInterpreterFunctionDeclarationNode( sName, false, false, Void, minVariableDeclarationList(), 0, minParserItemList() ) );
+    minHandle<minFunctionDeclarationNode> hTemp( new minInterpreterFunctionDeclarationNode( sName, false, false, Void, minVariableDeclarationList(), 0, minParserItemList(), /*TODO DEBUG*/0 ) );
 
 	pair<FunctionContainerT::const_iterator,FunctionContainerT::const_iterator> aFound 
 			= equal_range( m_aFunctionContainer.begin(), m_aFunctionContainer.end(), hTemp, CompareFunctions() );

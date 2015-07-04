@@ -112,7 +112,7 @@ bool minParser::ParseFunction()
 }
 
 // Hilfsmethode
-bool minParser::ParseForStringToken( const string & sStrg )
+bool minParser::ParseForStringToken( const string & sStrg, minToken * pToken )
 {
 	minToken aToken;
 	if( PeekRealToken( aToken ) )
@@ -120,6 +120,10 @@ bool minParser::ParseForStringToken( const string & sStrg )
 		if( aToken.GetString() == sStrg )
 		{
 			ReadToken();
+            if( pToken )
+            {
+                *pToken = aToken;
+            }
 			return true;
 		}
 	}
@@ -236,7 +240,8 @@ bool minParser::ParseBlock( minInterpreterNode * & pNodeOut, bool bNoBlockIsErro
 
 	SkipWhitespaces();
 
-	if( ParseForStringToken( "{" ) )
+    minToken aToken;
+    if( ParseForStringToken( "{", &aToken ) )
 	{
 		minParserItemList aNodeList;
 
@@ -248,7 +253,7 @@ bool minParser::ParseBlock( minInterpreterNode * & pNodeOut, bool bNoBlockIsErro
 		// wurde das Statement-List-Terminator Token, z.B. } gefunden ?
 		if( ParseForStringToken( "}" ) )
 		{
-			pNodeOut = new minBlockNode( aNodeList );
+            pNodeOut = new minBlockNode( aNodeList, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 			return true;
 		}
 	}
@@ -335,7 +340,7 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 		return true;
 	}
 	// richtige Klassendeklaration behandeln
-	else if( ParseForStringToken( "{" ) )
+    else if( ParseForStringToken( "{", &aToken ) )
 	{
 		minParserItemList aConstructorList;
 		minParserItemList aMethodList;
@@ -414,14 +419,14 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 			// jetzt noch ggf. den Default-Konstruktor bzw. Default-Destruktor anlegen (mit leerem Block)
 			if( aConstructorList.size()==0 )
 			{
-				aConstructorList.push_back( minHandle<minInterpreterNode>( new minInterpreterFunctionDeclarationNode( sClassName+g_sClassMethodSeparator+sClassName, /*bIsConstant*/false, /*bIsVirtual*/false, Void, minVariableDeclarationList(), /*pCode*/new minBlockNode( minParserItemList() ), minParserItemList() ) ) );
+                aConstructorList.push_back( minHandle<minInterpreterNode>( new minInterpreterFunctionDeclarationNode( sClassName+g_sClassMethodSeparator+sClassName, /*bIsConstant*/false, /*bIsVirtual*/false, Void, minVariableDeclarationList(), /*pCode*/new minBlockNode( minParserItemList(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) ), minParserItemList(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) ) ) );
 			}
 			if( !hDestructorNode.IsOk() )
 			{
-				hDestructorNode = minHandle<minInterpreterNode>( new minInterpreterFunctionDeclarationNode( sClassName+g_sClassMethodSeparator+"~"+sClassName, /*bIsConstant*/false, /*bIsVirtual*/false, Void, minVariableDeclarationList(), /*pCode*/new minBlockNode( minParserItemList() ), minParserItemList() ) );
+                hDestructorNode = minHandle<minInterpreterNode>( new minInterpreterFunctionDeclarationNode( sClassName+g_sClassMethodSeparator+"~"+sClassName, /*bIsConstant*/false, /*bIsVirtual*/false, Void, minVariableDeclarationList(), /*pCode*/new minBlockNode( minParserItemList(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) ), minParserItemList(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) ) );
 			}
 
-			pNodeOut = new minClassBlockNode( aMethodList, aMemberVariableList, aConstructorList, hDestructorNode );
+            pNodeOut = new minClassBlockNode( aMethodList, aMemberVariableList, aConstructorList, hDestructorNode, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 
 			return true;
 		}
@@ -505,7 +510,7 @@ bool minParser::ParseTypedef( minInterpreterNode * & pNodeOut )
 						{
 							if( ParseForStringToken( ";" ) && RegisterTypedefItem( aOldType, sNewTypeName ) )
 							{
-								pNodeOut = new minTypedefNode( aOldType, sNewTypeName );
+                                pNodeOut = new minTypedefNode( aOldType, sNewTypeName, 0, minDebuggerInfo::CreateDebuggerInfo( aNewTypeToken.GetLineNo() ) );
 								return true;
 							}
 						}
@@ -527,7 +532,7 @@ bool minParser::ParseTypedef( minInterpreterNode * & pNodeOut )
 				minInterpreterType aOldType( GetTypeFromString( aOldTypeToken.GetString() ), nPointerLevel, bIsReference, aOldTypeToken.GetString(), bIsConst );
 				if( ParseForStringToken( ";" ) && RegisterTypedefItem( aOldType, aNewTypeToken.GetString() ) )
 				{
-					pNodeOut = new minTypedefNode( aOldType, aNewTypeToken.GetString() );
+                    pNodeOut = new minTypedefNode( aOldType, aNewTypeToken.GetString(), 0, minDebuggerInfo::CreateDebuggerInfo( aNewTypeToken.GetLineNo() ) );
 					return true;
 				}
 			}
@@ -558,7 +563,7 @@ bool minParser::ParseTypedef( minInterpreterNode * & pNodeOut )
 					minInterpreterType aOldType( Object, 0, false, sClassName );
 					if( ParseForStringToken( ";" ) && RegisterTypedefItem( aOldType, aNewTypeToken.GetString() ) )
 					{
-						pNodeOut = new minTypedefNode( aOldType, aNewTypeToken.GetString(), pClassDeclarationCode  );
+                        pNodeOut = new minTypedefNode( aOldType, aNewTypeToken.GetString(), pClassDeclarationCode, minDebuggerInfo::CreateDebuggerInfo( aNewTypeToken.GetLineNo() )  );
 						return true;
 					}
 				}
@@ -630,7 +635,7 @@ bool minParser::ParseCaseOrDefaultForSwitch( minInterpreterNode * & pNodeOut, bo
 			aNodeList.push_back( minHandle<minInterpreterNode>( pNode ) );
 		}
 
-		pNodeOut = new minCaseLabelNode( pConstExprNode, aNodeList );
+        pNodeOut = new minCaseLabelNode( pConstExprNode, aNodeList, minDebuggerInfo::CreateDebuggerInfo( aToken.GetLineNo() ) );
 		return true;
 	}
 
@@ -645,7 +650,8 @@ bool minParser::ParseCaseOrDefaultForSwitch( minInterpreterNode * & pNodeOut, bo
 bool minParser::ParseSwitch( minInterpreterNode * & pNodeOut )
 {
 	// gepeektes (switch) Token lesen 
-	m_pTokenizer->ReadNextToken();
+    minToken aSwitchToken;
+    m_pTokenizer->GetNextToken(aSwitchToken);
 
 	// Bedingung in Klammern parsen
 	minInterpreterNode * pExpression = 0;
@@ -679,7 +685,7 @@ bool minParser::ParseSwitch( minInterpreterNode * & pNodeOut )
 			// wurde das Statement-List-Terminator Token, z.B. } gefunden ?
 			if( ParseForStringToken( "}" ) )
 			{
-				pNodeOut = new minSwitchNode( pExpression, aNodeList );
+                pNodeOut = new minSwitchNode( pExpression, aNodeList, minDebuggerInfo::CreateDebuggerInfo(aSwitchToken.GetLineNo()) );
 				return true;
 			}
 		}
@@ -692,7 +698,8 @@ bool minParser::ParseSwitch( minInterpreterNode * & pNodeOut )
 bool minParser::ParseWhile( minInterpreterNode * & pNodeOut )
 {
 	// gepeektes (while) Token lesen 
-	m_pTokenizer->ReadNextToken();
+    minToken aWhileToken;
+    m_pTokenizer->GetNextToken( aWhileToken );
 
 	// Bedingung in Klammern parsen
 	minInterpreterNode * pExpression = 0;
@@ -704,7 +711,7 @@ bool minParser::ParseWhile( minInterpreterNode * & pNodeOut )
 		minInterpreterNode * pStatement = 0;
 		if( ParseStatement( pStatement ) )
 		{
-			pNodeOut = new minWhileNode( pExpression, pStatement );
+            pNodeOut = new minWhileNode( pExpression, pStatement, minDebuggerInfo::CreateDebuggerInfo(aWhileToken.GetLineNo()) );
 			return true;
 		}
 	}
@@ -716,7 +723,8 @@ bool minParser::ParseWhile( minInterpreterNode * & pNodeOut )
 bool minParser::ParseDo( minInterpreterNode * & pNodeOut )
 {
 	// gepeektes (do) Token lesen 
-	m_pTokenizer->ReadNextToken();
+    minToken aDoToken;
+    m_pTokenizer->GetNextToken(aDoToken);
 
 	// jetzt das Statement nach dem do parsen, MUSS ein Block sein
 	minInterpreterNode * pStatement = 0;
@@ -738,7 +746,7 @@ bool minParser::ParseDo( minInterpreterNode * & pNodeOut )
 				ParseForStringToken( ")" ) && 
 				ParseForStringToken( ";" ) )
 			{
-				pNodeOut = new minDoNode( pExpression, pStatement );
+                pNodeOut = new minDoNode( pExpression, pStatement, minDebuggerInfo::CreateDebuggerInfo(aDoToken.GetLineNo()) );
 				return true;
 			}
 		}
@@ -751,7 +759,8 @@ bool minParser::ParseDo( minInterpreterNode * & pNodeOut )
 bool minParser::ParseFor( minInterpreterNode * & pNodeOut )
 {
 	// gepeektes (for) Token lesen 
-	m_pTokenizer->ReadNextToken();
+    minToken aForToken;
+    m_pTokenizer->GetNextToken(aForToken);
 
 	// Init, Bedingung und Loop Anweisung in Klammern parsen
 	minInterpreterNode * pInitExpression = 0;
@@ -767,7 +776,7 @@ bool minParser::ParseFor( minInterpreterNode * & pNodeOut )
 		minInterpreterNode * pStatement = 0;
 		if( ParseStatement( pStatement ) )
 		{
-			pNodeOut = new minForNode( pInitExpression, pCheckExpression, pLoopExpression, pStatement );
+            pNodeOut = new minForNode( pInitExpression, pCheckExpression, pLoopExpression, pStatement, minDebuggerInfo::CreateDebuggerInfo(aForToken.GetLineNo()) );
 			return true;
 		}
 	}
@@ -782,7 +791,8 @@ bool minParser::ParseIf( minInterpreterNode * & pNodeOut )
 	pNodeOut = 0;
 
 	// gepeektes (if) Token lesen
-	m_pTokenizer->ReadNextToken();
+    minToken aIfToken;
+    m_pTokenizer->GetNextToken(aIfToken);
 
 	// Bedingung in Klammern parsen
 	minInterpreterNode * pExpression = 0;
@@ -809,7 +819,7 @@ bool minParser::ParseIf( minInterpreterNode * & pNodeOut )
 				}
 			}
 
-			pNodeOut = new minIfNode( pExpression, pThenStatement, pElseStatement );
+            pNodeOut = new minIfNode( pExpression, pThenStatement, pElseStatement, minDebuggerInfo::CreateDebuggerInfo(aIfToken.GetLineNo()) );
 			return true;
 		}
 	}
@@ -884,7 +894,7 @@ bool minParser::ParseArgumentDeclarationList( minVariableDeclarationList & aVarD
 
 					// neue Variablen-Deklaration in die Variablen-Deklarationsliste eintragen
 					minVariableDeclarationNode * pVarNode 
-						= new minVariableDeclarationNode( sVariableName, aIpType, /*nArraySize*/-1, 0, 0, 0, StringListT() );
+						= new minVariableDeclarationNode(sVariableName, aIpType, /*nArraySize*/-1, 0, 0, 0, StringListT(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()));
 					// und neue Variablendeklaration in die Liste eintragen
 					aVarDeclList.push_back( minHandle<minVariableDeclarationNode>( pVarNode ) );
 
@@ -989,7 +999,7 @@ bool minParser::ParseConstructorInitList( const string & sClassName, minParserIt
 					ReadToken();
 				}
 
-				aInitListOut.push_back( minHandle<minInterpreterNode>( new minFunctionCallNode( sBaseClass, aArgumentList ) ) );
+                aInitListOut.push_back( minHandle<minInterpreterNode>( new minFunctionCallNode( sBaseClass, aArgumentList, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) ) ) );
 			}
 			else
 			{
@@ -1130,7 +1140,7 @@ bool minParser::ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, str
 		return false;
 	}
 
-	minClassDeclarationNode * pTemp = new minClassDeclarationNode( sClassNameOut, pClassCode, aBaseClassList );
+    minClassDeclarationNode * pTemp = new minClassDeclarationNode( sClassNameOut, pClassCode, aBaseClassList, 0, minDebuggerInfo::CreateDebuggerInfo(aTempToken.GetLineNo()) );
 
 	// die neue Struktur oder Klasse als Typ registrieren:
 	RegisterUserType( pTemp );
@@ -1146,93 +1156,93 @@ static minOperatorNode * CreateNewOperatorNode( const minToken & aToken, bool bI
 	switch( aToken.GetId() )
 	{
 		case EXISTS_ID :
-				return new minExistsOperatorNode( aToken.GetString() );
+                return new minExistsOperatorNode( aToken.GetString(), 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 #ifdef USEBIG
 		case DEREFEXISTS_ID :
-				return new minDereferenceExistsOperatorNode( aToken.GetString() );
+                return new minDereferenceExistsOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case DBGHALT_ID :
-				return new minDebugHaltNode( aToken.GetString() );
+                return new minDebugHaltNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case TYPEOF_ID :
-				return new minTypeofOperatorNode( aToken.GetString() );
+                return new minTypeofOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 #endif
 
 		case INC_ID :
-				return new minIncOperatorNode( aToken.GetString() );
+                return new minIncOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case DEC_ID :
-				return new minDecOperatorNode( aToken.GetString() );
+                return new minDecOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 
 		case NEW_ID :
-				return new minNewOperatorNode( aToken.GetString() );
+                return new minNewOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case DELETE_ID :
-				return new minDeleteOperatorNode( aToken.GetString() );
+                return new minDeleteOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case NOT_ID :
-				return new minNotOperatorNode( aToken.GetString() );
+                return new minNotOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case INVERT_ID :
-				return new minInvertOperatorNode( aToken.GetString() );
+                return new minInvertOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case PTR_DEREF_ID :
-				return new minPointerDereferenceOperatorNode( aToken.GetString() );
+                return new minPointerDereferenceOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case ADD_ID :
 				if( bIsUnaray )
-					return new minPlusOperatorNode( aToken.GetString() );
+                    return new minPlusOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 				else
-					return new minAddOperatorNode( aToken.GetString() );
+                    return new minAddOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case SUB_ID :
 				if( bIsUnaray )
-					return new minMinusOperatorNode( aToken.GetString() );
+                    return new minMinusOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 				else
-					return new minSubOperatorNode( aToken.GetString() );
+                    return new minSubOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case MULT_ID :
 				if( bIsUnaray )
-					return new minDereferenceOperatorNode( aToken.GetString() );
+                    return new minDereferenceOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 				else
-					return new minMultOperatorNode( aToken.GetString() );
+                    return new minMultOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case DIV_ID :
-				return new minDivOperatorNode( aToken.GetString() );
+                return new minDivOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case MOD_ID :
-				return new minModOperatorNode( aToken.GetString() );
+                return new minModOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case LEFTSHIFT_ID :
-				return new minShiftOperatorNode( aToken.GetString(), /*bLeftShift*/true );
+                return new minShiftOperatorNode( aToken.GetString(), /*bLeftShift*/true, 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case RIGHTSHIFT_ID :
-				return new minShiftOperatorNode( aToken.GetString(), /*bLeftShift*/false );
+                return new minShiftOperatorNode( aToken.GetString(), /*bLeftShift*/false, 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case ASSIGN_ID :
-				return new minAssignOperatorNode( aToken.GetString() );
+                return new minAssignOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case LESSEQUAL_ID :
-				return new minLessOperatorNode( aToken.GetString(), /*bLessEqual*/true );
+                return new minLessOperatorNode( aToken.GetString(), /*bLessEqual*/true, 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case LESS_ID :
-				return new minLessOperatorNode( aToken.GetString(), /*bLessEqual*/false );
+                return new minLessOperatorNode( aToken.GetString(), /*bLessEqual*/false, 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case MOREEQUAL_ID :
-				return new minMoreOperatorNode( aToken.GetString(), /*bMoreEqual*/true );
+                return new minMoreOperatorNode( aToken.GetString(), /*bMoreEqual*/true, 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case MORE_ID :
-				return new minMoreOperatorNode( aToken.GetString(), /*bMoreEqual*/false );
+                return new minMoreOperatorNode( aToken.GetString(), /*bMoreEqual*/false, 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case EQUAL_ID :
-				return new minEqualOperatorNode( aToken.GetString() );
+                return new minEqualOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case NOT_EQUAL_ID :
-				return new minNotEqualOperatorNode( aToken.GetString() );
+                return new minNotEqualOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case LOG_AND_ID :
-				return new minLogAndOperatorNode( aToken.GetString() );
+                return new minLogAndOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case LOG_OR_ID :
-				return new minLogOrOperatorNode( aToken.GetString() );
+                return new minLogOrOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case BINARY_AND_ID :
 				if( bIsUnaray )
-					return new minAddressOperatorNode( aToken.GetString() );
+                    return new minAddressOperatorNode( aToken.GetString(), minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 				else
-					return new minBinAndOperatorNode( aToken.GetString() );
+                    return new minBinAndOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case BINARY_OR_ID :
-				return new minBinOrOperatorNode( aToken.GetString() );
+                return new minBinOrOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case COMMA_ID :
-				return new minCommaOperatorNode( aToken.GetString() );
+                return new minCommaOperatorNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case DOT_ID :
-				return new minObjectElementNode( aToken.GetString() );
+                return new minObjectElementNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 		case ARRAY_START_ID :
-				return new minArrayElementNode( aToken.GetString() );
+                return new minArrayElementNode( aToken.GetString(), 0, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 	}
 	return 0;
 }
 
 // Konstruktor-Aufruf implementieren (23.12.1999)
-inline minInterpreterNode * MakeConstructorCallNode( const string & sTypeName, const minParserItemList & aArgumentList )
+inline minInterpreterNode * MakeConstructorCallNode( const string & sTypeName, const minParserItemList & aArgumentList, const minToken & aToken )
 {
-	minFunctionCallNode * pFcnNode = new minFunctionCallNode( /*Variablename==Klassennamen*/sTypeName, aArgumentList );
+    minFunctionCallNode * pFcnNode = new minFunctionCallNode( /*Variablename==Klassennamen*/sTypeName, aArgumentList, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 	return pFcnNode;
 		// Bem.: beim Interpretieren des Calls wird automatisch der Name in einen Methodennamen konvertiert !!!
 }
@@ -1357,7 +1367,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 					{
 						minInterpreterType aIpType = minInterpreterType( Function );
 						minVariableDeclarationNode * pVarNode
-							= new minVariableDeclarationNode( sVariableName, aIpType, /*nArraySize*/-1, 0, 0, 0, aTemplateTypeNameList );
+							= new minVariableDeclarationNode(sVariableName, aIpType, /*nArraySize*/-1, 0, 0, 0, aTemplateTypeNameList, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()));
 
 						pNodeOut = pVarNode;
 						return true;
@@ -1463,7 +1473,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 							// Variable anlegen (inkl. Konstruktor-Call),
 							// ggf. ist dies ein const-Objekt, wenn vor dem Aufruf dieser Methode das const-Token detektiert wurde !
 							minVariableDeclarationNode * pVarNode
-								= new minVariableDeclarationNode( sVariableName, aIpType, nArraySize, /*pArraySizeExpression*/0, /*pInitExpression*/0, MakeConstructorCallNode( aIpType.GetTypeString(), aArgumentList ), aTemplateTypeNameList );
+                                = new minVariableDeclarationNode( sVariableName, aIpType, nArraySize, /*pArraySizeExpression*/0, /*pInitExpression*/0, MakeConstructorCallNode( aIpType.GetTypeString(), aArgumentList, aToken ), aTemplateTypeNameList, minDebuggerInfo::CreateDebuggerInfo( aToken.GetLineNo() ) );
 
 							pNodeOut = pVarNode;
 							return true;
@@ -1519,7 +1529,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 
 							// TODO: ggf. den Parameter bIsConst (z.B. bei const int f() {})
 							//		 noch an den FunctionDecl.-Node uebergeben
-							pNodeOut = new minInterpreterFunctionDeclarationNode( sVariableName, bIsConstMethod, bIsVirtual, aIpType, aVarDeclList, pCode, aInitList );
+                            pNodeOut = new minInterpreterFunctionDeclarationNode( sVariableName, bIsConstMethod, bIsVirtual, aIpType, aVarDeclList, pCode, aInitList, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 							return true;
 						}
 						else
@@ -1648,11 +1658,11 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 				minInterpreterNode * pConstructorCall = 0;
 				if( aIpType.GetType() == Object )
 				{
-					pConstructorCall = MakeConstructorCallNode( aIpType.GetTypeString(), /*leere ArgumentList*/minParserItemList() );
+                    pConstructorCall = MakeConstructorCallNode( aIpType.GetTypeString(), /*leere ArgumentList*/minParserItemList(), aToken );
 				}
 				// jetzt die Variable anlegen
 				minVariableDeclarationNode * pNode
-					= new minVariableDeclarationNode( sVariableName, aIpType, nArraySize, pArraySizeExpression, pInitExpression, pConstructorCall, aTemplateTypeNameList );
+					= new minVariableDeclarationNode(sVariableName, aIpType, nArraySize, pArraySizeExpression, pInitExpression, pConstructorCall, aTemplateTypeNameList, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()));
 				// gab es schon eine Variablen-Deklaration ?
 				if( pNextNode )
 				{
@@ -1768,7 +1778,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 			minInterpreterNode * pExpression = 0;
 			if( ParseExpression( pExpression ) )
 			{
-				pNodeOut = new minReturnNode( pExpression );
+                pNodeOut = new minReturnNode( pExpression, minDebuggerInfo::CreateDebuggerInfo( aToken.GetLineNo() ) );
 				return true;
 			}
 		}
@@ -1776,7 +1786,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 		{
 			// gepeektes (;) Token lesen
 			m_pTokenizer->ReadNextToken();
-			pNodeOut = new minReturnNode( 0 );
+            pNodeOut = new minReturnNode( 0, minDebuggerInfo::CreateDebuggerInfo( aToken.GetLineNo() ) );
 			return true;
 		}
 		else
@@ -1789,7 +1799,8 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 	else if( nId == BREAK_ID )
 	{
 		// gepeektes (break) Token lesen
-		m_pTokenizer->ReadNextToken();
+        minToken aBreakToken;
+        m_pTokenizer->GetNextToken( aBreakToken );
 
 		if( !ParseForStringToken( ";" ) )
 		{
@@ -1798,13 +1809,14 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 			return false;
 		}
 
-		pNodeOut = new minBreakNode();
+        pNodeOut = new minBreakNode( minDebuggerInfo::CreateDebuggerInfo( aBreakToken.GetLineNo() ));
 		return true;
 	}
 	else if( nId == CONTINUE_ID )
 	{
 		// gepeektes (continue) Token lesen
-		m_pTokenizer->ReadNextToken();
+        minToken aContinueToken;
+        m_pTokenizer->GetNextToken( aContinueToken );
 
 		if( !ParseForStringToken( ";" ) )
 		{
@@ -1813,7 +1825,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 			return false;
 		}
 
-		pNodeOut = new minContinueNode();
+        pNodeOut = new minContinueNode( minDebuggerInfo::CreateDebuggerInfo( aContinueToken.GetLineNo() ));
 		return true;
 	}
 	else if( (nId == CLASS_ID) || (nId == STRUCT_ID) )
@@ -1879,7 +1891,8 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 bool minParser::ParseSizeof( minInterpreterNode * & pNodeOut )
 {
 	// gepeektes (sizeof) Token lesen 
-	m_pTokenizer->ReadNextToken();
+    minToken aSizeofToken;
+    m_pTokenizer->GetNextToken( aSizeofToken );
 
 	// Bedingung in Klammern parsen
 	minInterpreterNode * pExpression = 0;
@@ -1887,7 +1900,7 @@ bool minParser::ParseSizeof( minInterpreterNode * & pNodeOut )
 		ParseExpression( pExpression, /*bStopWithComma*/false, /*bStopWithSemicolon*/true ) &&
 		ParseForStringToken( ")" ) )
 	{
-		pNodeOut = new minSizeofNode( pExpression );
+        pNodeOut = new minSizeofNode( pExpression, minDebuggerInfo::CreateDebuggerInfo( aSizeofToken.GetLineNo() ) );
 		return true;
 	}
 	pNodeOut = 0;
@@ -1900,7 +1913,8 @@ bool minParser::ParseTemplate( minInterpreterNode * & pNodeOut )
 	// parse: template <class Type1, class Type2> class/function
 
 	// gepeektes (sizeof) Token lesen 
-	m_pTokenizer->ReadNextToken();
+    minToken aToken;
+    m_pTokenizer->GetNextToken(aToken);
 
 	minInterpreterNode * pClass = 0;
 	string sClassName;
@@ -1909,7 +1923,7 @@ bool minParser::ParseTemplate( minInterpreterNode * & pNodeOut )
 		ParseForStringToken( "class" ) &&
 		ParseClass( /*bIsStruct*/false, pClass, sClassName ) )
 	{
-		pNodeOut = new minTemplateNode( m_aTemplateTypeNameList, pClass );
+        pNodeOut = new minTemplateNode( m_aTemplateTypeNameList, pClass, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 
 		// temporaere Type Liste wieder loeschen
 		m_aTemplateTypeNameList.erase( m_aTemplateTypeNameList.begin(), m_aTemplateTypeNameList.end() );
@@ -2265,7 +2279,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				if( PeekRealToken( aTempToken ) /*&& aTempToken.IsIdentifier()*/ )
 				{
 					ReadToken();
-					pLeft = new minExistsOperatorNode( /*sOperator*/"__exists", new minVariableNode( aTempToken.GetString(), Unknown,  minDebuggerInfo::CreateDebuggerInfo( aTempToken.GetLineNo() ) ) );
+                    pLeft = new minExistsOperatorNode( /*sOperator*/"__exists", new minVariableNode( aTempToken.GetString(), Unknown, minDebuggerInfo::CreateDebuggerInfo( aTempToken.GetLineNo() ) ), minDebuggerInfo::CreateDebuggerInfo( aTempToken.GetLineNo() ) );
 				}
 				//ggf. bei Identifier Ueberpruefeung else --> ERROR
 
@@ -2296,7 +2310,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				minParserItemList aArgumentList;
 				if( ParseArgumentList( aArgumentList ) )
 				{
-					pLeft = new minFunctionCallNode( aLastToken.GetString(), aArgumentList );
+                    pLeft = new minFunctionCallNode( aLastToken.GetString(), aArgumentList, 0, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 				}
 				else
 				{
@@ -2316,7 +2330,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 					if( PeekRealToken( aToken ) && aToken.IsArrayStop() )
 					{
 						ReadToken();
-						pLeft = new minArrayElementNode( aToken.GetString(), new minVariableNode( aLastToken.GetString(), Unknown, minDebuggerInfo::CreateDebuggerInfo( aLastToken.GetLineNo() ) ), pIndexExpr );
+                        pLeft = new minArrayElementNode( aToken.GetString(), new minVariableNode( aLastToken.GetString(), Unknown, minDebuggerInfo::CreateDebuggerInfo( aToken.GetLineNo() ) ), pIndexExpr, minDebuggerInfo::CreateDebuggerInfo( aLastToken.GetLineNo() ) );
 // TODO: hier ggf. rekursiv aufsetzten...
 					}
 					else
@@ -2442,7 +2456,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 						// falls es ein Objekt ist, einen Konstruktor-Aufruf im new durchfuehren
 						if( aIpType.IsObject() )
 						{
-							((minNewOperatorNode *)pNewOperator)->SetConstructorCall( MakeConstructorCallNode( aIpType.GetTypeString(), aArgumentList ) );
+                            ((minNewOperatorNode *)pNewOperator)->SetConstructorCall( MakeConstructorCallNode( aIpType.GetTypeString(), aArgumentList, aToken ) );
 						}
 						else
 						{
@@ -2476,12 +2490,13 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 		}
 		else if( aToken.IsParenthisOpen() )
 		{
+            minToken aParenthisToken = aToken;
 			ReadToken();						// Klammer auf lesen
 			if( ParseExpression( pLeft, bStopWithComma, bStopWithSemicolon, bStopWithArrayStop ) )		// rekursiver Aufruf
 			{
 				if( PeekRealToken( aToken ) && aToken.IsParenthisClose() )
 				{
-					pLeft = new minParenthisNode( pLeft );
+                    pLeft = new minParenthisNode( pLeft, minDebuggerInfo::CreateDebuggerInfo(aParenthisToken.GetLineNo()) );
 					ReadToken();
 				}
 				else
@@ -2516,7 +2531,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 			minParserItemList aArgumentList;
 			if( ParseArgumentList( aArgumentList ) )
 			{
-				pLeft = new minFunctionCallNode( aLastToken.GetString(), aArgumentList, pLeft );
+                pLeft = new minFunctionCallNode( aLastToken.GetString(), aArgumentList, pLeft, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
 			}
 			else
 			{
