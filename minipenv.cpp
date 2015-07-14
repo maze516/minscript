@@ -1402,11 +1402,13 @@ static bool IsManglingNameCompatible( const string & sName1, const string & sNam
 minInterpreterEnvironment::minInterpreterEnvironment()
 {
     m_nCurrentLineNo = 0;
+    m_nCurrentCallStackLevel = 0;
     m_nLastErrorCode = 0;
 	m_bDebug = false;
     m_bDbg = false;
     m_bRunDbg = false;
     m_bStepToNextLine = false;
+    m_bStepIntoNextLine = false;
 	m_bIsSilent = false;
 }
 
@@ -1557,8 +1559,19 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
     int nCurrentLineNo = pCurrentNode->GetLineNumber();
 
     // process step over next line
-    if( m_bStepToNextLine && nCurrentLineNo==m_nCurrentLineNo )
+    if( m_bStepToNextLine &&
+        ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ||
+          (m_nCurrentCallStackLevel>0 && m_aCallStack.size()>m_nCurrentCallStackLevel) ) )
     {
+        cout << "cont. over " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << endl;
+        return;
+    }
+
+    // process step into next line
+    if( m_bStepIntoNextLine &&
+        ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ) )
+    {
+        cout << "cont. into " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << endl;
         return;
     }
 
@@ -1568,9 +1581,11 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 // TODO --> script-name und line-no an token / interpreterNode dran haengen
     cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
 
-    cout << "Line number=" << nCurrentLineNo << endl;
+    cout << "Line number=" << nCurrentLineNo << " stacksize: " << m_aCallStack.size() << endl;
 
     //pCurrentNode->Dump( cout );
+
+// TODO --> user input request, alle zustaende zuruecksetzen...
 
     bool bContinueDbgLoop = true;
     while( bContinueDbgLoop )
@@ -1584,23 +1599,42 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             cout << "next AST step" << endl;
 // TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
             bContinueDbgLoop = false;
+            m_bRunDbg = false;
             m_bStepToNextLine = false;
+            m_bStepIntoNextLine = false;
         }
         else if( sInput=="o" )   // step next line
         {
             cout << "step over next line" << endl;
 // TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
             bContinueDbgLoop = false;
+// TODO --> in methode zusammenfassen
+// TODO --> block item in callstack notwendig?
+            m_bRunDbg = false;
             m_bStepToNextLine = true;
+            m_bStepIntoNextLine = false;
             m_nCurrentLineNo = nCurrentLineNo;
+            m_nCurrentCallStackLevel = m_aCallStack.size();
         }
-// TODO --> step into implementieren
+        else if( sInput=="i" )   // step next line
+        {
+            cout << "step into next line" << endl;
+// TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
+            bContinueDbgLoop = false;
+            m_bRunDbg = false;
+            m_bStepToNextLine = false;
+            m_bStepIntoNextLine = true;
+            m_nCurrentLineNo = nCurrentLineNo;
+            m_nCurrentCallStackLevel = m_aCallStack.size();
+        }
+// TODO --> step into implementieren --> callstack level auswerten...
         else if( sInput=="c" )
         {
             cout << "run..." << endl;
             bContinueDbgLoop = false;
             m_bRunDbg = true;
             m_bStepToNextLine = false;
+            m_bStepIntoNextLine = false;
         }
         else if( sInput=="w" )
         {
@@ -1644,6 +1678,14 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			vector<string>::const_iterator iter = lines.begin();
 			while( iter != lines.end() )
 			{
+                if( iLineNo==nCurrentLineNo )
+                {
+                    cout << "--> ";
+                }
+                else
+                {
+                    cout << "    ";
+                }
 				cout << iLineNo << " " << *iter << endl;
 				iLineNo++;
 				iter++;
@@ -1659,6 +1701,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             cout << "show help:" << endl;
             cout << "  n        : next AST step" << endl;
             cout << "  o        : step over next line" << endl;
+            cout << "  i        : step into next line" << endl;
             cout << "  c        : run" << endl;
 			cout << "  b lineno : set breakpoint at line" << endl;
 			cout << "  clear    : clear all breakpoins" << endl;

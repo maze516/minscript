@@ -646,6 +646,7 @@ private:
 	BreakpointContainerT	m_aBreakpointContainer;
     // Variablen fuer die Fehlerbehandlung und Debugging
     int                     m_nCurrentLineNo;
+    int                     m_nCurrentCallStackLevel;
 	int						m_nLastErrorCode;
 	string					m_sLastErrorMsg;
 	string					m_sSourceCode;
@@ -653,7 +654,8 @@ private:
     bool                    m_bDbg;
     bool                    m_bRunDbg;
     bool                    m_bStepToNextLine;
-	bool					m_bIsSilent;
+    bool                    m_bStepIntoNextLine;
+    bool					m_bIsSilent;
 };
 
 typedef minInterpreterEnvironment minIpEnv;

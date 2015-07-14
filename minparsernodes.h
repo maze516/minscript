@@ -1264,7 +1264,7 @@ class minBlockNode : public minInterpreterNode
 {
 public:
     minBlockNode( const minParserItemList & aNodeList, minHandle<minDebuggerInfo> hDebuggerInfo )
-        : minInterpreterNode( _BLOCKNODE, hDebuggerInfo ),
+        : minInterpreterNode( _BLOCKNODE, 0/*TODO gulp working test to jump over blocks... hDebuggerInfo*/ ),
 		  m_aNodeContainer( aNodeList )
 	{}
 	virtual ~minBlockNode();
