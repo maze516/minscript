@@ -1403,6 +1403,7 @@ minInterpreterEnvironment::minInterpreterEnvironment()
 {
     m_nCurrentLineNo = 0;
     m_nCurrentCallStackLevel = 0;
+	m_nLastBreakpointLineNo = 0;
     m_nLastErrorCode = 0;
 	m_bDebug = false;
     m_bDbg = false;
@@ -1504,8 +1505,13 @@ minHandle<minDebuggerInfo> minDebuggerInfo::CreateDebuggerInfo( int iLineNo )
 bool minInterpreterEnvironment::IsAtBreakpoint( minInterpreterNode * pCurrentNode ) const
 {
 	int iLineNo = pCurrentNode->GetLineNumber();
+	return IsAtBreakpoint(iLineNo);
+}
+
+bool minInterpreterEnvironment::IsAtBreakpoint(int iLineNo) const
+{
 	BreakpointContainerT::const_iterator iter = m_aBreakpointContainer.begin();
-	while( iter!=m_aBreakpointContainer.end() )
+	while (iter != m_aBreakpointContainer.end())
 	{
 		if ((*iter).iLineNo == iLineNo)
 		{
@@ -1543,11 +1549,37 @@ vector<string> split(const string & str, const string & delimiters)
 
 void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
-	bool bIsAtBreakpoint = IsAtBreakpoint( pCurrentNode );
+	int nCurrentLineNo = pCurrentNode->GetLineNumber();
+
+// TODO: r --> return from function
+// TODO: lb --> list of breakpoints
+// TODO: cl n --> clear breakpoint at line n
+// TODO: a --> dump AST
+// TODO: dump() auch fuer ForNode, etc. implementieren...
+// TODO: was ist mit dem block-Eintrag auf dem Stack, ist der wirklich notwendig?
+// TODO: visiscript: unterschiedliche Farben im Ausgabe-Fenster fuer stdout und stderr ?!
+// TODO: minscript debugger ausgaben auf stderr ausgeben?
+// TODO: minscript richtung clean code aufraeumen, grosse methoden verkleinern...
+
+// TODO --> breakpoint behandlung --> zeilen nummern beachten ! alle statements der breakpoint zeile abarbeiten !
+	bool bIsAtBreakpoint = IsAtBreakpoint( nCurrentLineNo );
 	if (bIsAtBreakpoint)
 	{
-		cout << "Hit breakpoint !" << endl;
+		if (m_nLastBreakpointLineNo != nCurrentLineNo)
+		{
+			cout << "Hit breakpoint !" << endl;
+			m_nLastBreakpointLineNo = nCurrentLineNo;
+		}
+		else
+		{
+			bIsAtBreakpoint = false;
+		}
 	}
+	else
+	{
+		m_nLastBreakpointLineNo = 0;
+	}
+
 // TODO --> behandeln, dass an der naechsten anweisung gestoppt wird (statement)
 //	bool bContinueUntilNextLine = m_iNextStepLineNo;
 
@@ -1556,22 +1588,20 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         return;
     }
 
-    int nCurrentLineNo = pCurrentNode->GetLineNumber();
-
     // process step over next line
-    if( m_bStepToNextLine &&
+    if( m_bStepToNextLine && !bIsAtBreakpoint &&
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ||
-          (m_nCurrentCallStackLevel>0 && m_aCallStack.size()>m_nCurrentCallStackLevel) ) )
+          (m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel) ) )
     {
-        cout << "cont. over " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << endl;
+        cout << "cont. over " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
         return;
     }
 
     // process step into next line
-    if( m_bStepIntoNextLine &&
+	if (m_bStepIntoNextLine && !bIsAtBreakpoint &&
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ) )
     {
-        cout << "cont. into " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << endl;
+		cout << "cont. into " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
         return;
     }
 
@@ -1670,6 +1700,11 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			m_aBreakpointContainer.clear();
 			cout << "Cleared " << iSize << " breakpoints" << endl;
 		}
+		else if (sInput == "a")
+		{
+			pCurrentNode->Dump( cout );
+			//DumpParser(cout);
+		}
         else if( sInput=="s" )
         {
 			// dump source code
@@ -1678,13 +1713,21 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			vector<string>::const_iterator iter = lines.begin();
 			while( iter != lines.end() )
 			{
-                if( iLineNo==nCurrentLineNo )
+				if (IsAtBreakpoint(iLineNo))
+				{
+					cout << "B";
+				}
+				else
+				{
+					cout << " ";
+				}
+				if (iLineNo == nCurrentLineNo)
                 {
-                    cout << "--> ";
+                    cout << "-> ";
                 }
                 else
                 {
-                    cout << "    ";
+                    cout << "   ";
                 }
 				cout << iLineNo << " " << *iter << endl;
 				iLineNo++;
@@ -1708,7 +1751,8 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			cout << "  w        : show call stack" << endl;
 			cout << "  l        : show local variables" << endl;
             cout << "  s        : show source code" << endl;
-            cout << "  h        : show help" << endl;
+			cout << "  a        : show AST" << endl;
+			cout << "  h        : show help" << endl;
             cout << "  q        : quit debugging" << endl;
         }
         else

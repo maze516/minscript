@@ -639,7 +639,8 @@ public:
 
 private:
 	bool IsAtBreakpoint(minInterpreterNode * pCurrentNode) const;
-		
+	bool IsAtBreakpoint(int iLineNo) const;
+
 	CallStackContainerT		m_aCallStack;
 	FunctionContainerT		m_aFunctionContainer;
 	ClassContainerT			m_aClassContainer;
@@ -647,6 +648,7 @@ private:
     // Variablen fuer die Fehlerbehandlung und Debugging
     int                     m_nCurrentLineNo;
     int                     m_nCurrentCallStackLevel;
+	int						m_nLastBreakpointLineNo;
 	int						m_nLastErrorCode;
 	string					m_sLastErrorMsg;
 	string					m_sSourceCode;
