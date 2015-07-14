@@ -640,6 +640,7 @@ public:
 private:
 	bool IsAtBreakpoint(minInterpreterNode * pCurrentNode) const;
 	bool IsAtBreakpoint(int iLineNo) const;
+	list<int> GetBreakpointLines() const;
 
 	CallStackContainerT		m_aCallStack;
 	FunctionContainerT		m_aFunctionContainer;

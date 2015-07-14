@@ -279,4 +279,6 @@ MINDLLEXPORT bool SplitPath( const char * sPath, string & sDrive, string & sDir,
 
 void InitDefaultTokenizer( minTokenizer & m_aTokenizer );
 
+void DumpScript( const string & sScript, int nCurrentLineNo, list<int> lstBreakpointLines );
+
 #endif

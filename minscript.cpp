@@ -1365,7 +1365,8 @@ int main( int argc, char *argv[] )
 		unsigned long nExecutionTime;
 		unsigned long nParseTime;
         aIp.SetDbgModus( aArgs.m_bDbgModus );
-		cout << "SCRIPT: " << sScrpitWithPredefs << endl;
+		cout << "SCRIPT: " << endl;
+		DumpScript( sScrpitWithPredefs, -1, list<int>() );
 		bool bOk = aIp.Run( sScrpitWithPredefs, sScript, aVal, &nExecutionTime, &nParseTime, aParsedTokens);
 		if( bOk )
 		{

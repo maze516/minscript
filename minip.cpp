@@ -1010,7 +1010,7 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	// stdlib.h
 	pFcn = new NativeFcnWrapper1<string, const char *>( (NativeFcnWrapper1<string, const char *>::MyFcnType1)my_getenv, "string getenv( string sName );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
-    pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)putenv, "int putenv( string sNameValue );" );
+    pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)_putenv, "int putenv( string sNameValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeVoidFcnWrapper1<int>( (NativeVoidFcnWrapper1<int>::MyFcnType1)exit, "void exit( int iValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
@@ -1179,6 +1179,59 @@ bool WriteAsciiFile( const char * sFileName, const string & sTextIn )
 		return true;
 	}
 	return false;
+}
+
+// http://stackoverflow.com/questions/236129/split-a-string-in-c
+static vector<string> split(const string & str, const string & delimiters)
+{
+	vector<string> v;
+	string::size_type start = 0;
+	auto pos = str.find_first_of(delimiters, start);
+	while (pos != string::npos)
+	{
+		if (pos != start) // ignore empty tokens
+		{
+			//			v.emplace_back(str, start, pos - start);
+			v.push_back(str.substr(start, pos - start));
+		}
+		start = pos + 1;
+		pos = str.find_first_of(delimiters, start);
+	}
+	if (start < str.length()) // ignore trailing delimiter
+	{
+		//		v.emplace_back(str, start, str.length() - start); // add what's left of the string
+		v.push_back(str.substr(start, str.length() - start));
+	}
+	return v;
+}
+
+void DumpScript( const string & sScript, int nCurrentLineNo, list<int> lstBreakpointLines )
+{
+	vector<string> lines = split(sScript, string("\n"));
+	int iLineNo = 1;
+	vector<string>::const_iterator iter = lines.begin();
+	while( iter != lines.end() )
+	{		
+		if (find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
+		{
+			cout << "B";
+		}
+		else
+		{
+			cout << " ";
+		}
+		if( iLineNo == nCurrentLineNo )
+		{
+			cout << "-> ";
+		}
+		else
+		{
+			cout << "   ";
+		}
+		cout << iLineNo << " " << *iter << endl;
+		iLineNo++;
+		iter++;
+	}
 }
 
 #ifdef _with_preproc

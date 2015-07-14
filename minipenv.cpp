@@ -55,6 +55,8 @@
 const char * g_sClassMethodSeparator = "#";		// war mal "_"
 const char * g_sFunctionCallStart =	"?";
 
+extern void DumpScript(const string & sScript, int nCurrentLineNo, list<int> lstBreakpointLines);
+
 #undef _old_name_search			// fuer binaere Suche, neu seit 14.2.2003
 
 //*************************************************************************
@@ -1522,30 +1524,17 @@ bool minInterpreterEnvironment::IsAtBreakpoint(int iLineNo) const
 	return false;
 }
 
-// http://stackoverflow.com/questions/236129/split-a-string-in-c
-vector<string> split(const string & str, const string & delimiters)
+list<int> minInterpreterEnvironment::GetBreakpointLines() const
 {
-	vector<string> v;
-	string::size_type start = 0;
-	auto pos = str.find_first_of(delimiters, start);
-	while (pos != string::npos) 
+	list<int> ret;
+	BreakpointContainerT::const_iterator iter = m_aBreakpointContainer.begin();
+	while( iter != m_aBreakpointContainer.end() )
 	{
-		if (pos != start) // ignore empty tokens
-		{
-//			v.emplace_back(str, start, pos - start);
-            v.push_back(str.substr(start, pos - start));
-        }
-		start = pos + 1;
-		pos = str.find_first_of(delimiters, start);
+		ret.push_back( (*iter).iLineNo );
+		++iter;
 	}
-	if (start < str.length()) // ignore trailing delimiter
-	{
-//		v.emplace_back(str, start, str.length() - start); // add what's left of the string
-        v.push_back(str.substr(start, str.length() - start));
-	}
-	return v;
+	return ret;
 }
-
 
 void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
@@ -1708,32 +1697,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
         else if( sInput=="s" )
         {
-			// dump source code
-			vector<string> lines = split(m_sSourceCode, string("\n"));
-			int iLineNo = 1;
-			vector<string>::const_iterator iter = lines.begin();
-			while( iter != lines.end() )
-			{
-				if (IsAtBreakpoint(iLineNo))
-				{
-					cout << "B";
-				}
-				else
-				{
-					cout << " ";
-				}
-				if (iLineNo == nCurrentLineNo)
-                {
-                    cout << "-> ";
-                }
-                else
-                {
-                    cout << "   ";
-                }
-				cout << iLineNo << " " << *iter << endl;
-				iLineNo++;
-				iter++;
-			}			
+			DumpScript( m_sSourceCode, nCurrentLineNo, GetBreakpointLines() );
         }
         else if( sInput=="q" )
         {
