@@ -152,13 +152,13 @@ public:
 
 private:
 	void Init();
-	void SetError( int nCode )
+	void SetError( int nCode, int nLineNo )
 	{
 		m_bIsError = true;
 		m_nErrorCode = nCode; 
-		HandleError();
+		HandleError( nLineNo );
 	}
-	void HandleError();
+	void HandleError( int nLineNo );
 	void SetProgramNode( minInterpreterNode * pNewProgNode );	
 
 	// Methode zum Ignorieren von Whitespaces

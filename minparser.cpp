@@ -266,7 +266,7 @@ bool minParser::ParseBlock( minInterpreterNode * & pNodeOut, bool bNoBlockIsErro
 	// nur unbekannten Fehler setzen, wenn noch kein Fehler gesetzt ist (neu seit 14.11.1999) !
 	if( !IsError() )
 	{
-		SetError( PARSER_ERROR_IN_BLOCK );
+		SetError( PARSER_ERROR_IN_BLOCK, aToken.GetLineNo() );
 	}
 	return false;
 }
@@ -309,7 +309,7 @@ bool minParser::PeekAndReadClassScope( InterpreterClassScope & aClassScopeInOut 
 		else
 		{
 			// ERROR: : erwartet !
-			SetError( PARSER_ERROR_DOT_DOT_EXPECTED );
+			SetError( PARSER_ERROR_DOT_DOT_EXPECTED, aToken.GetLineNo() );
 			return false;
 		}
 	}
@@ -325,7 +325,7 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 	minToken aToken;
 	if( PeekRealToken( aToken ) && !(aToken.IsBlockOpen() || aToken.IsStatementTerminator()) )
 	{
-		SetError( PARSER_ERROR_IN_CLASSBLOCK );
+		SetError( PARSER_ERROR_IN_CLASSBLOCK, aToken.GetLineNo() );
 		pNodeOut = 0;
 		return false;
 	}
@@ -361,7 +361,7 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 				pVarNode->SetClassScope( aClassScope );
 				if( !pVarNode->IsValidMemberDeclaration() )
 				{
-					SetError( PARSER_ERROR_IN_MEMBERDATA );
+					SetError( PARSER_ERROR_IN_MEMBERDATA, aToken.GetLineNo() );
 					return false;
 				}
 
@@ -381,7 +381,7 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 					if( hDestructorNode.IsOk() )
 					{
 						// Fehler: es wurde ein zweiter Destruktor angegeben !
-						SetError( PARSER_ERROR_DESTRUCTOR_ALLREADY_DEFINED );
+						SetError( PARSER_ERROR_DESTRUCTOR_ALLREADY_DEFINED, aToken.GetLineNo() );
 						return false;
 					}
 					else
@@ -405,7 +405,7 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 			else
 			{
 				// sollte NIE auftreten !
-				SetError( PARSER_ERROR_INTERNAL_ERROR );
+				SetError( PARSER_ERROR_INTERNAL_ERROR, aToken.GetLineNo() );
 				return false;
 			}
 		}
@@ -433,7 +433,7 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 	}
 	else 
 	{
-		SetError( PARSER_ERROR_IN_CLASSBLOCK );
+		SetError( PARSER_ERROR_IN_CLASSBLOCK, aToken.GetLineNo() );
 		pNodeOut = 0;
 		return false;
 	}
@@ -441,7 +441,7 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 	// nur unbekannten Fehler setzen, wenn noch kein Fehler gesetzt ist (neu seit 14.11.1999) !
 	if( !IsError() )
 	{
-		SetError( PARSER_ERROR_IN_CLASSBLOCK );
+		SetError( PARSER_ERROR_IN_CLASSBLOCK, aToken.GetLineNo() );
 	}
 	return false;
 }
@@ -578,7 +578,7 @@ bool minParser::ParseTypedef( minInterpreterNode * & pNodeOut )
 	}
 
 	pNodeOut = 0;
-	SetError( PARSER_ERROR_IN_TYPEDEF );
+	SetError( PARSER_ERROR_IN_TYPEDEF, -1 );
 	return false;
 }
 
@@ -611,7 +611,7 @@ bool minParser::ParseCaseOrDefaultForSwitch( minInterpreterNode * & pNodeOut, bo
 			if( !ParseExpression( pConstExprNode, /*bStopWithComma*/false, /*bStopWithSemicolon*/false, /*bStopWithArrayStop*/false ) )
 			{
 				pNodeOut = 0;
-				SetError( PARSER_ERROR_CONSTANT_EXPECTED );
+				SetError( PARSER_ERROR_CONSTANT_EXPECTED, aToken.GetLineNo() );
 				return false;
 			}
 		}
@@ -621,7 +621,7 @@ bool minParser::ParseCaseOrDefaultForSwitch( minInterpreterNode * & pNodeOut, bo
 		if( aToken.GetId()!=DOT_DOT_ID )
 		{
 			pNodeOut = 0;
-			SetError( PARSER_ERROR_DOT_DOT_EXPECTED );
+			SetError( PARSER_ERROR_DOT_DOT_EXPECTED, aToken.GetLineNo() );
 			return false;
 		}
 		ReadToken();
@@ -672,7 +672,7 @@ bool minParser::ParseSwitch( minInterpreterNode * & pNodeOut )
 				if( bIsDefault && bIsDefaultFound )
 				{
 					pNodeOut = 0;
-					SetError( PARSER_ERROR_TO_MANY_DEFAULT_LABELS );
+					SetError( PARSER_ERROR_TO_MANY_DEFAULT_LABELS, aSwitchToken.GetLineNo() );
 					return false;
 				}
 				if( bIsDefault )
@@ -691,7 +691,7 @@ bool minParser::ParseSwitch( minInterpreterNode * & pNodeOut )
 		}
 	}
 	pNodeOut = 0;
-	SetError( PARSER_ERROR_IN_SWITCH );
+	SetError( PARSER_ERROR_IN_SWITCH, aSwitchToken.GetLineNo() );
 	return false;
 }
 
@@ -716,7 +716,7 @@ bool minParser::ParseWhile( minInterpreterNode * & pNodeOut )
 		}
 	}
 	pNodeOut = 0;
-	SetError( PARSER_ERROR_IN_WHILE );
+	SetError( PARSER_ERROR_IN_WHILE, aWhileToken.GetLineNo() );
 	return false;
 }
 
@@ -752,7 +752,7 @@ bool minParser::ParseDo( minInterpreterNode * & pNodeOut )
 		}
 	}
 	pNodeOut = 0;
-	SetError( PARSER_ERROR_IN_DO );
+	SetError( PARSER_ERROR_IN_DO, aDoToken.GetLineNo() );
 	return false;
 }
 
@@ -781,7 +781,7 @@ bool minParser::ParseFor( minInterpreterNode * & pNodeOut )
 		}
 	}
 	pNodeOut = 0;
-	SetError( PARSER_ERROR_IN_FOR );
+	SetError( PARSER_ERROR_IN_FOR, aForToken.GetLineNo() );
 	return false;
 }
 
@@ -814,7 +814,7 @@ bool minParser::ParseIf( minInterpreterNode * & pNodeOut )
 				// und den else-Zweig parsen
 				if( !ParseStatement( pElseStatement ) )
 				{
-					SetError( PARSER_ERROR_IN_IF );
+					SetError( PARSER_ERROR_IN_IF, aToken.GetLineNo() );
 					return false;
 				}
 			}
@@ -823,7 +823,7 @@ bool minParser::ParseIf( minInterpreterNode * & pNodeOut )
 			return true;
 		}
 	}
-	SetError( PARSER_ERROR_IN_IF );
+	SetError( PARSER_ERROR_IN_IF, aIfToken.GetLineNo() );
 	return false;
 }
 
@@ -903,7 +903,7 @@ bool minParser::ParseArgumentDeclarationList( minVariableDeclarationList & aVarD
 				}
 				else
 				{
-					SetError( PARSER_ERROR_IDENTIFIER_EXPECTED );	// wird z.Z. zwar ueberschriebenm ... !
+					SetError( PARSER_ERROR_IDENTIFIER_EXPECTED, aToken.GetLineNo() );	// wird z.Z. zwar ueberschriebenm ... !
 					return false;
 				}
 				
@@ -919,7 +919,7 @@ bool minParser::ParseArgumentDeclarationList( minVariableDeclarationList & aVarD
 			else
 			{
 				// unbekannter Datentyp gefunden (Bugfix: 4.1.2000)
-				SetError( PARSER_ERROR_TYPE_EXPECTED );
+				SetError( PARSER_ERROR_TYPE_EXPECTED, aToken.GetLineNo() );
 				return false;
 			}
 		}	// end of while()
@@ -983,14 +983,14 @@ bool minParser::ParseConstructorInitList( const string & sClassName, minParserIt
 							}
 							else
 							{
-								SetError( ERROR_IN_BASECLASS_INIT );
+								SetError( ERROR_IN_BASECLASS_INIT, aToken.GetLineNo() );
 								return false;
 							}
 						}
 					}
 					else
 					{
-						SetError( ERROR_IN_BASECLASS_INIT );
+						SetError( ERROR_IN_BASECLASS_INIT, aToken.GetLineNo() );
 						return false;
 					}
 				}
@@ -1003,7 +1003,7 @@ bool minParser::ParseConstructorInitList( const string & sClassName, minParserIt
 			}
 			else
 			{
-				SetError( ERROR_IN_BASECLASS_INIT );
+				SetError( ERROR_IN_BASECLASS_INIT, aToken.GetLineNo() );
 				return false;
 			}
 		}
@@ -1037,7 +1037,7 @@ bool minParser::ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, str
 	if( !PeekRealToken( aIdentiferToken ) || !aIdentiferToken.IsIdentifier() )
 	{
 		pNodeOut = 0;
-		SetError( EXPECTED_CLASS_NAME );
+		SetError(EXPECTED_CLASS_NAME, aIdentiferToken.GetLineNo());
 		return false;
 	}
 
@@ -1050,7 +1050,7 @@ bool minParser::ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, str
 	if( IsUserTypeDefined( sClassNameOut ) )
 	{
 		pNodeOut = 0;
-		SetError( CLASS_NAME_ALREADY_DEFINED );
+		SetError(CLASS_NAME_ALREADY_DEFINED, aIdentiferToken.GetLineNo());
 		return false;
 	}
 
@@ -1079,7 +1079,7 @@ bool minParser::ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, str
 			else
 			{
 				pNodeOut = 0;
-				SetError( EXPECTED_INHERITANCE_TOKEN );
+				SetError( EXPECTED_INHERITANCE_TOKEN, aTempToken.GetLineNo() );
 				return false;
 			}
 
@@ -1093,7 +1093,7 @@ bool minParser::ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, str
 				if( !IsUserType( aTempToken.GetString() ) )
 				{
 					pNodeOut = 0;
-					SetError( UNKNOWN_BASECLASS );
+					SetError( UNKNOWN_BASECLASS, aTempToken.GetLineNo() );
 					return false;
 				}
 
@@ -1103,7 +1103,7 @@ bool minParser::ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, str
 			else
 			{
 				pNodeOut = 0;
-				SetError( EXPECTED_BASECLASS );
+				SetError( EXPECTED_BASECLASS, aTempToken.GetLineNo() );
 				return false;
 			}
 
@@ -1136,7 +1136,7 @@ bool minParser::ParseClass( bool bIsStruct, minInterpreterNode * & pNodeOut, str
 	if( !ParseClassBlock( /*class-name*/sClassNameOut, pClassCode, bIsStruct ) )
 	{
 		pNodeOut = 0;
-		SetError( ERROR_IN_CLASS );
+		SetError( ERROR_IN_CLASS, -1 );
 		return false;
 	}
 
@@ -1382,7 +1382,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 			}
 		}
 
-		SetError( PARSER_ERROR_IN_FCN_PTR_DECLARATION );
+		SetError( PARSER_ERROR_IN_FCN_PTR_DECLARATION, aToken.GetLineNo() );
 		return false;
 	}
 
@@ -1428,7 +1428,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 				if( aIpType.IsReference() )
 				{
 					// ACHTUNG: Referenzen koennen noch nicht zurueckgegeben werden
-					SetError( CANT_RETURN_REFERENCE );
+					SetError( CANT_RETURN_REFERENCE, aToken.GetLineNo() );
 					return false;
 				}
 
@@ -1480,7 +1480,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 						}
 					}
 
-					SetError( PARSER_ERROR_IN_OBJ_DECLARATION );
+					SetError( PARSER_ERROR_IN_OBJ_DECLARATION, aToken.GetLineNo() );
 					return false;
 				}
 				else
@@ -1511,7 +1511,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 
 							if( !ParseConstructorInitList( sVariableName, aInitList ) )
 							{
-								SetError( PARSER_ERROR_IN_CONSTRUCTOR_INIT );
+								SetError( PARSER_ERROR_IN_CONSTRUCTOR_INIT, aToken.GetLineNo() );
 								return false;
 							}
 						}
@@ -1523,7 +1523,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 							// ein Destruktor darf keine Parameter besitzen !
 							if( bIsDestructor && aVarDeclList.size()>0 )
 							{
-								SetError( PARSER_ERROR_DESTRUCTOR_WITH_ARGUMENTS );
+								SetError( PARSER_ERROR_DESTRUCTOR_WITH_ARGUMENTS, aToken.GetLineNo() );
 								return false;
 							}
 
@@ -1534,13 +1534,13 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 						}
 						else
 						{
-							SetError( PARSER_ERROR_IN_FCN_DECLARATION );	// oder in Konstruktor Deklaration !
+							SetError( PARSER_ERROR_IN_FCN_DECLARATION, aToken.GetLineNo() );	// oder in Konstruktor Deklaration !
 							return false;
 						}
 					}
 					else
 					{
-						SetError( PARSER_ERROR_IN_FCN_DECLARATION );	// oder in Konstruktor Deklaration !
+						SetError( PARSER_ERROR_IN_FCN_DECLARATION, aToken.GetLineNo() );	// oder in Konstruktor Deklaration !
 						return false;
 					}
 				}
@@ -1576,7 +1576,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 					if( !ParseExpression( pArraySizeExpression, /*bStopWithComma*/true, /*bStopWithSemicolon*/true ) )
 					{
 						// Fehler in der Expression !
-						SetError( ERROR_IN_EXPRESSION );
+						SetError( ERROR_IN_EXPRESSION, aToken.GetLineNo() );
 						return false;
 					}
 
@@ -1587,7 +1587,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 					}
 					else
 					{
-						SetError( ARRAY_STOP_EXPECTED );
+						SetError( ARRAY_STOP_EXPECTED, aToken.GetLineNo() );
 						return false;
 					}
 
@@ -1636,13 +1636,13 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 						if( !ParseExpression( pInitExpression, /*bStopWithComma*/true, /*bStopWithSemicolon*/true ) )
 						{
 							// Fehler in der Expression !
-							SetError( ERROR_IN_EXPRESSION );
+							SetError( ERROR_IN_EXPRESSION, aToken.GetLineNo() );
 							return false;
 						}
 					}
 					else
 					{
-						SetError( INITIALIZION_NOT_ALLOWED );
+						SetError( INITIALIZION_NOT_ALLOWED, aToken.GetLineNo() );
 						return false;
 					}
 				}
@@ -1650,7 +1650,7 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 				// Reference-Variablen muessen eine Zuweisung haben !
 				if( aIpType.IsReference() && !pInitExpression )
 				{
-					SetError( REFERENCE_NEEDS_LVALUE );
+					SetError( REFERENCE_NEEDS_LVALUE, aToken.GetLineNo() );
 					return false;
 				}
 
@@ -1704,26 +1704,26 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 							// jetzt weiter lesen, es kann ein = oder , oder ; kommen
 							if( !PeekRealToken( aToken ) )
 							{
-								SetError( ERROR_READING_TOKEN );
+								SetError( ERROR_READING_TOKEN, aToken.GetLineNo() );
 								return false;
 							}
 						}
 						else
 						{
-							SetError( EXPECT_IDENTIFIER );
+							SetError( EXPECT_IDENTIFIER, aToken.GetLineNo() );
 							return false;
 						}
 					}
 					else
 					{
 						// ungeultigen Operator gefunden
-						SetError( UNEXPECTED_TOKEN );
+						SetError( UNEXPECTED_TOKEN, aToken.GetLineNo() );
 						return false;
 					}
 				}
 				else
 				{
-					SetError( ERROR_READING_TOKEN );
+					SetError( ERROR_READING_TOKEN, aToken.GetLineNo() );
 					return false;
 				}
 				nArraySize = -1;	// Array-Size wieder initialisieren ! (Bugfix 14.12.1999)
@@ -1735,13 +1735,14 @@ bool minParser::ParseVarDeclarationOrFunction( minInterpreterNode * & pNodeOut, 
 
 	}	// if( bIsConstructor || bIsIdentifier )
 
-	SetError( PARSER_ERROR_IN_VAR_DECLARATION );
+	SetError( PARSER_ERROR_IN_VAR_DECLARATION, aToken.GetLineNo() );
 	return false;
 }
 
 bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode * & pNodeOut, const string * psClassName )
 {
 	int nId = aPeekedToken.GetId();
+	int nLineNo = aPeekedToken.GetLineNo();
 	if( nId == TYPEDEF_ID )
 	{
 		return ParseTypedef( pNodeOut );
@@ -1792,7 +1793,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 		else
 		{
 			pNodeOut = 0;
-			SetError( ERROR_IN_RETURN );
+			SetError( ERROR_IN_RETURN, aToken.GetLineNo() );
 			return false;
 		}
 	}
@@ -1805,7 +1806,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 		if( !ParseForStringToken( ";" ) )
 		{
 			pNodeOut = 0;
-			SetError( EXPECTED_SEPARATOR );
+			SetError( EXPECTED_SEPARATOR, aBreakToken.GetLineNo() );
 			return false;
 		}
 
@@ -1821,7 +1822,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 		if( !ParseForStringToken( ";" ) )
 		{
 			pNodeOut = 0;
-			SetError( EXPECTED_SEPARATOR );
+			SetError( EXPECTED_SEPARATOR, aContinueToken.GetLineNo() );
 			return false;
 		}
 
@@ -1884,7 +1885,7 @@ bool minParser::ParseKeyword( const minToken & aPeekedToken, minInterpreterNode 
 	}
 
 	pNodeOut = 0;
-	SetError( UNEXPECTED_KEYWORD );
+	SetError( UNEXPECTED_KEYWORD, nLineNo );
 	return false;
 }
 
@@ -1904,7 +1905,7 @@ bool minParser::ParseSizeof( minInterpreterNode * & pNodeOut )
 		return true;
 	}
 	pNodeOut = 0;
-	SetError( PARSER_ERROR_IN_SIZEOF );
+	SetError( PARSER_ERROR_IN_SIZEOF, aSizeofToken.GetLineNo() );
 	return false;
 }
 
@@ -1932,7 +1933,7 @@ bool minParser::ParseTemplate( minInterpreterNode * & pNodeOut )
 	}
 
 	pNodeOut = 0;
-	SetError( PARSER_ERROR_IN_TEMPLATE );
+	SetError( PARSER_ERROR_IN_TEMPLATE, aToken.GetLineNo() );
 	return false;
 }
 
@@ -1970,7 +1971,7 @@ bool minParser::ParseTemplateArgumentList( StringListT & aTypeNameListOut )
 		}
 	}
 
-	SetError( PARSER_ERROR_IN_TEMPLATE_ARGS );
+	SetError( PARSER_ERROR_IN_TEMPLATE_ARGS, -1 );
 	return false;
 }
 
@@ -2292,7 +2293,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 					}
 					else
 					{
-						SetError( ERROR_IN_DEFINED );
+						SetError( ERROR_IN_DEFINED, aTempToken.GetLineNo() );
 						return false;
 					}
 				}
@@ -2314,7 +2315,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				}
 				else
 				{
-					SetError( ERROR_IN_FCN_CALL );
+					SetError( ERROR_IN_FCN_CALL, aLastToken.GetLineNo() );
 					return false;
 				}
 			}
@@ -2335,13 +2336,13 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 					}
 					else
 					{
-						SetError( ARRAY_STOP_EXPECTED );
+						SetError( ARRAY_STOP_EXPECTED, aToken.GetLineNo() );
 						return false;
 					}
 				}
 				else
 				{
-					SetError( ERROR_IN_ARRAY_INDEX );
+					SetError( ERROR_IN_ARRAY_INDEX, aToken.GetLineNo() );
 					return false;
 				}
 			}
@@ -2424,7 +2425,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				// Bugfix 27.1.2003
 				if( pNewOperator == 0 )
 				{
-					SetError( UNKNOWN_OPERATOR );
+					SetError( UNKNOWN_OPERATOR, aToken.GetLineNo() );
 					return false;
 				}
 
@@ -2469,7 +2470,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 					}
 					else
 					{
-						SetError( NEED_TYPE_FOR_NEW );
+						SetError( NEED_TYPE_FOR_NEW, aToken.GetLineNo() );
 						return false;
 					}
 					pExpressionOut = pNewOperator;
@@ -2501,19 +2502,19 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 				}
 				else
 				{
-					SetError( EXPECT_PARENTHIS_CLOSE );
+					SetError( EXPECT_PARENTHIS_CLOSE, aToken.GetLineNo() );
 					return false;
 				}
 			}
 			else
 			{
-				SetError( ERROR_IN_PARENTHIS );
+				SetError( ERROR_IN_PARENTHIS, aToken.GetLineNo() );
 				return false;
 			}
 		}
 		else
 		{
-			SetError( EXPECT_IDENTIFIER_OR_CONSTANT );
+			SetError( EXPECT_IDENTIFIER_OR_CONSTANT, aToken.GetLineNo() );
 			return false;
 		}
 		// wenn man hier ist, dann ist Token ok, jetzt lesen
@@ -2535,7 +2536,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 			}
 			else
 			{
-				SetError( ERROR_IN_FCN_CALL );
+				SetError( ERROR_IN_FCN_CALL, aToken.GetLineNo() );
 				return false;
 			}
 		}
@@ -2595,7 +2596,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 						}
 						else
 						{
-							SetError( ARRAY_STOP_EXPECTED );
+							SetError( ARRAY_STOP_EXPECTED, aToken.GetLineNo() );
 							return false;
 						}
 					}
@@ -2605,7 +2606,7 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 			}
 			else
 			{
-				SetError( UNKNOWN_OPERATOR );
+				SetError( UNKNOWN_OPERATOR, aToken.GetLineNo() );
 				return false;
 			}
 		}
@@ -2661,11 +2662,12 @@ bool minParser::ParseExpression( minInterpreterNode * & pExpressionOut, bool bSt
 	return false;
 }
 
-void minParser::HandleError()
+void minParser::HandleError( int nLineNo )
 {
 	cout << "Parser-Error occured !!!" << endl;
 	cout << "  ErrorNo  = " << GetErrorCode() << endl;
 	cout << "  ErrorPos = " << m_pTokenizer->GetErrorPos() << endl;
+	cout << "  Line No  = " << nLineNo << endl;
 }
 
 void minParser::SetProgramNode( minInterpreterNode * pNewProgNode )
@@ -2728,7 +2730,7 @@ minInterpreterType minParser::ReadAndSubstitueTypeToken( bool bIsConst, const st
 
 		if( !ParseForStringToken( ">" ) )
 		{
-			SetError( PARSER_ERROR_IN_TEMPLATE_ARGS );
+			SetError( PARSER_ERROR_IN_TEMPLATE_ARGS, aToken.GetLineNo() );
 			return minInterpreterType();
 		}
 	}

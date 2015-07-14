@@ -1669,6 +1669,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         else if( sInput=="w" )
         {
             cout << "show stack size=" << GetCallStackSize() << endl;
+// TODO --> Transformation: funktionen und Blocks zusammenfassen zu einem debugger callstack item !
             CallStackContainerT::const_iterator iter = m_aCallStack.begin();
             int i = 1;
             while( iter!=m_aCallStack.end() )
