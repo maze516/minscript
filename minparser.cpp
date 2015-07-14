@@ -322,6 +322,8 @@ bool minParser::ParseClassBlock( const string & sClassName, minClassBlockNode * 
 {
 	minInterpreterNode * pNode = 0;
 
+	SkipWhitespaces();
+
 	minToken aToken;
 	if( PeekRealToken( aToken ) && !(aToken.IsBlockOpen() || aToken.IsStatementTerminator()) )
 	{
