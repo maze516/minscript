@@ -1617,7 +1617,7 @@ typedef list<minInterpreterValue> _InterpreterValueContainer;
 static string FindClassForMethod( const minInterpreterEnvironment & aEnv, const string & sClassScope, const string & sClassName, const string & sMethodName, bool bIsSearchInBaseClass, bool bTestVirtual );
 static bool DoExecuteConstructorHelper( const string & sClassName, minInterpreterValue & aReturnValOut, minInterpreterNode * pConstructorCall, minInterpreterEnvironment & aEnv );
 static void ExecuteDestructorHelper( minInterpreterValue & aVar, minInterpreterEnvironment & aEnv );
-static void ExecuteElementOperatorHelper( int nAccessModus, minInterpreterValue & aLeftVal, minInterpreterValue & aReturnValOut, minInterpreterNode * pRightNode, minInterpreterEnvironment & aEnv );
+static bool ExecuteElementOperatorHelper( int nAccessModus, minInterpreterValue & aLeftVal, minInterpreterValue & aReturnValOut, minInterpreterNode * pRightNode, minInterpreterEnvironment & aEnv );
 
 const double g_dMaxDouble			= 1e308;
 

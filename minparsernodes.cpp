@@ -130,16 +130,18 @@ static string FindClassForMethod( const minInterpreterEnvironment & aEnv, const 
 }
 
 // Makro-Funktion
-static void ExecuteElementOperatorHelper( int nAccessModus, minInterpreterValue & aLeftVal, minInterpreterValue & aReturnValOut, minInterpreterNode * pRightNode, minInterpreterEnvironment & aEnv )
+static bool ExecuteElementOperatorHelper( int nAccessModus, minInterpreterValue & aLeftVal, minInterpreterValue & aReturnValOut, minInterpreterNode * pRightNode, minInterpreterEnvironment & aEnv )
 {
 	// pushe den CallStackItem des Objektes an das aEnv, 
 	// damit die Member des Objektes gefunden werden koennen !
 	// und fuehre dann die rechte Seite des Element-Ausdrucks aus.
 	aEnv.PushCallStackItem( (*aLeftVal.GetObjectCallStackItem()) );
 
-	pRightNode->Execute( nAccessModus, aReturnValOut, aEnv );
+	bool bRet = pRightNode->Execute( nAccessModus, aReturnValOut, aEnv );
 
 	aEnv.PopCallStackItem();
+
+	return bRet;
 }
 
 // Makro-Funktion
@@ -1748,7 +1750,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 		// erzeuge neuen Call-Stack Eintrag im Environment, fuehre den Call aus und
 		// loesche den Call-Stack Eintrag wieder !
 		bool bOk = false;
-		aEnv.PushCallStackItem( /*m_sName*/string( g_sFunctionCallStart )+sFcnName+"()", /*m_bHidesObject*/!bIsMethod );		// TODO: ggf. Argumente noch angeben...
+		aEnv.PushCallStackItem( /*m_sName*/string( g_sFunctionCallStart )+sFcnName+"()", /*m_bHidesObject*/!bIsMethod, GetLineNumber() );		// TODO: ggf. Argumente noch angeben...
 
 		// einen Ausdruck evaluieren (falls einer angegeben ist) der eine Funktion liefern soll (z.B. (*pFcn)();)
 		if( m_pFunctionExpression )
@@ -2050,14 +2052,14 @@ bool minFunctionCallNode::GenerateCppCode( string & sCodeOut )
 bool minFunctionCallNode::Dump( ostream & aStream, const string & sSpace ) const
 {
 	aStream << sSpace.c_str() << NODE_STRING << GetClassName().c_str() << " " << m_sName.c_str() << "(...)" << endl;
-	/*
+	
 	minParserItemList::const_iterator aIter = m_aArgumentExpressionList.begin();
-	while( aIter != m_aArgumentExpressionList.begin() )
+	while( aIter != m_aArgumentExpressionList.end() )
 	{
-		(*aIter)->Dump( aStream, sSpace );
+		(*aIter)->Dump( aStream, sSpace+string( SPACE_SHIFT ) );
 		++aIter;
 	}
-	*/
+	
 	return true;
 }
 #endif
@@ -2106,7 +2108,8 @@ bool minOperatorNode::GenerateCppCode( string & sCodeOut )
 #ifdef USEBIG
 bool minOperatorNode::Dump( ostream & aStream, const string & sSpace ) const
 {
-	aStream << sSpace.c_str() << NODE_STRING << "OperatorNode(" << m_sOperator.c_str() << ") [" << m_nOperatorLevel << "]";
+	aStream << sSpace.c_str() << NODE_STRING << "OperatorNode(" << m_sOperator.c_str() << ") [" << m_nOperatorLevel << "] type=" << GetClassName() << "/" << typeid(this).name() << " " << GetInfo();
+	
 	if( m_nOperatorLevel == UNARY_OPERATOR_LEVEL )
 	{
 		aStream << " [UNARY]";
@@ -2479,8 +2482,7 @@ bool minObjectElementNode::DoExecute( int nAccessModus, minInterpreterValue & aR
 		{
 			if( aLeftVal.IsObject() )
 			{
-				ExecuteElementOperatorHelper( nAccessModus, aLeftVal, aReturnValOut, m_pRightNode, aEnv );
-				return true;
+				return ExecuteElementOperatorHelper( nAccessModus, aLeftVal, aReturnValOut, m_pRightNode, aEnv );
 			}
 			else
 			{
