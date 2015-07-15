@@ -437,7 +437,7 @@ class MINDLLEXPORT minCallStackItem
 	typedef list<minInterpreterVariable>	VariableContainerT;
 
 public:
-	minCallStackItem( const string & sItemName = "", bool bHidesObject = false );
+	minCallStackItem( const string & sItemName = "", bool bHidesObject = false, int nLineNumber = 0 );
 	minCallStackItem( const minCallStackItem & aOther );
 	~minCallStackItem();
 
@@ -491,6 +491,7 @@ private:
 	bool					m_bHidesObject;			// neu seit 17. 1.2003
 	string					m_sItemName;
 	string					m_sUserName;			// neu seit 19.12.1999
+	int						m_nLineNumber;			// neu seit 15. 7.2015
 	VariableContainerT		m_aVariableContainer;
 	minBaseObjectList *		m_paBaseObjectList;		// neu seit 22. 1.2000
 	minInterpreterValue *	m_pThisObj;				// neu seit  4. 2.2003
@@ -559,7 +560,7 @@ public:
 	// den uebergebenen Call-Stack Eintrag als oberstes Element ablegen
 	bool PushCallStackItem( minHandle<minCallStackItem> aCallStackItem );
 	// neuen Call-Stack Eintrag erzeugen
-	bool PushCallStackItem( const string & sItemName, bool bHidesObject = false );
+	bool PushCallStackItem( const string & sItemName, bool bHidesObject = false, int nLineNumber = 0 );
 	// den obersten Call-Stack Eintrag vom Stack nehmen (und zerstoeren)
 	bool PopCallStackItem();
 

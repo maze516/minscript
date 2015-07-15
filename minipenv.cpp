@@ -1101,10 +1101,11 @@ MEMORY_DBG( static int g_cItemCount = 0; )
 MEMORY_DBG( int GetItemCount() { return g_cItemCount; } )
 
 
-minCallStackItem::minCallStackItem( const string & sItemName, bool bHidesObject ) 
+minCallStackItem::minCallStackItem( const string & sItemName, bool bHidesObject, int nLineNumber ) 
 	: m_bHidesObject( bHidesObject ),
 	  m_sItemName( sItemName ), 
 	  m_sUserName( "" ), 
+	  m_nLineNumber( nLineNumber ),
 	  m_paBaseObjectList( 0 ),
 	  m_pThisObj( 0 ),
 	  m_pVariableCreator( 0 )
@@ -1147,6 +1148,7 @@ void minCallStackItem::Assign( const minCallStackItem & aOther )
 	m_bHidesObject = aOther.m_bHidesObject;
 	m_sItemName = aOther.m_sItemName;
 	m_sUserName = aOther.m_sUserName;
+	m_nLineNumber = aOther.m_nLineNumber;
 	m_aVariableContainer = aOther.m_aVariableContainer;
 	if( aOther.m_paBaseObjectList )
 		m_paBaseObjectList = new minBaseObjectList( *(aOther.m_paBaseObjectList) );
@@ -1237,12 +1239,18 @@ void minCallStackItem::DumpVariables(ostream & stream)
 string minCallStackItem::GetInfoString() const
 {
 	string sResult = GetItemName();
+	char sBuffer[c_iMaxBuffer];
 
 	if( GetUserName().length()>0 )
 	{
-		char sBuffer[c_iMaxBuffer];
 		sprintf( sBuffer, "0x%lx", (unsigned long int)this );
 		sResult += "{"+GetUserName()+" "+sBuffer+"}";
+	}
+	if( m_nLineNumber>0 )
+	{
+		sprintf(sBuffer, "%d", m_nLineNumber);
+		sResult += " line=";
+		sResult += sBuffer;
 	}
 	sResult += ": ";
 
@@ -1447,9 +1455,9 @@ bool minInterpreterEnvironment::PushCallStackItem( minHandle<minCallStackItem> a
 	return true;
 }
 
-bool minInterpreterEnvironment::PushCallStackItem( const string & sItemName, bool bHidesObject )
+bool minInterpreterEnvironment::PushCallStackItem( const string & sItemName, bool bHidesObject, int nLineNumber )
 {
-	m_aCallStack.push_back( minHandle<minCallStackItem>( new minCallStackItem( sItemName, bHidesObject ) ) );
+	m_aCallStack.push_back( minHandle<minCallStackItem>( new minCallStackItem( sItemName, bHidesObject, nLineNumber ) ) );
 	return true;
 }
 
@@ -1659,6 +1667,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         {
             cout << "show stack size=" << GetCallStackSize() << endl;
 // TODO --> Transformation: funktionen und Blocks zusammenfassen zu einem debugger callstack item !
+// TODO --> ggf. zeilen nummern fuer callstack eintrag anzeigen
             CallStackContainerT::const_iterator iter = m_aCallStack.begin();
             int i = 1;
             while( iter!=m_aCallStack.end() )
@@ -1675,14 +1684,22 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			cout << "local variables: " << aCurrentCallStackItem->GetInfoString() << endl;
 			aCurrentCallStackItem->DumpVariables(cout);
 		}
-		else if( sInput.length()>0 && sInput[0]=='b' )
+		else if( sInput.length()>1 && sInput[0]=='b' )
 		{
 // TODO --> DbgInfo an minInterpreterNode setzen, Struktur mit lineNo, FileName --> Diese Debug Infos ggf. auch in anderem Container verwalten?
-			string sLineNo = sInput.substr(2);
+			string sLineNo = sInput.substr(1);
 			minBreakpointInfo aBreakpoint;
-			aBreakpoint.iLineNo = atoi( sLineNo.c_str() );
-			m_aBreakpointContainer.push_back( aBreakpoint );
-			cout << "set breakpoint at line " << sLineNo << " number total breakpoints=" << m_aBreakpointContainer.size() << endl;
+			int iBreakOnLine = atoi(sLineNo.c_str());
+			if (iBreakOnLine > 0)
+			{
+				aBreakpoint.iLineNo = iBreakOnLine;
+				m_aBreakpointContainer.push_back(aBreakpoint);
+				cout << "set breakpoint at line " << sLineNo << " number total breakpoints=" << m_aBreakpointContainer.size() << endl;
+			}
+			else
+			{
+				cout << "Warning: not breakpoint set !" << endl;
+			}
 		}
 		else if( sInput == "clear" )
 		{
