@@ -1010,7 +1010,7 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	// stdlib.h
 	pFcn = new NativeFcnWrapper1<string, const char *>( (NativeFcnWrapper1<string, const char *>::MyFcnType1)my_getenv, "string getenv( string sName );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
-    pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)_putenv, "int putenv( string sNameValue );" );
+    pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)putenv, "int putenv( string sNameValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeVoidFcnWrapper1<int>( (NativeVoidFcnWrapper1<int>::MyFcnType1)exit, "void exit( int iValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
@@ -1141,7 +1141,7 @@ bool ReadScript( const char * sFileName, string & sScriptOut, const StringListT 
 
 					strcpy( sBuffer, "" );
 					aFile.getline( sBuffer, 1023 );
-                    if( strlen(sBuffer)>0 )
+                    //if( strlen(sBuffer)>0 )	// 16.7.2015: do not ignore empty lines
                     {
                         sScriptOut += sBuffer;
                         sScriptOut += "\n";     // TODO: dieses neue Zeile Zeichen ist manchmal falsch, wenn letzte Zeile im Skript kein new line hat !
@@ -1189,7 +1189,7 @@ static vector<string> split(const string & str, const string & delimiters)
 	auto pos = str.find_first_of(delimiters, start);
 	while (pos != string::npos)
 	{
-		if (pos != start) // ignore empty tokens
+		//if (pos != start) // ignore empty tokens
 		{
 			//			v.emplace_back(str, start, pos - start);
 			v.push_back(str.substr(start, pos - start));

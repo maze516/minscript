@@ -1548,15 +1548,17 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
 	int nCurrentLineNo = pCurrentNode->GetLineNumber();
 
+// TODO: ggf. bei Breakpoints stoppen, fuer die kein code existiert, z. b. block anfang/ende --> ignoriere Breakpoints fuer leerzeilen und kommentare ?
 // TODO: r --> return from function
 // TODO: lb --> list of breakpoints
 // TODO: cl n --> clear breakpoint at line n
-// TODO: a --> dump AST
+// TODO: a --> dump AST fuer ganzes script
 // TODO: dump() auch fuer ForNode, etc. implementieren...
 // TODO: was ist mit dem block-Eintrag auf dem Stack, ist der wirklich notwendig?
 // TODO: visiscript: unterschiedliche Farben im Ausgabe-Fenster fuer stdout und stderr ?!
 // TODO: minscript debugger ausgaben auf stderr ausgeben?
 // TODO: minscript richtung clean code aufraeumen, grosse methoden verkleinern...
+// ((TODO: korrekte Zeilennummern wie im original Script verwenden --> Whitespace tokens nicht ignorieren...?
 
 // TODO --> breakpoint behandlung --> zeilen nummern beachten ! alle statements der breakpoint zeile abarbeiten !
 	bool bIsAtBreakpoint = IsAtBreakpoint( nCurrentLineNo );
@@ -1667,7 +1669,6 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         {
             cout << "show stack size=" << GetCallStackSize() << endl;
 // TODO --> Transformation: funktionen und Blocks zusammenfassen zu einem debugger callstack item !
-// TODO --> ggf. zeilen nummern fuer callstack eintrag anzeigen
             CallStackContainerT::const_iterator iter = m_aCallStack.begin();
             int i = 1;
             while( iter!=m_aCallStack.end() )
