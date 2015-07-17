@@ -54,7 +54,13 @@
 #include <stdio.h>			// fuer: sprintf()
 #include <stdlib.h>
 
-#define _MINSCRIPT_VERSION	"1.3.0"
+#define _MINSCRIPT_VERSION	"1.3.0"			
+
+// version history:
+// 1.2.1		17. february 2003	// first public release 
+// 1.2.2		 4. january  2004 
+// 1.2.3		20. april    2014   // first android release
+// 1.3.0					 2015   // bugfixes, added builtin debugger modus
 
 #define _REGISTER_FCN_NAME	"minRegisterNativeFunctions"
 
@@ -346,6 +352,12 @@ static void ShowCompileOptionsForDll( ostream & aStream )
 #else
 	aStream << "Error: unknown compiler configuration" << endl;
 #endif
+}
+
+void DumpVersion(ostream & out)
+{
+	out << "minscript, version " << _MINSCRIPT_VERSION << " from " << __DATE__ /*<< endl*/;
+	out << ", (c) by Michael Neuroth, 1999-2015" << endl;
 }
 
 static string GetCallArguments( string & sArgumentsForCall, const minVariableDeclarationList & aArgsList )
@@ -1177,8 +1189,7 @@ int main( int argc, char *argv[] )
 	}
 	if( aArgs.m_bShowVersion )
 	{
-		cout << "minscript, version " << _MINSCRIPT_VERSION << " from " << __DATE__ /*<< endl*/;
-        cout << ", (c) by Michael Neuroth, 1999-2015" << endl;
+		DumpVersion( cout );
 		return 0;
 	}
 #ifdef USEBIG

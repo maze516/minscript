@@ -1417,10 +1417,9 @@ minInterpreterEnvironment::minInterpreterEnvironment()
     m_nLastErrorCode = 0;
 	m_bDebug = false;
     m_bDbg = false;
-    m_bRunDbg = false;
-    m_bStepToNextLine = false;
-    m_bStepIntoNextLine = false;
+	m_bDbgResetExecution = false;
 	m_bIsSilent = false;
+	ResetDebuggerExecutionFlags();
 }
 
 minInterpreterEnvironment::~minInterpreterEnvironment()
@@ -1429,6 +1428,14 @@ minInterpreterEnvironment::~minInterpreterEnvironment()
 	m_aCallStack.erase( m_aCallStack.begin(), m_aCallStack.end() );
 	RemoveAllFunctions();
 	RemoveAllClasses();
+}
+
+void minInterpreterEnvironment::ResetDebuggerExecutionFlags()
+{
+	m_bRunDbg = false;
+	m_bStepToNextLine = false;
+	m_bStepIntoNextLine = false;
+	m_bStepOut = false;
 }
 
 minHandle<minCallStackItem> minInterpreterEnvironment::GetActCallStackItem()
@@ -1544,21 +1551,74 @@ list<int> minInterpreterEnvironment::GetBreakpointLines() const
 	return ret;
 }
 
-void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
+vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallStackContainerT & aCallStack ) const
+{
+	vector<string> ret;
+
+	CallStackContainerT::const_iterator iter = aCallStack.begin();
+	int i = 1;
+	while (iter != m_aCallStack.end())
+	{
+		string sInfo = (*iter)->GetInfoString();
+		if (sInfo.length() > 0 && sInfo[0] == '?')
+		{
+			sInfo += " " + i;
+			ret.push_back(sInfo);
+			++i;
+		}
+		++iter;
+	}
+
+	return ret;
+}
+
+minCallStackItem::VariableContainerT minInterpreterEnvironment::GetVairablesForDebugger( const CallStackContainerT & aCallStack ) const
+{
+	minCallStackItem::VariableContainerT aVariables;
+
+	CallStackContainerT::const_reverse_iterator iter = aCallStack.rbegin();
+	while (iter != m_aCallStack.rend())
+	{
+		string sInfo = (*iter)->GetInfoString();
+		if (sInfo.length() > 0 && sInfo[0] == '?')
+		{
+			break;
+		}
+		else
+		{
+			const minCallStackItem::VariableContainerT & currentVariables = (*iter)->GetVariables();
+			aVariables.insert( aVariables.end(), currentVariables.begin(), currentVariables.end() );
+		}
+		++iter;
+	}
+
+	return aVariables;
+}
+
+bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
 	int nCurrentLineNo = pCurrentNode->GetLineNumber();
 
+// TODO: visiscript: unterschiedliche Farben im Ausgabe-Fenster fuer stdout und stderr ?!
+
+// ((TODO: korrekte Zeilennummern wie im original Script verwenden --> Whitespace tokens nicht ignorieren...?
+// ((TODO: r --> return from function
+// ((TODO: p --> restart program 
+// ((TODO: restart program execution after finishing program
 // TODO: ggf. bei Breakpoints stoppen, fuer die kein code existiert, z. b. block anfang/ende --> ignoriere Breakpoints fuer leerzeilen und kommentare ?
-// TODO: r --> return from function
+// TODO: navigate in callstack: up, down
 // TODO: lb --> list of breakpoints
 // TODO: cl n --> clear breakpoint at line n
 // TODO: a --> dump AST fuer ganzes script
 // TODO: dump() auch fuer ForNode, etc. implementieren...
 // TODO: was ist mit dem block-Eintrag auf dem Stack, ist der wirklich notwendig?
-// TODO: visiscript: unterschiedliche Farben im Ausgabe-Fenster fuer stdout und stderr ?!
 // TODO: minscript debugger ausgaben auf stderr ausgeben?
 // TODO: minscript richtung clean code aufraeumen, grosse methoden verkleinern...
-// ((TODO: korrekte Zeilennummern wie im original Script verwenden --> Whitespace tokens nicht ignorieren...?
+
+	if( m_bDbgResetExecution )
+	{
+		return false;
+	}
 
 // TODO --> breakpoint behandlung --> zeilen nummern beachten ! alle statements der breakpoint zeile abarbeiten !
 	bool bIsAtBreakpoint = IsAtBreakpoint( nCurrentLineNo );
@@ -1584,7 +1644,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
     if( !bIsAtBreakpoint && m_bRunDbg )
     {
-        return;
+        return true;
     }
 
     // process step over next line
@@ -1593,7 +1653,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
           (m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel) ) )
     {
         cout << "cont. over " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
-        return;
+        return true;
     }
 
     // process step into next line
@@ -1601,8 +1661,17 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ) )
     {
 		cout << "cont. into " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
-        return;
+        return true;
     }
+
+	// process step out (return from function)
+	if (m_bStepOut && !bIsAtBreakpoint &&
+		(nCurrentLineNo == m_nCurrentLineNo || nCurrentLineNo ==/*ignore*/0 ||
+		(m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel-1)))
+	{
+		cout << "cont. out " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
+		return true;
+	}
 
 // TODO --> debugger interface implementieren: fuer anzeige Quellcode, etc.
 //          oder: debugger extern in eigener Klasse implementieren und das InterpreterEnvironment und den node hineinreichen... ?
@@ -1626,46 +1695,69 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         if( sInput=="n" )   // step next ast
         {
             cout << "next AST step" << endl;
-// TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
-            bContinueDbgLoop = false;
-            m_bRunDbg = false;
-            m_bStepToNextLine = false;
-            m_bStepIntoNextLine = false;
-        }
+
+			ResetDebuggerExecutionFlags();
+
+			bContinueDbgLoop = false;
+		}
         else if( sInput=="o" )   // step next line
         {
             cout << "step over next line" << endl;
-// TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
-            bContinueDbgLoop = false;
-// TODO --> in methode zusammenfassen
+
+// ((TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
 // TODO --> block item in callstack notwendig?
-            m_bRunDbg = false;
-            m_bStepToNextLine = true;
-            m_bStepIntoNextLine = false;
+			ResetDebuggerExecutionFlags();
+			m_bStepToNextLine = true;
+
             m_nCurrentLineNo = nCurrentLineNo;
             m_nCurrentCallStackLevel = m_aCallStack.size();
-        }
-        else if( sInput=="i" )   // step next line
+
+			bContinueDbgLoop = false;
+		}
+        else if( sInput=="i" )   // step into next line
         {
             cout << "step into next line" << endl;
-// TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
-            bContinueDbgLoop = false;
-            m_bRunDbg = false;
-            m_bStepToNextLine = false;
-            m_bStepIntoNextLine = true;
+
+			ResetDebuggerExecutionFlags();
+			m_bStepIntoNextLine = true;
+
             m_nCurrentLineNo = nCurrentLineNo;
             m_nCurrentCallStackLevel = m_aCallStack.size();
-        }
-// TODO --> step into implementieren --> callstack level auswerten...
-        else if( sInput=="c" )
+
+			bContinueDbgLoop = false;
+		}
+		else if (sInput == "r")   // step out
+		{
+			cout << "step out" << endl;
+
+			ResetDebuggerExecutionFlags();
+			m_bStepOut = true;
+
+			m_nCurrentLineNo = nCurrentLineNo;
+			m_nCurrentCallStackLevel = m_aCallStack.size();
+
+			bContinueDbgLoop = false;
+		}
+		else if (sInput == "c")
         {
             cout << "run..." << endl;
-            bContinueDbgLoop = false;
-            m_bRunDbg = true;
-            m_bStepToNextLine = false;
-            m_bStepIntoNextLine = false;
-        }
-        else if( sInput=="w" )
+
+			ResetDebuggerExecutionFlags();
+			m_bRunDbg = true;
+
+			bContinueDbgLoop = false;
+		}
+		else if (sInput == "p")
+		{
+			cout << "reset execution..." << endl;
+
+			ResetDebuggerExecutionFlags();
+			m_bRunDbg = true;
+			m_bDbgResetExecution = true;
+
+			bContinueDbgLoop = false;
+		}
+		else if (sInput == "w")
         {
             cout << "show stack size=" << GetCallStackSize() << endl;
 // TODO --> Transformation: funktionen und Blocks zusammenfassen zu einem debugger callstack item !
@@ -1677,6 +1769,13 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
                 ++iter;
                 ++i;
             }
+
+			cout << endl;
+			vector<string> aDbgCallStack = GetCallStackForDebugger( m_aCallStack );
+			for (int n = aDbgCallStack.size() - 1; n>=0; --n)
+			{
+				cout << n+1 << " " << aDbgCallStack[n] << endl;
+			}
         }
 		else if( sInput=="l" )
 		{
@@ -1684,10 +1783,20 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			minHandle<minCallStackItem> aCurrentCallStackItem = GetActCallStackItem();
 			cout << "local variables: " << aCurrentCallStackItem->GetInfoString() << endl;
 			aCurrentCallStackItem->DumpVariables(cout);
+
+			cout << "---------------------------" << endl;
+			minCallStackItem::VariableContainerT temp = GetVairablesForDebugger( m_aCallStack );
+			minCallStackItem::VariableContainerT::iterator iter = temp.begin();
+			while (iter != temp.end())
+			{
+				cout << (*iter).GetName() << "\t" << (*iter).GetValue()->GetString() << "\t" << (*iter).GetValue()->GetTypeString() << endl;
+				++iter;
+			}
 		}
 		else if( sInput.length()>1 && sInput[0]=='b' )
 		{
 // TODO --> DbgInfo an minInterpreterNode setzen, Struktur mit lineNo, FileName --> Diese Debug Infos ggf. auch in anderem Container verwalten?
+// TODO --> pruefe ob es einen Interpreter-Knoten fuer diese Zeilennummer ueberhaupt gibt --> falls nein --> ablehen und Fehlermeldung
 			string sLineNo = sInput.substr(1);
 			minBreakpointInfo aBreakpoint;
 			int iBreakOnLine = atoi(sLineNo.c_str());
@@ -1699,7 +1808,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			}
 			else
 			{
-				cout << "Warning: not breakpoint set !" << endl;
+				cout << "Warning: breakpoint not set !" << endl;
 			}
 		}
 		else if( sInput == "clear" )
@@ -1717,7 +1826,11 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         {
 			DumpScript( m_sSourceCode, nCurrentLineNo, GetBreakpointLines() );
         }
-        else if( sInput=="q" )
+		else if (sInput == "v")
+		{
+			DumpVersion(cout);
+		}
+		else if (sInput == "q")
         {
             cout << "exit debugging..." << endl;
             exit(-1);
@@ -1728,7 +1841,9 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             cout << "  n        : next AST step" << endl;
             cout << "  o        : step over next line" << endl;
             cout << "  i        : step into next line" << endl;
-            cout << "  c        : run" << endl;
+			cout << "  r        : step out (return from function)" << endl;
+			cout << "  c        : run" << endl;
+			cout << "  p        : reset program execution" << endl;
 			cout << "  b lineno : set breakpoint at line" << endl;
 			cout << "  clear    : clear all breakpoins" << endl;
 			cout << "  w        : show call stack" << endl;
@@ -1736,6 +1851,7 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             cout << "  s        : show source code" << endl;
 			cout << "  a        : show AST" << endl;
 			cout << "  h        : show help" << endl;
+			cout << "  v        : show interpreter version" << endl;
             cout << "  q        : quit debugging" << endl;
         }
         else
@@ -1743,6 +1859,8 @@ void minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             cout << "Unknwown input: " << sInput << endl;
         }
     }
+
+	return true;
 }
 
 void minInterpreterEnvironment::Dump() const

@@ -233,34 +233,41 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 		minInterpreterNode * pNode = m_aParser.GetProgramNode();
 		if( pNode )
 		{
-			// Environment initalisieren
-			m_aEnvironment.RemoveAllFunctions();
-			InitRuntimeEnvironment();
-			// Callstack-Eintrag erzeugen, ausfuehren und Callstack-Eintrag wieder loeschen
-			m_aEnvironment.PushCallStackItem( "__main()" );
-			m_aEnvironment.SetDebugMode( m_bDebug );
-			m_aEnvironment.SetSourceCode( sScriptWithPredefs );
-            m_aEnvironment.SetDbgMode( m_bDbg );
-			unsigned long nStartTime = minGetCurrentTickCount();
-			try {
-				m_bRunOk = pNode->Execute( /*bGetLValue*/false, aReturnValueOut, m_aEnvironment );
-			}
-			catch( minRuntimeException aError )
+			do
 			{
-				cerr << endl << "Runtime exception: " << aError.GetInfoString().c_str() << endl << endl;
-			}
-			unsigned long nStopTime = minGetCurrentTickCount();
-			m_aEnvironment.PopCallStackItem();
-			// Environment wieder zuruecksetzen
-			//m_aEnvironment.RemoveAllFunctions();
-			if( pExecutionTime )
-			{
-				*pExecutionTime = (1000*(nStopTime-nStartTime))/minGetTickCountPerSec();
-			}
-			if( pParseTime )
-			{
-				*pParseTime = (1000*(nParseStopTime-nParseStartTime))/minGetTickCountPerSec();
-			}
+				// Environment initalisieren
+				m_aEnvironment.RemoveAllFunctions();
+				InitRuntimeEnvironment();
+				// Callstack-Eintrag erzeugen, ausfuehren und Callstack-Eintrag wieder loeschen
+				m_aEnvironment.PushCallStackItem( "__main()" );
+				m_aEnvironment.ResetDebuggerExecutionFlags();
+				m_aEnvironment.SetDbgResetExecution(false);
+				m_aEnvironment.SetDebugMode( m_bDebug );
+				m_aEnvironment.SetSourceCode( sScriptWithPredefs );
+				m_aEnvironment.SetDbgMode( m_bDbg );
+				unsigned long nStartTime = minGetCurrentTickCount();
+				try 
+				{
+					m_bRunOk = pNode->Execute( /*bGetLValue*/false, aReturnValueOut, m_aEnvironment);
+				}
+				catch( minRuntimeException aError )
+				{
+					cerr << endl << "Runtime exception: " << aError.GetInfoString().c_str() << endl << endl;
+				}
+				unsigned long nStopTime = minGetCurrentTickCount();
+				m_aEnvironment.PopCallStackItem();
+				// Environment wieder zuruecksetzen
+				//m_aEnvironment.RemoveAllFunctions();
+				if( pExecutionTime )
+				{
+					*pExecutionTime = (1000*(nStopTime-nStartTime))/minGetTickCountPerSec();
+				}
+				if( pParseTime )
+				{
+					*pParseTime = (1000*(nParseStopTime-nParseStartTime))/minGetTickCountPerSec();
+				}
+			} while (m_aEnvironment.IsDbgMode());
+
 			return m_bRunOk;
 		}
 	}

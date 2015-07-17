@@ -484,7 +484,10 @@ bool minInterpreterNode::Execute( int nAccessModus, minInterpreterValue & aRetur
 {
     if( aEnv.IsDbgMode() )
     {
-        aEnv.ProcessDbg( this );
+        if( !aEnv.ProcessDbg( this ) )
+		{
+			return false;
+		}
     }
 	return DoExecute( nAccessModus, aReturnValOut, aEnv );
 }

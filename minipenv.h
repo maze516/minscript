@@ -45,6 +45,7 @@
 //*************************************************************************
 #include "mstl_string.h"
 #include "mstl_list.h"
+#include "mstl_vector.h"
 
 //*************************************************************************
 #include "dllexport.h"
@@ -434,12 +435,14 @@ class MINDLLEXPORT minCallStackItem
 {
 	friend class minBlockNode;
 
+public:
 	typedef list<minInterpreterVariable>	VariableContainerT;
 
-public:
-	minCallStackItem( const string & sItemName = "", bool bHidesObject = false, int nLineNumber = 0 );
+	minCallStackItem(const string & sItemName = "", bool bHidesObject = false, int nLineNumber = 0);
 	minCallStackItem( const minCallStackItem & aOther );
 	~minCallStackItem();
+
+	const VariableContainerT & GetVariables() const { return m_aVariableContainer; }
 
 	minCallStackItem & operator=( const minCallStackItem & aOther );
 
@@ -542,6 +545,9 @@ public:
     void SetDbgMode( bool bDebug )		{ m_bDbg = bDebug; }
     bool IsDbgMode() const				{ return m_bDbg; }
 
+	void SetDbgResetExecution(bool bReset) { m_bDbgResetExecution = bReset; }
+	bool IsDbgResetExecution() const	{ return m_bDbgResetExecution; }
+
 	// Flag to indicate an extended tracing
     void SetDebugMode( bool bDebug )	{ m_bDebug = bDebug; }
 	bool IsDebugMode() const			{ return m_bDebug; }
@@ -633,15 +639,19 @@ public:
 	virtual bool AddNativeFunction( NativeFcnWrapperBase * pNativeFunc );
 
     // Implement command line debugger
-    void ProcessDbg( minInterpreterNode * pCurrentNode );
+    bool ProcessDbg( minInterpreterNode * pCurrentNode );
     
 	// zum Testen
 	void Dump() const;
 
+	void ResetDebuggerExecutionFlags();
+
 private:
-	bool IsAtBreakpoint(minInterpreterNode * pCurrentNode) const;
-	bool IsAtBreakpoint(int iLineNo) const;
+	bool IsAtBreakpoint( minInterpreterNode * pCurrentNode ) const;
+	bool IsAtBreakpoint( int iLineNo ) const;
 	list<int> GetBreakpointLines() const;
+	vector<string> GetCallStackForDebugger( const CallStackContainerT & aCallStack ) const;
+	minCallStackItem::VariableContainerT GetVairablesForDebugger( const CallStackContainerT & aCallStack ) const;
 
 	CallStackContainerT		m_aCallStack;
 	FunctionContainerT		m_aFunctionContainer;
@@ -656,9 +666,11 @@ private:
 	string					m_sSourceCode;
 	bool					m_bDebug;
     bool                    m_bDbg;
+	bool					m_bDbgResetExecution;
     bool                    m_bRunDbg;
     bool                    m_bStepToNextLine;
     bool                    m_bStepIntoNextLine;
+	bool					m_bStepOut;
     bool					m_bIsSilent;
 };
 
@@ -674,6 +686,8 @@ MINDLLEXPORT ostream & GetDebugStream();
 MINDLLEXPORT const char * GetMethodSeparatorStrg();
 
 //*************************************************************************
+
+extern void DumpVersion(ostream & out);
 
 #include <assert.h>
 
