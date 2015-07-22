@@ -418,7 +418,7 @@ void minInterpreterValue::SetCreator( const minCreatorInterface * pVariableCreat
 	}
 }
 
-string minInterpreterValue::GetString()	const
+string minInterpreterValue::GetString( bool bDebugOutput )	const
 {
 	if( IsReference() )
 	{
@@ -429,7 +429,7 @@ string minInterpreterValue::GetString()	const
 		return *m_aValue.m_psValue;
 	}
 	// in allen anderen Faellen konvertieren
-	return ConvertTo( String ).GetString();
+    return ConvertTo( String, bDebugOutput ).GetString();
 }
 
 double minInterpreterValue::GetDouble() const
@@ -733,7 +733,7 @@ void * minInterpreterValue::GetRepAddr() const
 	}
 }
 
-minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & aToType ) const
+minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & aToType, bool bDebugOutput ) const
 {
 	if( IsReference() )
 	{
@@ -922,8 +922,13 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 			{
 				case String :
 					{
+                        string sVariables;
+                        if( bDebugOutput && m_aValue.m_phObjValue!=0 )
+                        {
+                            sVariables = (*(m_aValue.m_phObjValue))->GetInfoString();
+                        }
 						char sBuffer[c_iMaxBuffer];
-						sprintf( sBuffer, "object 0x%lx", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0) );					
+                        sprintf( sBuffer, "object 0x%lx %s", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0), sVariables.c_str() );
 						return minInterpreterValue( /*"object"*/sBuffer );
 					}
 				case Double : 
@@ -945,8 +950,13 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 			{
 				case String :
 					{
-						char sBuffer[c_iMaxBuffer];
-						sprintf( sBuffer, "Array 0x%lx", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0) );					
+                        string sVariables;
+                        if( bDebugOutput && m_aValue.m_phObjValue!=0 )
+                        {
+                            sVariables = (*(m_aValue.m_phObjValue))->GetInfoString();
+                        }
+                        char sBuffer[c_iMaxBuffer];
+                        sprintf( sBuffer, "Array 0x%lx %s", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0), sVariables.c_str() );
 						return minInterpreterValue( /*"object"*/sBuffer );
 					}
 				case Double : 
@@ -1188,7 +1198,7 @@ bool minCallStackItem::ExistsVariable( const string & sName ) const
 
 minHandle<minInterpreterValue> minCallStackItem::GetValueForVariable( const string & sName )
 {
-	//cout << "GetVariable >" << GetUserName().c_str() << "< this=" << (void *)this << " " << m_sItemName.c_str() << " name=" << sName << " size=" << m_aVariableContainer.size() << endl;
+    //cout << "GetVariable >" << GetUserName().c_str() << "< this=" << (void *)this << " " << m_sItemName.c_str() << " name=" << sName << " size=" << m_aVariableContainer.size() << endl;
 
 	VariableContainerT::iterator aIter
 			= find( m_aVariableContainer.begin(), m_aVariableContainer.end(), minInterpreterVariable( sName ) );
@@ -1479,7 +1489,7 @@ bool minInterpreterEnvironment::PopCallStackItem()
 	return false;
 }
 
-void minInterpreterEnvironment::ProcessError()
+void minInterpreterEnvironment::ProcessError( minInterpreterNode * pCurrentNode )
 {
 // TODO
 	if( !IsSilentMode() )
@@ -1487,8 +1497,14 @@ void minInterpreterEnvironment::ProcessError()
 		cout << "EXCEPTION occured !!!" << endl;
 		cout << "  ErrorNo  = " << GetLastErrorCode() << endl;
 		cout << "  ErrorMsg = " << GetLastErrorMsg().c_str() << endl;
-		// vorlaeufig nur Stack anzeigen
+        cout << "  Line No  = " << pCurrentNode->GetLineNumber() << endl;
+        // vorlaeufig nur Stack anzeigen
 		Dump();
+
+        if( IsDbgMode() )
+        {
+            ProcessDbg( pCurrentNode );
+        }
 	}
 	// und jetzt eine Exception aufwerfen
 	throw minRuntimeException( GetLastErrorMsg() );
@@ -1580,14 +1596,13 @@ minCallStackItem::VariableContainerT minInterpreterEnvironment::GetVairablesForD
 	while (iter != m_aCallStack.rend())
 	{
 		string sInfo = (*iter)->GetInfoString();
-		if (sInfo.length() > 0 && sInfo[0] == '?')
+
+        const minCallStackItem::VariableContainerT & currentVariables = (*iter)->GetVariables();
+        aVariables.insert( aVariables.end(), currentVariables.begin(), currentVariables.end() );
+
+        if (sInfo.length() > 0 && sInfo[0] == '?')
 		{
-			break;
-		}
-		else
-		{
-			const minCallStackItem::VariableContainerT & currentVariables = (*iter)->GetVariables();
-			aVariables.insert( aVariables.end(), currentVariables.begin(), currentVariables.end() );
+            break;
 		}
 		++iter;
 	}
@@ -1605,8 +1620,11 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 // ((TODO: r --> return from function
 // ((TODO: p --> restart program 
 // ((TODO: restart program execution after finishing program
+// ((TODO: bei Exceptions anhalten und callstack anzeigen
+// TODO: evaluation von Ausdruecken im debug mode erlauben: i*i oder 9*9
 // TODO: ggf. bei Breakpoints stoppen, fuer die kein code existiert, z. b. block anfang/ende --> ignoriere Breakpoints fuer leerzeilen und kommentare ?
 // TODO: navigate in callstack: up, down
+// TODO: Content von Objekten und Arrays anzeigen
 // TODO: lb --> list of breakpoints
 // TODO: cl n --> clear breakpoint at line n
 // TODO: a --> dump AST fuer ganzes script
@@ -1642,13 +1660,13 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 // TODO --> behandeln, dass an der naechsten anweisung gestoppt wird (statement)
 //	bool bContinueUntilNextLine = m_iNextStepLineNo;
 
-    if( !bIsAtBreakpoint && m_bRunDbg )
+    if( !bIsAtBreakpoint && m_bRunDbg && !HasError() )
     {
         return true;
     }
 
     // process step over next line
-    if( m_bStepToNextLine && !bIsAtBreakpoint &&
+    if( m_bStepToNextLine && !bIsAtBreakpoint && !HasError() &&
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ||
           (m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel) ) )
     {
@@ -1657,7 +1675,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
     }
 
     // process step into next line
-	if (m_bStepIntoNextLine && !bIsAtBreakpoint &&
+    if (m_bStepIntoNextLine && !bIsAtBreakpoint && !HasError() &&
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ) )
     {
 		cout << "cont. into " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
@@ -1665,7 +1683,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
     }
 
 	// process step out (return from function)
-	if (m_bStepOut && !bIsAtBreakpoint &&
+    if (m_bStepOut && !bIsAtBreakpoint && !HasError() &&
 		(nCurrentLineNo == m_nCurrentLineNo || nCurrentLineNo ==/*ignore*/0 ||
 		(m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel-1)))
 	{
@@ -1789,7 +1807,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			minCallStackItem::VariableContainerT::iterator iter = temp.begin();
 			while (iter != temp.end())
 			{
-				cout << (*iter).GetName() << "\t" << (*iter).GetValue()->GetString() << "\t" << (*iter).GetValue()->GetTypeString() << endl;
+                cout << (*iter).GetName() << "\t" << (*iter).GetValue()->GetString(true) << "\t" << (*iter).GetValue()->GetTypeString() << endl;
 				++iter;
 			}
 		}

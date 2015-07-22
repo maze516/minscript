@@ -156,7 +156,7 @@ static bool ExecuteConstructorHelper( const string & sClassName, minInterpreterV
 	{
 		// Konstruktor nicht gefunden !
 		aEnv.SetError( ENV_ERROR_CLASS_NOT_FOUND, "class "+sClassName+" not found" );
-		aEnv.ProcessError();
+        aEnv.ProcessError( pConstructorCall );
 		return false;
 	}
 
@@ -183,7 +183,7 @@ static bool ExecuteConstructorHelper( const string & sClassName, minInterpreterV
 	{
 		// Konstruktor nicht gefunden !
 		aEnv.SetError( ENV_ERROR_CONSTRUCTOR_NOT_FOUND, "constructor for class "+sClassName+" not found" );
-		aEnv.ProcessError();
+        aEnv.ProcessError( pConstructorCall );
 		return false;
 	}
 
@@ -561,7 +561,7 @@ bool minVariableNode::DoExecute( int nAccessModus, minInterpreterValue & aReturn
 				return true;
 				/*
 				aEnv.SetError( ENV_ERROR_VAR_IS_CONST, "variable "+m_sName+" is const" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 				*/
 				
@@ -579,7 +579,7 @@ bool minVariableNode::DoExecute( int nAccessModus, minInterpreterValue & aReturn
 	else
 	{
 		aEnv.SetError( ENV_ERROR_VAR_NOT_FOUND, "variable "+m_sName+" not found" );
-		aEnv.ProcessError();
+        aEnv.ProcessError( this );
 		return false;
 	}
 	return true;
@@ -671,7 +671,7 @@ bool minVariableDeclarationNode::DoExecute( int nAccessModus, minInterpreterValu
 			else
 			{
 				aEnv.SetError( ENV_ERROR_REQ_L_VALUE, "require l-value for parameter "+GetName() );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 		}
@@ -688,7 +688,7 @@ bool minVariableDeclarationNode::DoExecute( int nAccessModus, minInterpreterValu
 					{
 						//aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast "+(int)aTempRet.GetType()+" in "+(int)aReturnValOut.GetType() );
 						aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast" );
-						aEnv.ProcessError();
+                        aEnv.ProcessError( this );
 						return false;
 					}
 				}
@@ -739,7 +739,7 @@ bool minVariableDeclarationNode::DoExecute( int nAccessModus, minInterpreterValu
 			else
 			{
 				aEnv.SetError( ENV_ERROR_IN_EXPR, "error in expression before var-declaration "+GetName() );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 		}
@@ -747,7 +747,7 @@ bool minVariableDeclarationNode::DoExecute( int nAccessModus, minInterpreterValu
 		if( !bOk )
 		{
 			aEnv.SetError( ENV_ERROR_CALLING_FCN, "variable "+m_sName+" already exists or error in constructor" );
-			aEnv.ProcessError();
+            aEnv.ProcessError( this );
 			return false;
 		}
 
@@ -1323,7 +1323,7 @@ bool minInterpreterFunctionDeclarationNode::DoExecute( int nAccessModus, minInte
 			if( !bOk )
 			{
 				aEnv.SetError( ENV_ERROR_FCN_ALLREADY_DEFINED, "function "+GetName()+" allready defined" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 
@@ -1601,7 +1601,7 @@ bool minNativeFunctionDeclarationNode::DoExecuteFcnBlock
 			default:
 				// diese Stelle sollte NIE auftreten
 				aEnv.SetError( ENV_UNEXPECTED_ERROR, "no such native function" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				bOk = false;
 		}
 	}
@@ -1814,7 +1814,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 			if( hFunction->IsMethod() && !bIsMethod )
 			{
 				aEnv.SetError( ENV_ERROR_CALLING_METHOD, "calling method "+sFcnName+" without this" );	// m_sName
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 
@@ -1826,7 +1826,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 			if( aArgDeclList.size() != aArgEvalContainer.size() )
 			{
 				aEnv.SetError( ENV_ERROR_CALLING_FCN, "bad number of arguments in function "+sFcnName );// m_sName
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 
@@ -1854,7 +1854,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 						if( aType != aArgVal.GetInterpreterType() )
 						{
 							aEnv.SetError( ENV_ERROR_REQ_L_VALUE, "bad reference for parameter "+hArgDecl->GetName()+" in function "+sFcnName );
-							aEnv.ProcessError();
+                            aEnv.ProcessError( this );
 							return false;
 						}
 
@@ -1870,7 +1870,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 					else
 					{
 						aEnv.SetError( ENV_ERROR_REQ_L_VALUE, "require l-value for parameter "+hArgDecl->GetName()+" in function "+sFcnName );
-						aEnv.ProcessError();
+                        aEnv.ProcessError( this );
 						return false;
 					}
 				}
@@ -1942,7 +1942,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 								if( !hInitCall->Execute( /*nAccessModus*/0, aTempVal, aEnv ) )
 								{
 									aEnv.SetError( ENV_ERROR_IN_CONSTRUCTOR_INIT, "error in constructor init" );
-									aEnv.ProcessError();
+                                    aEnv.ProcessError( this );
 									return false;
 								}
 							}
@@ -1968,7 +1968,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 						if( !bOk )
 						{
 							aEnv.SetError( ENV_ERROR_IN_CONSTRUCTOR_INIT, "error in constructor init for base class "+(*aBaseIter) );
-							aEnv.ProcessError();
+                            aEnv.ProcessError( this );
 							return false;
 						}
 
@@ -1993,7 +1993,7 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 					(hFunction->GetReturnType()!=aReturnValOut.GetInterpreterType()) )
 				{
 					aEnv.SetError( ENV_ERROR_RETURN_NOT_ALLOWED, "return not allowed in function " + hFunction->GetName() + "()" );
-					aEnv.ProcessError();
+                    aEnv.ProcessError( this );
 					return false;
 				}
 
@@ -2005,14 +2005,14 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 			catch( minImplException & /*aException*/ )
 			{
 				aEnv.SetError( ENV_ERROR_BREAK_OR_CONTINUE_NOT_ALLOWED, "continue or break not allowed" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 		}
 		else
 		{
 			aEnv.SetError( ENV_ERROR_FCN_NOT_FOUND, "function "+sFcnName+(m_sManglingNameCache!=string("!") ? m_sManglingNameCache : "")+"() not found" );
-			aEnv.ProcessError();
+            aEnv.ProcessError( this );
 			return false;
 		}
 		/* old
@@ -2157,14 +2157,14 @@ bool minThisNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnValO
 			else
 			{
 				aEnv.SetError( ENV_ERROR_NO_THIS, "no this for object" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 						}
 		else
 		{
 			aEnv.SetError( ENV_ERROR_NO_THIS, "no object for this" );
-			aEnv.ProcessError();
+            aEnv.ProcessError( this );
 			return false;
 		}
 	}
@@ -2264,7 +2264,7 @@ bool minDebugHaltNode::DoExecute( int nAccessModus, minInterpreterValue & aRetur
 	cerr << "user breakpoint" << endl;
 	//cout << "user breakpoint" << endl;
 	aEnv.SetError( ENV_ERROR_BREAKPOINT, "user breakpoint" );
-	aEnv.ProcessError();
+    aEnv.ProcessError( this );
 	return true;
 }
 
@@ -2347,7 +2347,7 @@ bool minDeleteOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & a
 			else
 			{
 				aEnv.SetError( ENV_ERROR_NO_PTR, "no pointer for delete" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 			return true;
@@ -2355,7 +2355,7 @@ bool minDeleteOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & a
 		else
 		{
 			aEnv.SetError( ENV_ERROR_REQ_L_VALUE, "need l-value for delete" );
-			aEnv.ProcessError();
+            aEnv.ProcessError( this );
 			return false;
 		}
 	}
@@ -2383,14 +2383,14 @@ bool minPointerDereferenceOperatorNode::DoExecute( int nAccessModus, minInterpre
 				else
 				{
 					aEnv.SetError( ENV_ERROR_DEREF_NULL_PTR, "dereference on NULL pointer" );
-					aEnv.ProcessError();
+                    aEnv.ProcessError( this );
 					return false;
 				}
 			}
 			else
 			{
 				aEnv.SetError( ENV_ERROR_NO_OBJ_PTR, "no object-pointer for ptr-dereference" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 			return true;
@@ -2433,7 +2433,7 @@ bool minDereferenceOperatorNode::DoExecute( int nAccessModus, minInterpreterValu
 				else
 				{
 					aEnv.SetError( ENV_ERROR_DEREF_NULL_PTR, "dereference on NULL pointer" );
-					aEnv.ProcessError();
+                    aEnv.ProcessError( this );
 					return false;
 				}
 			}
@@ -2491,7 +2491,7 @@ bool minObjectElementNode::DoExecute( int nAccessModus, minInterpreterValue & aR
 			{
 				// es ist gar kein Objekt, das Elemente besitzt
 				aEnv.SetError( ENV_ERROR_NO_OBJECT, "no object" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 		}
@@ -2546,16 +2546,16 @@ bool minArrayElementNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 					else
 					{
 						// angegebener Index existiert nicht
-						aEnv.SetError( ENV_ERROR_BAD_ARRAYINDEX, "bad array index" );
-						aEnv.ProcessError();
+                        aEnv.SetError( ENV_ERROR_BAD_ARRAYINDEX, "bad array index" );
+                        aEnv.ProcessError( this );
 						return false;
 					}
 				}
 				else
 				{
 					// angegebener Index existiert nicht
-					aEnv.SetError( ENV_ERROR_BAD_ARRAYINDEX, "bad array index" );
-					aEnv.ProcessError();
+                    aEnv.SetError( ENV_ERROR_BAD_ARRAYINDEX, "bad array index" );
+                    aEnv.ProcessError( this );
 					return false;
 				}
 			}
@@ -2563,7 +2563,7 @@ bool minArrayElementNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 			{
 				// es ist gar kein Objekt, das Elemente besitzt
 				aEnv.SetError( ENV_ERROR_NO_ARRAYOBJECT, "no array object" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 		}
@@ -2591,7 +2591,7 @@ bool minAssignOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & a
 				{
 					//aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast "+(int)aRigthVal.GetType()+" in "+(int)pLeftExprValue->GetType() );
 					aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast" );
-					aEnv.ProcessError();
+                    aEnv.ProcessError( this );
 					return false;
 				}
 
@@ -2602,7 +2602,7 @@ bool minAssignOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & a
 			else
 			{
 				aEnv.SetError( ENV_ERROR_REQ_L_VALUE, "no l-value" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 		}
@@ -2880,7 +2880,7 @@ bool minDivOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aRet
 			if( dDenominator == 0 )
 			{
 				aEnv.SetError( ENV_ERROR_DIV_WITH_ZERO, "div with 0" );
-				aEnv.ProcessError();
+                aEnv.ProcessError( this );
 				return false;
 			}
 			

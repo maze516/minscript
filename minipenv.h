@@ -311,7 +311,7 @@ public:
 		return m_aValue.m_dValue;
 	}
 */
-	string		GetString()	const;
+    string		GetString( bool bDebugOutput = false )	const;
 	double		GetDouble() const;
 	bool		GetBool() const;
 	long		GetInt() const;
@@ -371,7 +371,7 @@ public:
 
 private:
 	// DIE Konversions-Methode !!!
-	minInterpreterValue ConvertTo( const minInterpreterType & aToType ) const;
+    minInterpreterValue ConvertTo( const minInterpreterType & aToType, bool bDebugOutput = false ) const;
 
 	void Assign( const minInterpreterValue & aObj );
 	void DeleteDataIfOwner();
@@ -625,13 +625,14 @@ public:
 	// Methoden fuer die Fehlerbehandlung
 	int		GetLastErrorCode() const			{ return m_nLastErrorCode; }
 	string	GetLastErrorMsg() const				{ return m_sLastErrorMsg; }
+    bool    HasError() const                    { return GetLastErrorCode()!=0; }
 	void	SetError( int nErrorCode, const string & sMsg ) 
 	{ 
 		m_nLastErrorCode = nErrorCode; 
 		m_sLastErrorMsg = sMsg;
 	}
 	// erzeugt eine Fehlerbehandlung/Exception --> z.B. Unterstuetzung von Registrierung von Callbacks !
-	void	ProcessError();
+    void	ProcessError( minInterpreterNode * pCurrentNode = 0 );
 
 	string GetInfoString() const;
 
