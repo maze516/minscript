@@ -56,6 +56,12 @@
 #include <stdlib.h>
 #include <time.h>
 
+#if defined( _MSC_VER )
+#define PUTENV _putenv
+#else
+#define PUTENV putenv
+#endif
+
 //*************************************************************************
 
 void InitDefaultTokenizer( minTokenizer & m_aTokenizer )
@@ -1017,7 +1023,7 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	// stdlib.h
 	pFcn = new NativeFcnWrapper1<string, const char *>( (NativeFcnWrapper1<string, const char *>::MyFcnType1)my_getenv, "string getenv( string sName );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
-    pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)putenv, "int putenv( string sNameValue );" );
+    pFcn = new NativeFcnWrapper1<int, const char *>( (NativeFcnWrapper1<int, const char *>::MyFcnType1)PUTENV, "int putenv( string sNameValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeVoidFcnWrapper1<int>( (NativeVoidFcnWrapper1<int>::MyFcnType1)exit, "void exit( int iValue );" );
 	m_aEnvironment.AddNativeFunction( pFcn );

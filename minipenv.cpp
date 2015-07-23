@@ -1621,9 +1621,15 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 // ((TODO: p --> restart program 
 // ((TODO: restart program execution after finishing program
 // ((TODO: bei Exceptions anhalten und callstack anzeigen
-// TODO: evaluation von Ausdruecken im debug mode erlauben: i*i oder 9*9
+// TODO: optimierung: in FunctionNode.DoExecute() ist der Aufruf GetNoOfFunctions() teuer ist der wirklich notwendig ? GetFunction() ist ebenfalls teuer
+// TODO: optimierung: in minVariableNode::DoExecute() ist GetValueForVariable() und CopyValue() teuer !
+// TODO: ggf. maps/dictionaries als einfachen datentyp implementieren?
+// TODO: ggf. dynamic type variablen typ definieren --> var aVariant = 4; aVariang = "blub"
+// TODO: ggf. evaluation von Ausdruecken im debug mode erlauben: i*i oder 9*9
 // TODO: ggf. bei Breakpoints stoppen, fuer die kein code existiert, z. b. block anfang/ende --> ignoriere Breakpoints fuer leerzeilen und kommentare ?
-// TODO: navigate in callstack: up, down
+	// TODO: aussagekraeftige Fehlermeldungen realisieren --> strings fuer fehler codes !
+	// TODO: zeilen nummern korrekt zurueckgeben --> offset bestimmen
+	// TODO: navigate in callstack: up, down
 // TODO: Content von Objekten und Arrays anzeigen
 // TODO: lb --> list of breakpoints
 // TODO: cl n --> clear breakpoint at line n

@@ -89,6 +89,7 @@ const int PARSER_ERROR_TO_MANY_DEFAULT_LABELS		= 2023;
 const int PARSER_ERROR_IN_SIZEOF					= 2024;
 const int PARSER_ERROR_IN_TEMPLATE					= 2025;
 const int PARSER_ERROR_IN_TEMPLATE_ARGS				= 2026;
+const int PARSER_ERROR_IN_TEMPLATE_NO_FUNCTIONS_SUPPORTED	= 2027;
 
 //*************************************************************************
 

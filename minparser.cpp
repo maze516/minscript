@@ -115,7 +115,10 @@ bool minParser::ParseFunction()
 bool minParser::ParseForStringToken( const string & sStrg, minToken * pToken )
 {
 	minToken aToken;
-	if( PeekRealToken( aToken ) )
+
+	SkipWhitespaces();
+
+	if (PeekRealToken(aToken))
 	{
 		if( aToken.GetString() == sStrg )
 		{
@@ -274,6 +277,8 @@ bool minParser::ParseBlock( minInterpreterNode * & pNodeOut, bool bNoBlockIsErro
 bool minParser::PeekAndReadClassScope( InterpreterClassScope & aClassScopeInOut )
 {
 	minToken aToken;
+
+	SkipWhitespaces();
 
 	// Bugfix 9.2.2003: aendere uebergebenen Class-Scope nicht !
 	//aClassScopeInOut = None;
@@ -586,6 +591,8 @@ bool minParser::ParseTypedef( minInterpreterNode * & pNodeOut )
 
 bool minParser::ParseCaseOrDefaultForSwitch( minInterpreterNode * & pNodeOut, bool & bIsDefaultOut )
 {
+	SkipWhitespaces();
+
 	// case constant :
 	//    statement-list
 	//    break;
@@ -651,6 +658,8 @@ bool minParser::ParseCaseOrDefaultForSwitch( minInterpreterNode * & pNodeOut, bo
 
 bool minParser::ParseSwitch( minInterpreterNode * & pNodeOut )
 {
+	SkipWhitespaces();
+
 	// gepeektes (switch) Token lesen 
     minToken aSwitchToken;
     m_pTokenizer->GetNextToken(aSwitchToken);
@@ -699,6 +708,8 @@ bool minParser::ParseSwitch( minInterpreterNode * & pNodeOut )
 
 bool minParser::ParseWhile( minInterpreterNode * & pNodeOut )
 {
+	SkipWhitespaces();
+
 	// gepeektes (while) Token lesen 
     minToken aWhileToken;
     m_pTokenizer->GetNextToken( aWhileToken );
@@ -724,6 +735,8 @@ bool minParser::ParseWhile( minInterpreterNode * & pNodeOut )
 
 bool minParser::ParseDo( minInterpreterNode * & pNodeOut )
 {
+	SkipWhitespaces();
+
 	// gepeektes (do) Token lesen 
     minToken aDoToken;
     m_pTokenizer->GetNextToken(aDoToken);
@@ -760,6 +773,8 @@ bool minParser::ParseDo( minInterpreterNode * & pNodeOut )
 
 bool minParser::ParseFor( minInterpreterNode * & pNodeOut )
 {
+	SkipWhitespaces();
+
 	// gepeektes (for) Token lesen 
     minToken aForToken;
     m_pTokenizer->GetNextToken(aForToken);
@@ -792,6 +807,8 @@ bool minParser::ParseIf( minInterpreterNode * & pNodeOut )
 	// auf jeden Fall den Output-Parameter initialisieren
 	pNodeOut = 0;
 
+	SkipWhitespaces();
+
 	// gepeektes (if) Token lesen
     minToken aIfToken;
     m_pTokenizer->GetNextToken(aIfToken);
@@ -806,6 +823,8 @@ bool minParser::ParseIf( minInterpreterNode * & pNodeOut )
 		if( ParseStatement( pThenStatement ) )
 		{
 			minToken aToken;
+
+			SkipWhitespaces();
 
 			// jetzt koennte ein else kommen
 			if( PeekRealToken( aToken ) && aToken.IsKeyword() && aToken.GetId()==ELSE_ID )
@@ -1915,6 +1934,8 @@ bool minParser::ParseTemplate( minInterpreterNode * & pNodeOut )
 {
 	// parse: template <class Type1, class Type2> class/function
 
+	SkipWhitespaces();
+
 	// gepeektes (sizeof) Token lesen 
     minToken aToken;
     m_pTokenizer->GetNextToken(aToken);
@@ -1922,16 +1943,27 @@ bool minParser::ParseTemplate( minInterpreterNode * & pNodeOut )
 	minInterpreterNode * pClass = 0;
 	string sClassName;
 
-	if( ParseTemplateArgumentList( m_aTemplateTypeNameList ) &&
-		ParseForStringToken( "class" ) &&
-		ParseClass( /*bIsStruct*/false, pClass, sClassName ) )
+	if( ParseTemplateArgumentList(m_aTemplateTypeNameList) )
 	{
-        pNodeOut = new minTemplateNode( m_aTemplateTypeNameList, pClass, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()) );
+		// process template classes
+		if( ParseForStringToken("class") &&
+			ParseClass( /*bIsStruct*/false, pClass, sClassName) )
+		{
+			pNodeOut = new minTemplateNode(m_aTemplateTypeNameList, pClass, minDebuggerInfo::CreateDebuggerInfo(aToken.GetLineNo()));
 
-		// temporaere Type Liste wieder loeschen
-		m_aTemplateTypeNameList.erase( m_aTemplateTypeNameList.begin(), m_aTemplateTypeNameList.end() );
+			// temporaere Type Liste wieder loeschen
+			m_aTemplateTypeNameList.erase(m_aTemplateTypeNameList.begin(), m_aTemplateTypeNameList.end());
 
-		return true;
+			return true;
+		}
+
+		// process template functions
+		if( ParseVarDeclarationOrFunction(pNodeOut, /*bIsConst*/false, /*bIsVirtual*/false) )
+		{
+// TODO --> Template Functions realisieren !
+			SetError( PARSER_ERROR_IN_TEMPLATE_NO_FUNCTIONS_SUPPORTED, aToken.GetLineNo() );
+			return false;
+		}
 	}
 
 	pNodeOut = 0;
