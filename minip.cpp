@@ -221,7 +221,7 @@ void minScriptInterpreter::DumpAllFunctionPrototypes( ostream & aStream ) const
 	m_aEnvironment.DumpAllFunctionPrototypes( aStream );
 }
 
-bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string & sScript, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime, unsigned long * pParseTime, const minTokenizer::TokenContainerT & aParsedTokens )
+bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string & sScript, int nLineCountOfAddedCode, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime, unsigned long * pParseTime, const minTokenizer::TokenContainerT & aParsedTokens )
 {
 	if( aParsedTokens.size()>0 )
 	{
@@ -230,10 +230,10 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 	}
 	else
 	{
-		m_aTokenizer.SetText( sScript );
+		m_aTokenizer.SetText( sScript, nLineCountOfAddedCode );
 	}
 	unsigned long nParseStartTime = minGetCurrentTickCount();
-	if( m_aParser.Parse() )
+	if( m_aParser.Parse( nLineCountOfAddedCode ) )
 	{
 		unsigned long nParseStopTime = minGetCurrentTickCount();
 		minInterpreterNode * pNode = m_aParser.GetProgramNode();
@@ -245,12 +245,17 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 				m_aEnvironment.RemoveAllFunctions();
 				InitRuntimeEnvironment();
 				// Callstack-Eintrag erzeugen, ausfuehren und Callstack-Eintrag wieder loeschen
+				m_aEnvironment.SetLineCountOfAddedCode( nLineCountOfAddedCode );
 				m_aEnvironment.PushCallStackItem( "__main()" );
 				m_aEnvironment.ResetDebuggerExecutionFlags();
 				m_aEnvironment.SetDbgResetExecution(false);
 				m_aEnvironment.SetDebugMode( m_bDebug );
 				m_aEnvironment.SetSourceCode( sScriptWithPredefs );
 				m_aEnvironment.SetDbgMode( m_bDbg );
+				if (m_aEnvironment.IsDbgMode())
+				{
+					cout << endl << "starting debugging..." << endl << endl;
+				}
 				unsigned long nStartTime = minGetCurrentTickCount();
 				try 
 				{
@@ -261,6 +266,10 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 					cerr << endl << "Runtime exception: " << aError.GetInfoString().c_str() << endl << endl;
 				}
 				unsigned long nStopTime = minGetCurrentTickCount();
+				if (m_aEnvironment.IsDbgMode())
+				{
+					cout << endl << "script execution finished." << endl;
+				}
 				m_aEnvironment.PopCallStackItem();
 				// Environment wieder zuruecksetzen
 				//m_aEnvironment.RemoveAllFunctions();
@@ -272,7 +281,7 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 				{
 					*pParseTime = (1000*(nParseStopTime-nParseStartTime))/minGetTickCountPerSec();
 				}
-			} while (m_aEnvironment.IsDbgMode());
+			} while( m_aEnvironment.IsDbgMode() );
 
 			return m_bRunOk;
 		}
@@ -286,10 +295,10 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 	return false;
 }
 
-bool minScriptInterpreter::ParseOnly( const string & sScript )
+bool minScriptInterpreter::ParseOnly( const string & sScript, int nLineCountOfAddedCode )
 {
-	m_aTokenizer.SetText( sScript );
-	if( m_aParser.Parse() )
+	m_aTokenizer.SetText( sScript, nLineCountOfAddedCode );
+	if( m_aParser.Parse( nLineCountOfAddedCode ) )
 	{
 		return true;
 	}
@@ -308,11 +317,11 @@ bool minScriptInterpreter::GenerateCppCode( const string & sScript, string & sCp
 }
 #endif
 
-bool minScriptInterpreter::RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens )
+bool minScriptInterpreter::RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, int nLineCountOfAddedCode, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens )
 {
     //cout << "PREPROCESSOR: " << sScriptIn << endl;
 #ifdef _with_preproc
-	minPreProcessor aPreProc( bOnlyPreproc, m_aTokenizer, sScriptIn, aIncludeDirList, aParsedTokens );
+	minPreProcessor aPreProc( bOnlyPreproc, m_aTokenizer, sScriptIn, nLineCountOfAddedCode, aIncludeDirList, aParsedTokens );
 
 	bool bOk = aPreProc.GenerateOutput( sPreProcedScriptOut );
 
@@ -415,8 +424,8 @@ bool minScriptInterpreter::DumpParser( ostream & aStream )
 
 minInterpreterNode * const minScriptInterpreter::GetProgramNodeForScript( const string & sScript )
 {
-	m_aTokenizer.SetText( sScript );
-	if( m_aParser.Parse() )
+	m_aTokenizer.SetText( sScript, 0 );
+	if( m_aParser.Parse( 0 ) )
 	{
 		minInterpreterNode * pNode = m_aParser.GetProgramNode();
 		if( pNode )
@@ -1218,10 +1227,10 @@ static vector<string> split(const string & str, const string & delimiters)
 	return v;
 }
 
-void DumpScript( const string & sScript, int nCurrentLineNo, list<int> lstBreakpointLines )
+void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines )
 {
 	vector<string> lines = split(sScript, string("\n"));
-	int iLineNo = 1;
+	int iLineNo = 1 - nLineCodeOfAddedCode;
 	vector<string>::const_iterator iter = lines.begin();
 	while( iter != lines.end() )
 	{		
@@ -1245,6 +1254,12 @@ void DumpScript( const string & sScript, int nCurrentLineNo, list<int> lstBreakp
 		iLineNo++;
 		iter++;
 	}
+}
+
+int CountNewLines( const string & s )
+{
+	size_t n = std::count(s.begin(), s.end(), '\n');
+	return n;
 }
 
 #ifdef _with_preproc

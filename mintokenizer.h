@@ -116,14 +116,14 @@ public:
 	void	SetParsedTokens( const TokenContainerT * pTokenContainer );
 
 	// setzt den Programmtext
-	void	SetText( const string & sProgramTextIn )	{ m_sProgram = sProgramTextIn; InitProcessing(); }
+	void	SetText( const string & sProgramTextIn, int nLineCountOfAddedCode )	{ m_sProgram = sProgramTextIn; InitProcessing( nLineCountOfAddedCode ); }
 	string  GetText() const								{ return m_sProgram; }
 
 	void	SetReplaceStringEscapesModus( bool bDoReplace )		{ m_bDoReplace = bDoReplace; }
 	bool	GetReplaceStringEscapesModus() const				{ return m_bDoReplace; }
 
 	// initialisiert den Tokenizer-Prozess an den Anfang des Programmtextes
-	bool InitProcessing();
+	bool InitProcessing( int nLineCountOfAddedCode );
 
 	// Ueberpruefung auf Fehlerzustand und Fehlerposition
 	bool IsError() const							{ return m_bIsError; }

@@ -144,7 +144,7 @@ public:
 	// fuer die vom Tokenizer gelieferten Tokens wird
 	// eine Liste von Parser-Items aufgebaut.
 	// Diese Liste kann von einem minCodeProcessor abgearbeitet werden.
-	bool Parse();
+	bool Parse( int nLineCountOfAddedCode );
 	// liefert den Parser-Knoten, der das Programm raepraesentiert
     minInterpreterNode * const GetProgramNode() const	{ return m_pProgramNode; }
 
@@ -155,9 +155,16 @@ private:
 	void Init();
 	void SetError( int nCode, int nLineNo )
 	{
-		m_bIsError = true;
-		m_nErrorCode = nCode; 
-		HandleError( nLineNo );
+		if( !m_bIsError )
+		{
+			m_bIsError = true;
+			m_nErrorCode = nCode;
+			HandleError(nLineNo);
+		}
+		else
+		{
+            // ignore more than one parser error, just report the first parser error, parsing will be stoped anyway
+		}
 	}
 	void HandleError( int nLineNo );
 	void SetProgramNode( minInterpreterNode * pNewProgNode );	

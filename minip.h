@@ -220,10 +220,10 @@ public:
 	minScriptInterpreter( bool bDebug = false );
 	~minScriptInterpreter();
 
-	bool Run( const string & sScriptWithPredefs, const string & sScriptIn, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime = 0, unsigned long * pParseTime = 0, const minTokenizer::TokenContainerT & aParsedTokens = minTokenizer::TokenContainerT());
-	bool ParseOnly( const string & sScriptIn );
+	bool Run( const string & sScriptWithPredefs, const string & sScriptIn, int nLineCountOfAddedCode, minInterpreterValue & aReturnValueOut, unsigned long * pExecutionTime = 0, unsigned long * pParseTime = 0, const minTokenizer::TokenContainerT & aParsedTokens = minTokenizer::TokenContainerT());
+	bool ParseOnly( const string & sScriptIn, int nLineCountOfAddedCode );
 	SMALL( bool GenerateCppCode( const string & sScriptIn, string & sCppCodeOut ); )
-	bool RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens );
+	bool RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, int nLineCountOfAddedCode, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens );
 
 	// Methode zum registrieren von weiteren Funktionen am Interpreter
 	bool LoadModule( const string & sDllNameIn, long * phDll );
@@ -279,6 +279,8 @@ MINDLLEXPORT bool SplitPath( const char * sPath, string & sDrive, string & sDir,
 
 void InitDefaultTokenizer( minTokenizer & m_aTokenizer );
 
-void DumpScript( const string & sScript, int nCurrentLineNo, list<int> lstBreakpointLines );
+void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines );
+
+int CountNewLines( const string & s );
 
 #endif

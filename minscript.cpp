@@ -1064,7 +1064,7 @@ static bool MakeMakefile( const minArgumentsHelper & aArgs )
 
 #endif
 
-string RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptInterpreter & aIp, string & sScript, minTokenizer::TokenContainerT & aParsedTokens )
+string RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScriptInterpreter & aIp, string & sScript, minTokenizer::TokenContainerT & aParsedTokens, int & nLineCountOfAddedCodeInOut )
 {
 	// als Parameter vordefinierte Symbole vorbereiten
 	string sPredefinedSymbols;
@@ -1110,11 +1110,12 @@ string RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScrip
 			++aIter;
 		}
 	}
+	nLineCountOfAddedCodeInOut += CountNewLines(sPredefinedSymbols);
 	if( aArgs.m_bRunPreprocessor )
 	{
 		string sPreProcessedScript;
 		unsigned long nPreprocessingStartTime = minGetCurrentTickCount();
-		bool bOk = aIp.RunPreProcessor( bOnlyPreproc, sPredefinedSymbols+sScript, sPreProcessedScript, aArgs.m_aIncludePathList, aParsedTokens );
+		bool bOk = aIp.RunPreProcessor( bOnlyPreproc, sPredefinedSymbols+sScript, nLineCountOfAddedCodeInOut, sPreProcessedScript, aArgs.m_aIncludePathList, aParsedTokens );
 		if( !bOk )
 		{
 			cerr << "error in preprocessor" << endl;
@@ -1262,7 +1263,8 @@ int main( int argc, char *argv[] )
 	// (OHNE den Argumenten-Code) den Preprocessor aufrufen
 	if( aArgs.m_bRunPreprocessor && !aArgs.m_bRunScript )
 	{
-        RunPreproc( /*bOnlyPreproc*/true, aArgs, aIp, sScript, aParsedTokens );
+		int nLineCountOfAddedCode = 0;
+        RunPreproc( /*bOnlyPreproc*/true, aArgs, aIp, sScript, aParsedTokens, nLineCountOfAddedCode );
     }
 
 	// Code fuer die Argumente erzeugen
@@ -1287,15 +1289,18 @@ int main( int argc, char *argv[] )
 		}
 	}
 
+
 	// Block um das Script setzen
-	sScript = string( "{\n" ) + sArgCode + sScript + string( "\n}" );
+	string sAddedInfrastructureCode = string("{\n") + sArgCode;
+	sScript = sAddedInfrastructureCode + sScript + string("\n}");
 
 	// nur wenn das Skript auch ausgefuehrt werden soll an dieser Stelle
 	// (mit dem Precode und den Argumenten-Code) den Preprocessor aufrufen
 	string sScrpitWithPredefs;
-	if( aArgs.m_bRunPreprocessor && aArgs.m_bRunScript )
+	int nLineCountOfAddedCode = CountNewLines(sAddedInfrastructureCode);
+	if (aArgs.m_bRunPreprocessor && aArgs.m_bRunScript)
 	{
-		sScrpitWithPredefs = RunPreproc( /*bOnlyPreproc*/false, aArgs, aIp, sScript, aParsedTokens);
+		sScrpitWithPredefs = RunPreproc( /*bOnlyPreproc*/false, aArgs, aIp, sScript, aParsedTokens, nLineCountOfAddedCode );
 	}
 
 	if( aArgs.m_bRunCodegen )
@@ -1326,7 +1331,7 @@ int main( int argc, char *argv[] )
 	else if( aArgs.m_bMakeStubs || aArgs.m_bMakeWrapper )
 	{
 #ifdef USEBIG
-		bool bOk = aIp.ParseOnly( sScript ); 
+		bool bOk = aIp.ParseOnly( sScript, nLineCountOfAddedCode ); 
 		if( bOk )
 		{
 			minParserItemList aItemList, aClassItemList;
@@ -1377,8 +1382,8 @@ int main( int argc, char *argv[] )
 		unsigned long nParseTime;
         aIp.SetDbgModus( aArgs.m_bDbgModus );
 		cout << "SCRIPT: " << endl;
-		DumpScript( sScrpitWithPredefs, -1, list<int>() );
-		bool bOk = aIp.Run( sScrpitWithPredefs, sScript, aVal, &nExecutionTime, &nParseTime, aParsedTokens);
+		DumpScript( sScrpitWithPredefs, nLineCountOfAddedCode, -1, list<int>() );
+		bool bOk = aIp.Run( sScrpitWithPredefs, sScript, nLineCountOfAddedCode, aVal, &nExecutionTime, &nParseTime, aParsedTokens);
 		if( bOk )
 		{
 			// Returnwert zuweisen
@@ -1396,7 +1401,7 @@ int main( int argc, char *argv[] )
 	}
 	else if( aArgs.m_bParseOnly )
 	{
-		bool bOk = aIp.ParseOnly( sScript ); 
+		bool bOk = aIp.ParseOnly( sScript, nLineCountOfAddedCode ); 
 		if( bOk )
 		{
 			cout << "parsing script ok." << endl;

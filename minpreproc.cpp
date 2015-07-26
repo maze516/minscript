@@ -80,7 +80,7 @@ private:
 
 //*************************************************************************
 
-minPreProcessor::minPreProcessor( bool bOnlyPreproc, const minTokenizer & aTokenizer, const string & sScript, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokenContainer )
+minPreProcessor::minPreProcessor( bool bOnlyPreproc, const minTokenizer & aTokenizer, const string & sScript, int nLineCountOfAddedCode, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokenContainer )
 	: m_bOk( true ), 
 	  m_bOnlyPreproc( bOnlyPreproc ),
 	  m_aTokenizer( aTokenizer ),
@@ -92,7 +92,7 @@ minPreProcessor::minPreProcessor( bool bOnlyPreproc, const minTokenizer & aToken
 	{
 		m_aTokenizer.SetReplaceStringEscapesModus( false );
 	}
-	SetTextAndInit( sScript ); 
+	SetTextAndInit( sScript, nLineCountOfAddedCode ); 
 }
 
 minPreProcessor::minPreProcessor( const minTokenizer & aTokenizer, const DefineSymbolContainerT & aDefineSymbolContainer, const string & sIncludeFileName, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokenContainer )
@@ -105,7 +105,7 @@ minPreProcessor::minPreProcessor( const minTokenizer & aTokenizer, const DefineS
 
 	if( ReadScript( sIncludeFileName.c_str(), sScript, m_aIncludeDirList ) )
 	{
-		SetTextAndInit( sScript ); 
+		SetTextAndInit( sScript, 0 ); 
 		m_aDefineSymbolContainer = aDefineSymbolContainer;
 	}
 	else
@@ -119,11 +119,11 @@ bool minPreProcessor::IsProcessingEnabled() const
 	return m_aIfStateStack.size()==0 || m_aIfStateStack.top().IsEnabled(); 
 }
 
-void minPreProcessor::SetTextAndInit( const string & sScript )
+void minPreProcessor::SetTextAndInit( const string & sScript, int nLineCountOfAddedCode )
 {
 	m_bOk = true;
-	m_aTokenizer.SetText( sScript );
-	m_aTokenizer.InitProcessing();
+	m_aTokenizer.SetText( sScript, nLineCountOfAddedCode );
+	m_aTokenizer.InitProcessing( nLineCountOfAddedCode );
 	// Arbeitsvariablen loeschen
 	m_aDefineSymbolContainer.erase( m_aDefineSymbolContainer.begin(), m_aDefineSymbolContainer.end() );
 	m_aDependencyList.erase( m_aDependencyList.begin(), m_aDependencyList.end() );
@@ -274,8 +274,9 @@ bool minPreProcessor::GenerateOutput( string & sPreProcedScriptOut )
 						{
 							// das durch define ersetzte Token neu parsen 
 							// und ein Token dafuer erzeugen
-							m_aTokenizerHelper.InitProcessing();
-							m_aTokenizerHelper.SetText( sSymbolOut );
+							int nLineCountOfAddedCode = 0;
+							m_aTokenizerHelper.InitProcessing( nLineCountOfAddedCode );
+							m_aTokenizerHelper.SetText( sSymbolOut, nLineCountOfAddedCode );
 							if( m_aTokenizerHelper.GetNextToken( aToken ) )
 							{
 								m_aParsedTokenContainer.push_back( aToken );
@@ -495,7 +496,7 @@ string minPreProcessor::RecursiveProcessDefineSerach( const string & sTokenStrin
 {
 	// TODO: Optimierung moeglich: hier wird der Tokenizer kopiert, dies ist teuer !!!
 	minTokenizer aTempTokenizer( m_aTokenizer );	// kopiere alle Tokens
-	aTempTokenizer.SetText( sTokenString );
+	aTempTokenizer.SetText( sTokenString, 0 );
 
 	// zerlege den gefundenen Ersatz-Define-String in Tokens und 
 	// behandele diese Tokens ebenfalls als Define-Ersatz (falls notwendig) --> Rekursion !
@@ -904,7 +905,7 @@ bool minPreProcessor::ProcessIf( bool bDoEvaluation )
 	{
 		minScriptInterpreter aIp;
 		minInterpreterValue aReturnValue;
-		if( aIp.Run( sTempScript, sTempScript, aReturnValue ) )
+		if( aIp.Run( sTempScript, sTempScript, 0, aReturnValue ) )
 		{
 			if( aReturnValue.GetBool() )
 			{

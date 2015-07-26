@@ -55,7 +55,7 @@
 const char * g_sClassMethodSeparator = "#";		// war mal "_"
 const char * g_sFunctionCallStart =	"?";
 
-extern void DumpScript(const string & sScript, int nCurrentLineNo, list<int> lstBreakpointLines);
+extern void DumpScript(const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines);
 
 #undef _old_name_search			// fuer binaere Suche, neu seit 14.2.2003
 
@@ -1421,6 +1421,7 @@ static bool IsManglingNameCompatible( const string & sName1, const string & sNam
 
 minInterpreterEnvironment::minInterpreterEnvironment()
 {
+	m_nLineCountOfAddedCode = 0;
     m_nCurrentLineNo = 0;
     m_nCurrentCallStackLevel = 0;
 	m_nLastBreakpointLineNo = 0;
@@ -1464,6 +1465,26 @@ minHandle<minCallStackItem> minInterpreterEnvironment::GetActCallStackItemMinusO
 		return *(++m_aCallStack.rbegin());
 	}
 	return minHandle<minCallStackItem>( 0 );
+}
+
+minHandle<minCallStackItem> minInterpreterEnvironment::GetCallStackItemForLevel( int iLevel )
+{
+	int i = 1;
+	int iMax = m_aCallStack.size();
+	if( iLevel>=1 && iLevel<=m_aCallStack.size() )
+	{
+		CallStackContainerT::iterator iter = m_aCallStack.begin();
+		while( iter!=m_aCallStack.end() )
+		{
+			if( i == iLevel )
+			{
+				return *iter;
+			}
+			++i;
+			++iter;
+		}
+	}
+	return minHandle<minCallStackItem>(0);
 }
 
 bool minInterpreterEnvironment::PushCallStackItem( minHandle<minCallStackItem> aCallStackItem )
@@ -1576,7 +1597,7 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 	while (iter != m_aCallStack.end())
 	{
 		string sInfo = (*iter)->GetInfoString();
-		if (sInfo.length() > 0 && sInfo[0] == '?')
+		if( sInfo.length() > 0 && (sInfo[0] == '?' || sInfo.substr(0,6)=="__main") )
 		{
 			sInfo += " " + i;
 			ret.push_back(sInfo);
@@ -1626,10 +1647,14 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 // TODO: ggf. maps/dictionaries als einfachen datentyp implementieren?
 // TODO: ggf. dynamic type variablen typ definieren --> var aVariant = 4; aVariang = "blub"
 // TODO: ggf. evaluation von Ausdruecken im debug mode erlauben: i*i oder 9*9
+// TODO: ggf. len(array) implementieren
 // TODO: ggf. bei Breakpoints stoppen, fuer die kein code existiert, z. b. block anfang/ende --> ignoriere Breakpoints fuer leerzeilen und kommentare ?
-	// TODO: aussagekraeftige Fehlermeldungen realisieren --> strings fuer fehler codes !
-	// TODO: zeilen nummern korrekt zurueckgeben --> offset bestimmen
+	// TODO: aussagekraeftige Fehlermeldungen realisieren --> strings fuer parser fehler codes !
+	// ((TODO: zeilen nummern korrekt zurueckgeben --> offset bestimmen
 	// TODO: navigate in callstack: up, down
+	// TODO: pruefe, ob breakpoint ueberhaupt gesetzt werden kann --> gibt es InterpreterNode fuer gesuchte Zeilennummer?
+// ((TODO: bug untersuchen mit do not halt on breakpoint line --> problem ist mehrzeiliger c kommentar ! /* */ --> Zeilennummer des Token wurde nicht korrekt hoch gezaehlt !
+// ((TODO: abbruch bei erstem Parserfehler und nicht alle folge Fehler anzeigen !
 // TODO: Content von Objekten und Arrays anzeigen
 // TODO: lb --> list of breakpoints
 // TODO: cl n --> clear breakpoint at line n
@@ -1709,6 +1734,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 // TODO --> user input request, alle zustaende zuruecksetzen...
 
+	int iSelectedCallStackLevel = m_aCallStack.size();
+
     bool bContinueDbgLoop = true;
     while( bContinueDbgLoop )
     {
@@ -1750,7 +1777,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-		else if (sInput == "r")   // step out
+		else if( sInput == "r" )   // step out
 		{
 			cout << "step out" << endl;
 
@@ -1762,7 +1789,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-		else if (sInput == "c")
+		else if( sInput == "c" )
         {
             cout << "run..." << endl;
 
@@ -1781,21 +1808,52 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-		else if (sInput == "w")
+		else if( sInput == "u" )
+		{
+			if( iSelectedCallStackLevel > 1 )
+			{
+				iSelectedCallStackLevel--;
+			}
+			else
+			{
+				cout << "Warning: can not move callstack up!" << endl;
+			}
+		}
+		else if( sInput == "d" )
+		{
+			if( iSelectedCallStackLevel < m_aCallStack.size() )
+			{
+				iSelectedCallStackLevel++;
+			}
+			else
+			{
+				cout << "Warning: can not move callstack down!" << endl;
+			}
+		}
+		else if( sInput == "w" )
         {
             cout << "show stack size=" << GetCallStackSize() << endl;
 // TODO --> Transformation: funktionen und Blocks zusammenfassen zu einem debugger callstack item !
             CallStackContainerT::const_iterator iter = m_aCallStack.begin();
             int i = 1;
+			int iMaxCallStackItems = m_aCallStack.size();
             while( iter!=m_aCallStack.end() )
             {
+				if( iSelectedCallStackLevel==i )
+				{
+					cout << "->";
+				}
+				else
+				{
+					cout << "  ";
+				}
                 cout << i << " " << (*iter)->GetInfoString() << endl;
                 ++iter;
                 ++i;
             }
 
-			cout << endl;
-			vector<string> aDbgCallStack = GetCallStackForDebugger( m_aCallStack );
+			cout << "---------------------------" << endl;
+			vector<string> aDbgCallStack = GetCallStackForDebugger(m_aCallStack);
 			for (int n = aDbgCallStack.size() - 1; n>=0; --n)
 			{
 				cout << n+1 << " " << aDbgCallStack[n] << endl;
@@ -1804,7 +1862,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		else if( sInput=="l" )
 		{
 // gulp working
-			minHandle<minCallStackItem> aCurrentCallStackItem = GetActCallStackItem();
+			//minHandle<minCallStackItem> aCurrentCallStackItem = GetActCallStackItem();
+			minHandle<minCallStackItem> aCurrentCallStackItem = GetCallStackItemForLevel( iSelectedCallStackLevel );
 			cout << "local variables: " << aCurrentCallStackItem->GetInfoString() << endl;
 			aCurrentCallStackItem->DumpVariables(cout);
 
@@ -1848,7 +1907,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
         else if( sInput=="s" )
         {
-			DumpScript( m_sSourceCode, nCurrentLineNo, GetBreakpointLines() );
+// TODO --> hier auch die currentLineNo mit der Selektion auf dem CallStack abgleichen !?
+			DumpScript( m_sSourceCode, m_nLineCountOfAddedCode, nCurrentLineNo, GetBreakpointLines() );
         }
 		else if (sInput == "v")
 		{
@@ -1866,11 +1926,13 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             cout << "  o        : step over next line" << endl;
             cout << "  i        : step into next line" << endl;
 			cout << "  r        : step out (return from function)" << endl;
-			cout << "  c        : run" << endl;
+			cout << "  c        : run/continue" << endl;
 			cout << "  p        : reset program execution" << endl;
 			cout << "  b lineno : set breakpoint at line" << endl;
 			cout << "  clear    : clear all breakpoins" << endl;
 			cout << "  w        : show call stack" << endl;
+			cout << "  u        : one step up the call stack" << endl;
+			cout << "  d        : one step down the call stack" << endl;
 			cout << "  l        : show local variables" << endl;
             cout << "  s        : show source code" << endl;
 			cout << "  a        : show AST" << endl;

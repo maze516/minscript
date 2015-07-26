@@ -138,7 +138,7 @@ class MINDLLEXPORT minPreProcessor
 	typedef stack<_IfStateHelper>								IfStateStackT;
 
 public:
-	minPreProcessor( bool bOnlyPreproc, const minTokenizer & aTokenizer, const string & sScript, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokenContainer );
+	minPreProcessor( bool bOnlyPreproc, const minTokenizer & aTokenizer, const string & sScript, int nLineCountOfAddedCode, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokenContainer );
 
 	bool GenerateOutput( string & sPreProcedScriptOut );
 
@@ -153,7 +153,7 @@ private:
 	// +++ Hilfsmethoden +++
 	bool IsProcessingEnabled() const;
 
-	void SetTextAndInit( const string & sScript );
+	void SetTextAndInit( const string & sScript, int nLineCountOfAddedCode );
 	bool ReadAndProcessIncludeFile( const string & sIncludeFileName, string & sPreProcedScriptOut );
 
 	bool ReadArgumentTokens( minTokenContainerT & aArgTokenListOut );

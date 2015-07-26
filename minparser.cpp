@@ -82,9 +82,9 @@ void minParser::Init()
 	m_nErrorCode = ERROR_NO_ERROR;
 }
 
-bool minParser::Parse()
+bool minParser::Parse( int nLineCountOfAddedCode)
 {
-	m_pTokenizer->InitProcessing();
+	m_pTokenizer->InitProcessing( nLineCountOfAddedCode );
 
 	minInterpreterNode * pNode = 0;
 	// WICHTIG: Script muss in einem Block stehen, z.B. "{ a = 1; }"
@@ -98,7 +98,7 @@ bool minParser::Parse()
 
 bool minParser::ParseFunction()
 {
-	m_pTokenizer->InitProcessing();
+	m_pTokenizer->InitProcessing( 0 );
 
 	SkipWhitespaces();
 

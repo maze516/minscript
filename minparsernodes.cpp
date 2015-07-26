@@ -233,7 +233,7 @@ public:
 	minFunctionDeclarationNode * ParseFunction( const string & sScript )
 	{
 		//m_aTokenizer.SetText( "{ "+sScript+" }" );	// ein Script muss immer in einem Block stehen !
-		m_aTokenizer.SetText( sScript );
+		m_aTokenizer.SetText( sScript, 0 );
 		if( m_aParser.ParseFunction() )
 		{
 			minInterpreterNode * pNode = m_aParser.GetProgramNode();

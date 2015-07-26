@@ -113,7 +113,7 @@ void minTokenizer::SetParsedTokens( const TokenContainerT * pTokenContainer )
 	m_pParsedTokenContainer = pTokenContainer;
 }
 
-bool minTokenizer::InitProcessing()
+bool minTokenizer::InitProcessing( int nLineCountOfAddedCode )
 {
 	m_bIsError = false;
 	m_nErrorCode = ERROR_NO_ERROR;
@@ -124,8 +124,7 @@ bool minTokenizer::InitProcessing()
 		m_aParsedTokenIter = m_pParsedTokenContainer->begin();
 	}
 	m_iCount = 0;
-    m_iLineCount = 1;		// start with line number 1 !
-    //cout << "PRINT " << m_sProgram << endl;
+    m_iLineCount = 1 - nLineCountOfAddedCode;		// start with line number 1 !
 	return true;
 }
 
@@ -152,6 +151,8 @@ bool minTokenizer::GetNextToken( minToken & aTokenOut )
 	}
 	return true;
 }
+
+extern int CountNewLines(const string & s);
 
 bool minTokenizer::PeekNextToken( minToken & aTokenOut )
 {
@@ -196,8 +197,11 @@ bool minTokenizer::PeekNextToken( minToken & aTokenOut )
         if( aNextToken.IsNewLine() )
         {
             m_iLineCount++;
-            //cout << "line count " << m_iLineCount << " " << m_iCount << " " << aNextToken.GetString().size() << " line=" << aNextToken.GetLineNo() << endl;
         }
+		else if (aNextToken.IsComment())
+		{
+			m_iLineCount += CountNewLines( aNextToken.GetString() );
+		}
         else
         {
             //cout << "TOK: " << aNextToken.GetString() << endl;
@@ -996,7 +1000,7 @@ void minTokenizer::DumpTokenContainer( ostream & aStream, const TokenContainerT 
 
 	while( aIter != aTokenContainer.end() )
 	{
-		cout << iCount << " >" << (*aIter).GetRepresentationString().c_str() << "<" << endl;
+		cout << iCount << " >" << (*aIter).GetRepresentationString().c_str() << "< line=" << (*aIter).GetLineNo() << endl;
 		++iCount;
 		++aIter;
 	}

@@ -557,12 +557,16 @@ public:
 
 	void SetSourceCode( const string & sCode )	{ m_sSourceCode = sCode; }
 
+	void SetLineCountOfAddedCode(int nLineCount) { m_nLineCountOfAddedCode = nLineCount; }
+	
 	// Groesse des aktuellen Call-Stacks liefern
 	int GetCallStackSize() const				{ return (int)m_aCallStack.size(); }
 	// den gerade aktuellen Call-Stack Eintrag liefern (Spize des Stacks)
 	minHandle<minCallStackItem> GetActCallStackItem();
 	// der unter dem gerade aktuellen Call-Stack Eintrag liegenden Eintrag liefern (Spize des Stacks - 1), fuer this-Implementation
 	minHandle<minCallStackItem> GetActCallStackItemMinusOne();
+	// Zugriff auf den Callstack via Level (1..n)
+	minHandle<minCallStackItem> GetCallStackItemForLevel( int iLevel );
 	// den uebergebenen Call-Stack Eintrag als oberstes Element ablegen
 	bool PushCallStackItem( minHandle<minCallStackItem> aCallStackItem );
 	// neuen Call-Stack Eintrag erzeugen
@@ -659,6 +663,7 @@ private:
 	ClassContainerT			m_aClassContainer;
 	BreakpointContainerT	m_aBreakpointContainer;
     // Variablen fuer die Fehlerbehandlung und Debugging
+	int						m_nLineCountOfAddedCode;
     int                     m_nCurrentLineNo;
     int                     m_nCurrentCallStackLevel;
 	int						m_nLastBreakpointLineNo;
