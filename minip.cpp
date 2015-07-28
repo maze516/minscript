@@ -1204,7 +1204,7 @@ bool WriteAsciiFile( const char * sFileName, const string & sTextIn )
 }
 
 // http://stackoverflow.com/questions/236129/split-a-string-in-c
-static vector<string> split(const string & str, const string & delimiters)
+vector<string> split(const string & str, const string & delimiters)
 {
 	vector<string> v;
 	string::size_type start = 0;

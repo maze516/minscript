@@ -47,6 +47,7 @@
 #include "dllexport.h"
 
 #include "platform.h"
+#include "osdep.h"
 
 #include "minparsernodes.h"
 #include "minip.h"
@@ -123,6 +124,23 @@ struct minArgumentsHelper
 	bool				m_bMakeMakefile;
 	bool				m_bMakeDll;
 };
+
+static bool minProcessEnvironmentVariables( minArgumentsHelper & aArgs )
+{
+    char * sMinscriptPath = getenv("MINSCRIPTPATH");
+    if( sMinscriptPath!=0 )
+    {
+        vector<string> aDirs = split( sMinscriptPath, PATH_SEPARATOR);
+
+        vector<string>::const_iterator aIter = aDirs.begin();
+        while( aIter!=aDirs.end() )
+        {
+            aArgs.m_aIncludePathList.push_back( *aIter );
+            cout << "-->" << *aIter << endl;
+            ++aIter;
+        }
+    }
+}
 
 static bool minParseArgs( int argc, char * argv[], minArgumentsHelper & aArgs )
 {
@@ -1157,6 +1175,7 @@ int main( int argc, char *argv[] )
 	int nRet = 0;
 	
 	{	// Block zum Speicherleck Testen
+    minArgumentsHelper aArgs;
 
 	// Interpreter anlegen
 	minScriptInterpreter aIp;
@@ -1164,8 +1183,10 @@ int main( int argc, char *argv[] )
 	// zum merken der vom Preprocessor geparsten Tokens
 	minTokenizer::TokenContainerT aParsedTokens;
 
+    // verarbeite Environment Variablen:
+    minProcessEnvironmentVariables( aArgs );
+
 	// jetzt die Argumente parsen und interpretieren:
-	minArgumentsHelper aArgs;
 	if( !minParseArgs( argc, argv, aArgs ) )
 	{
 		cerr << "wrong argument found." << endl;

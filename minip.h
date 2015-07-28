@@ -283,4 +283,6 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 
 int CountNewLines( const string & s );
 
+vector<string> split( const string & str, const string & delimiters );
+
 #endif
