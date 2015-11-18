@@ -47,8 +47,9 @@
 #include "minparser.h"
 #include "minnativehlp.h"
 
-
 #include <stdio.h>				// fuer: sprintf
+
+#include <typeinfo>				// fuer: typeid()
 
 //*************************************************************************
 

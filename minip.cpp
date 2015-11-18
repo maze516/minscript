@@ -56,6 +56,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <algorithm>
+
 #if defined( _MSC_VER )
 #define PUTENV _putenv
 #else
@@ -1208,7 +1210,7 @@ vector<string> split(const string & str, const string & delimiters)
 {
 	vector<string> v;
 	string::size_type start = 0;
-	auto pos = str.find_first_of(delimiters, start);
+	size_t pos = str.find_first_of(delimiters, start);
 	while (pos != string::npos)
 	{
 		//if (pos != start) // ignore empty tokens
@@ -1234,7 +1236,7 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 	vector<string>::const_iterator iter = lines.begin();
 	while( iter != lines.end() )
 	{		
-		if (find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
+		if (std::find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
 		{
 			cout << "B";
 		}
