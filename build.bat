@@ -1,0 +1,1 @@
+mingw32-make -j 4 -f makefile.unx -e mingw=1 release=1
