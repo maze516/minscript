@@ -1599,7 +1599,7 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 		string sInfo = (*iter)->GetInfoString();
 		if( sInfo.length() > 0 && (sInfo[0] == '?' || sInfo.substr(0,6)=="__main") )
 		{
-			sInfo += " " + i;
+			sInfo += " " + std::to_string(i);
 			ret.push_back(sInfo);
 			++i;
 		}

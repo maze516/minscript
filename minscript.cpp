@@ -136,10 +136,11 @@ static bool minProcessEnvironmentVariables( minArgumentsHelper & aArgs )
         while( aIter!=aDirs.end() )
         {
             aArgs.m_aIncludePathList.push_back( *aIter );
-            cout << "-->" << *aIter << endl;
             ++aIter;
         }
+        return true;
     }
+    return false;
 }
 
 static bool minParseArgs( int argc, char * argv[], minArgumentsHelper & aArgs )
