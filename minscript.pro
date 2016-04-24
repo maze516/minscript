@@ -16,7 +16,7 @@ SOURCES += \
     osdep.cpp
 
 include(deployment.pri)
-qtcAddDeployment()
+#qtcAddDeployment()
 
 HEADERS += \
     minhandle.h \

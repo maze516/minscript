@@ -101,7 +101,7 @@ int MySystem( const char * sCmd )
 long minLoadLibrary( const char * sDllName )
 {
 #ifdef _WIN32
-	return (long)LoadLibrary( sDllName );
+    return (long)LoadLibrary( (LPCWSTR)sDllName );
 #endif
 #ifdef __IBMCPP__
 	// 3.2.2000: DLL-Name immer ohne .dll Extention angeben... (Modul-Name !!!)
