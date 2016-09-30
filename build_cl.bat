@@ -1,0 +1,1 @@
+nmake -f makefile.gen -e msc=1 release=1

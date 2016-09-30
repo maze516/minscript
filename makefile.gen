@@ -29,7 +29,8 @@ linux=1
 OUTDIR	= ./
 #OBJEXT	= .obj
 MININTERPRETERDLLDEFNAME	= minipw.def
-msc:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) 
+#msc:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) 
+msc:    $(OUTDIR)$(MININTERPRETERMSCEXE)$(EXEEXT)
 !endif
 
 !ifdef linux
@@ -62,6 +63,16 @@ DEBUG = $(DODEBUG)
 # the targets:
 #====================================================================
 
+minipstaticexe:
+$(OUTDIR)$(MININTERPRETERMSCEXE)$(EXEEXT): $(OUTDIR)minscript$(OBJEXT) $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
+		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minparsernodes$(OBJEXT) \
+		$(OUTDIR)minparser$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT)
+	$(CC) $(EXEOPT) \
+		$(OUTDIR)minscript$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
+		$(OUTDIR)minparsernodes$(OBJEXT) $(OUTDIR)minparser$(OBJEXT) \
+		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT) \
+		$(OUTDIR)mintokenizer$(OBJEXT) $(STDLIBS) 
+        
 minipexe:		
 $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT): $(OUTDIR)minscript$(OBJEXT) $(OUTDIR)$(MININTERPRETERDLL)$(DLLLIBEXT) 
 	$(CC) $(EXEOPT) $(ADDOPT) $(INCLUDES) $(DEBUG) $(EXEOUTOPT)$(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) \
