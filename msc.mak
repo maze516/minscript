@@ -4,17 +4,17 @@
 #DEFINES = /Dgulp
 DEFINES =
 WARNINGS =
-CCOPT = /c /MD /GX /GR $(WARNINGS)
+CCOPT = /c /MD /EHsc /GR $(WARNINGS)
 CCDLLOPT = 
 CCEXEOPT =
-DORELEASE = /O2 /G5 /D_UM_RELEASE
-DODEBUG = /Zi /Fm /D_UM_DEBUG
+DORELEASE = /O2 /D_UM_RELEASE 
+DODEBUG = /Zi /Fm /D_UM_DEBUG 
 DOPROFILE = /Zi
 DOPROFILEOBJ = # /P
 EXEOPT = /MD 
 LINKOPT = /link /FIXED:NO
 # /link[/FIXED:NO]
-DLLOPT = /MD /LD /GD
+DLLOPT = /MD /LD 
 STDLIBS = user32.lib gdi32.lib comdlg32.lib
 INCLUDES =  
  # /I../uvbase/defs /I../grit

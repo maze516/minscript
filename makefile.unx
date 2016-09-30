@@ -2,7 +2,8 @@
 
 MININTERPRETERDLL			= libminip
 MININTERPRETEREXE			= minscript
-MININTERPRETERFULLEXE		= minscriptf
+MININTERPRETERFULLEXE			= minscriptf
+MININTERPRETERMSCEXE			= minscriptmsc
 MININTERPRETERTEST			= mintest
 
 #====================================================================
@@ -10,11 +11,12 @@ MININTERPRETERTEST			= mintest
 #====================================================================
 
 ifdef msc
-include <msc.mak>
+include msc.mak
 OUTDIR	= ./
 #OBJEXT	= .obj
 MININTERPRETERDLLDEFNAME	= minipw.def
-msc:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT)
+#msc:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT)
+msc:   $(OUTDIR)$(MININTERPRETERMSCEXE)$(EXEEXT)
 endif
 
 ifdef mingw
@@ -36,6 +38,15 @@ endif
 
 ifdef android
 include android.mak
+OUTDIR	= ./
+#OBJEXT	= .o
+MININTERPRETERDLLDEFNAME	=
+#android:    $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT)
+android:    $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT)
+endif
+
+ifdef android_win
+include android_win.mak
 OUTDIR	= ./
 #OBJEXT	= .o
 MININTERPRETERDLLDEFNAME	=
@@ -80,16 +91,30 @@ endif
 # $(OUTDIR)$(MININTERPRETERDLL)$(DLLEXT)
 
 #====================================================================
+# $(LINKOPT) $(ADDOPT) $(INCLUDES) $(DEBUG)
+#$(EXEOUTOPT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) \
+
+$(info $(EXEEXT) $(OBJEXT) $(MY_INCLUDES) xxx)
+
+minipfullmscexe:
+$(OUTDIR)$(MININTERPRETERMSCEXE)$(EXEEXT): $(OUTDIR)minscript$(OBJEXT) $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
+		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minparsernodes$(OBJEXT) \
+		$(OUTDIR)minparser$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT)
+	$(CC) $(EXEOPT) \
+		$(OUTDIR)minscript$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
+		$(OUTDIR)minparsernodes$(OBJEXT) $(OUTDIR)minparser$(OBJEXT) \
+		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT) \
+		$(OUTDIR)mintokenizer$(OBJEXT) $(STDLIBS) 
 
 minipfullexe:
 $(OUTDIR)$(MININTERPRETERFULLEXE)$(EXEEXT): $(OUTDIR)minscript$(OBJEXT) $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
 		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minparsernodes$(OBJEXT) \
 		$(OUTDIR)minparser$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT)
 	$(CC) $(EXEOPT) $(LINKOPT) $(ADDOPT) $(INCLUDES) $(DEBUG) $(EXEOUTOPT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) \
-		$(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
+		$(OUTDIR)minscript$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
 		$(OUTDIR)minparsernodes$(OBJEXT) $(OUTDIR)minparser$(OBJEXT) \
 		$(OUTDIR)minipenv$(OBJEXT) $(OUTDIR)minip$(OBJEXT) $(OUTDIR)osdep$(OBJEXT) \
-		$(OUTDIR)minscript$(OBJEXT) $(STDLIBS) 
+		$(OUTDIR)mintokenizer$(OBJEXT) $(STDLIBS) 
 
 # remark (3.2.2013): $(STDLIBS) must follow object files (for android) otherwise we get link errors !
 
