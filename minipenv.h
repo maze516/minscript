@@ -484,6 +484,9 @@ public:
 	const minCreatorInterface *	GetCreator() const						{ return m_pVariableCreator; }
 	void SetCreator( const minCreatorInterface * pVariableCreator )		{ m_pVariableCreator = pVariableCreator; }
 
+	void SetCurrentLine( int nCurrentLineNo )							{ m_nCurrentLineNumber = nCurrentLineNo; }
+	int  GetCurrentLine() const											{ return m_nCurrentLineNumber; }
+
 	void DumpVariables( ostream & stream );
 
 private:
@@ -494,7 +497,8 @@ private:
 	bool					m_bHidesObject;			// neu seit 17. 1.2003
 	string					m_sItemName;
 	string					m_sUserName;			// neu seit 19.12.1999
-	int						m_nLineNumber;			// neu seit 15. 7.2015
+	int						m_nLineNumber;			// neu seit 15. 7.2015	line number of caller
+	int						m_nCurrentLineNumber;	// neu seit 14.10.2016
 	VariableContainerT		m_aVariableContainer;
 	minBaseObjectList *		m_paBaseObjectList;		// neu seit 22. 1.2000
 	minInterpreterValue *	m_pThisObj;				// neu seit  4. 2.2003
@@ -655,7 +659,7 @@ private:
 	bool IsAtBreakpoint( minInterpreterNode * pCurrentNode ) const;
 	bool IsAtBreakpoint( int iLineNo ) const;
 	list<int> GetBreakpointLines() const;
-	vector<string> GetCallStackForDebugger( const CallStackContainerT & aCallStack ) const;
+	vector<string> GetCallStackForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
 	minCallStackItem::VariableContainerT GetVairablesForDebugger( const CallStackContainerT & aCallStack ) const;
 
 	CallStackContainerT		m_aCallStack;

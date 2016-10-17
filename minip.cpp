@@ -1229,30 +1229,33 @@ vector<string> split(const string & str, const string & delimiters)
 	return v;
 }
 
-void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines )
+void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines, bool onlyCurrentLine )
 {
 	vector<string> lines = split(sScript, string("\n"));
 	int iLineNo = 1 - nLineCodeOfAddedCode;
 	vector<string>::const_iterator iter = lines.begin();
 	while( iter != lines.end() )
 	{		
-		if (std::find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
+		if (!onlyCurrentLine || iLineNo == nCurrentLineNo)
 		{
-			cout << "B";
+			if (std::find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
+			{
+				cout << "B";
+			}
+			else
+			{
+				cout << " ";
+			}
+			if( iLineNo == nCurrentLineNo )
+			{
+				cout << "-> ";
+			}
+			else
+			{
+				cout << "   ";
+			}
+			cout << iLineNo << " " << *iter << endl;
 		}
-		else
-		{
-			cout << " ";
-		}
-		if( iLineNo == nCurrentLineNo )
-		{
-			cout << "-> ";
-		}
-		else
-		{
-			cout << "   ";
-		}
-		cout << iLineNo << " " << *iter << endl;
 		iLineNo++;
 		iter++;
 	}

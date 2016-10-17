@@ -55,7 +55,7 @@
 const char * g_sClassMethodSeparator = "#";		// war mal "_"
 const char * g_sFunctionCallStart =	"?";
 
-extern void DumpScript(const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines);
+extern void DumpScript(const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines, bool onlyCurrentLine = false);
 
 #undef _old_name_search			// fuer binaere Suche, neu seit 14.2.2003
 
@@ -1116,6 +1116,7 @@ minCallStackItem::minCallStackItem( const string & sItemName, bool bHidesObject,
 	  m_sItemName( sItemName ), 
 	  m_sUserName( "" ), 
 	  m_nLineNumber( nLineNumber ),
+	  m_nCurrentLineNumber( 0 ),
 	  m_paBaseObjectList( 0 ),
 	  m_pThisObj( 0 ),
 	  m_pVariableCreator( 0 )
@@ -1159,6 +1160,7 @@ void minCallStackItem::Assign( const minCallStackItem & aOther )
 	m_sItemName = aOther.m_sItemName;
 	m_sUserName = aOther.m_sUserName;
 	m_nLineNumber = aOther.m_nLineNumber;
+	m_nCurrentLineNumber = aOther.m_nCurrentLineNumber;
 	m_aVariableContainer = aOther.m_aVariableContainer;
 	if( aOther.m_paBaseObjectList )
 		m_paBaseObjectList = new minBaseObjectList( *(aOther.m_paBaseObjectList) );
@@ -1259,7 +1261,13 @@ string minCallStackItem::GetInfoString() const
 	if( m_nLineNumber>0 )
 	{
 		sprintf(sBuffer, "%d", m_nLineNumber);
-		sResult += " line=";
+		sResult += " call_line=";
+		sResult += sBuffer;
+	}
+	if( m_nCurrentLineNumber>0 )
+	{
+		sprintf(sBuffer, "%d", m_nCurrentLineNumber);
+		sResult += " current_line=";
 		sResult += sBuffer;
 	}
 	sResult += ": ";
@@ -1471,7 +1479,7 @@ minHandle<minCallStackItem> minInterpreterEnvironment::GetCallStackItemForLevel(
 {
 	int i = 1;
 	int iMax = m_aCallStack.size();
-	if( iLevel>=1 && iLevel<=m_aCallStack.size() )
+	if( iLevel>=1 && iLevel<=(int)m_aCallStack.size() )
 	{
 		CallStackContainerT::iterator iter = m_aCallStack.begin();
 		while( iter!=m_aCallStack.end() )
@@ -1588,18 +1596,38 @@ list<int> minInterpreterEnvironment::GetBreakpointLines() const
 	return ret;
 }
 
-vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallStackContainerT & aCallStack ) const
+vector<string> minInterpreterEnvironment::GetCallStackForDebugger(const CallStackContainerT & aCallStack, int iSelectedCallStackLevel) const
 {
 	vector<string> ret;
 
-	CallStackContainerT::const_iterator iter = aCallStack.begin();
+	CallStackContainerT::const_reverse_iterator iter = aCallStack.rbegin();
 	int i = 1;
-	while (iter != m_aCallStack.end())
+	int nCurrentLine = -1;
+	while (iter != m_aCallStack.rend())
 	{
 		string sInfo = (*iter)->GetInfoString();
+		if( nCurrentLine<0 && sInfo.length() >= 5 && sInfo.substr(0, 5) == "block" )
+		{
+			nCurrentLine = (*iter)->GetCurrentLine();
+		}
 		if( sInfo.length() > 0 && (sInfo[0] == '?' || sInfo.substr(0,6)=="__main") )
 		{
-			sInfo += " " + std::to_string(i);
+			char sBuffer[c_iMaxBuffer];
+
+			sprintf(sBuffer, "%d", nCurrentLine);
+			sInfo += " current_line=";
+			sInfo += sBuffer;
+
+			nCurrentLine = -1;
+
+			//sInfo += " " /*+ std::to_string(i)*/;
+
+// TODO gulp working markiere die aktuellen callstack position
+			if( iSelectedCallStackLevel == i-1 )
+			{
+				sInfo = "-->" + sInfo;
+			}
+
 			ret.push_back(sInfo);
 			++i;
 		}
@@ -1697,11 +1725,12 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
     }
 
     // process step over next line
-    if( m_bStepToNextLine && !bIsAtBreakpoint && !HasError() &&
+	if (m_bStepToNextLine && !bIsAtBreakpoint && !HasError() && 
+		/* special handling for first step over in program, jump into first meta block */!(m_aCallStack.size() == 2 && m_nCurrentCallStackLevel == 1) &&
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ||
           (m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel) ) )
     {
-        cout << "cont. over " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
+        //cout << "cont. over " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
         return true;
     }
 
@@ -1709,7 +1738,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
     if (m_bStepIntoNextLine && !bIsAtBreakpoint && !HasError() &&
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ) )
     {
-		cout << "cont. into " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
+		//cout << "cont. into " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
         return true;
     }
 
@@ -1718,7 +1747,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		(nCurrentLineNo == m_nCurrentLineNo || nCurrentLineNo ==/*ignore*/0 ||
 		(m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel-1)))
 	{
-		cout << "cont. out " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
+		//cout << "cont. out " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
 		return true;
 	}
 
@@ -1726,9 +1755,11 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 //          oder: debugger extern in eigener Klasse implementieren und das InterpreterEnvironment und den node hineinreichen... ?
 
 // TODO --> script-name und line-no an token / interpreterNode dran haengen
-    cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
+    //cout << pCurrentNode->GetClassName() << " " << pCurrentNode->GetInfo() << endl;
 
-    cout << "Line number=" << nCurrentLineNo << " stacksize: " << m_aCallStack.size() << endl;
+    //cout << "Line number=" << nCurrentLineNo << " stacksize: " << m_aCallStack.size() << endl;
+
+	DumpScript(m_sSourceCode, m_nLineCountOfAddedCode, nCurrentLineNo, GetBreakpointLines(), true);
 
     //pCurrentNode->Dump( cout );
 
@@ -1821,7 +1852,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
 		else if( sInput == "d" )
 		{
-			if( iSelectedCallStackLevel < m_aCallStack.size() )
+			if( iSelectedCallStackLevel < (int)m_aCallStack.size() )
 			{
 				iSelectedCallStackLevel++;
 			}
@@ -1847,13 +1878,14 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				{
 					cout << "  ";
 				}
-                cout << i << " " << (*iter)->GetInfoString() << endl;
+				//pCurrentNode->GetLineNumber()
+				cout << i << " " << (*iter)->GetInfoString() << endl;
                 ++iter;
                 ++i;
             }
 
 			cout << "---------------------------" << endl;
-			vector<string> aDbgCallStack = GetCallStackForDebugger(m_aCallStack);
+			vector<string> aDbgCallStack = GetCallStackForDebugger(m_aCallStack, iSelectedCallStackLevel);
 			for (int n = aDbgCallStack.size() - 1; n>=0; --n)
 			{
 				cout << n+1 << " " << aDbgCallStack[n] << endl;
@@ -1912,7 +1944,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         }
 		else if (sInput == "v")
 		{
-			DumpVersion(cout);
+//			DumpVersion(cout);
 		}
 		else if (sInput == "q")
         {

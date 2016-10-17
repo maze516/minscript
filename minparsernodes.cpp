@@ -3171,7 +3171,8 @@ bool minBlockNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnVal
 	{
 		bool bOk = true;
 
-		bool bNeedStackItem = NeedElementsStackItem();
+		bool bNeedStackItem = true;	// 14.10.2016 for better debugging support use always a stack item !
+		//bool bNeedStackItem = NeedElementsStackItem();
 
 		// nur bei Bedarf einen Stack-Eintrag erzeugen
 		// (nur notwendig falls lokale Variable in diesem Block erzeugt werden)!
@@ -3179,6 +3180,8 @@ bool minBlockNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnVal
 		{
 			aEnv.PushCallStackItem( "block", /*bHidesObject*/false );
 		}
+
+		minHandle<minCallStackItem> aCurrentCallStackItem = aEnv.GetActCallStackItem();
 
 		try {
 			minParserItemList::iterator aIter = m_aNodeContainer.begin();
@@ -3188,6 +3191,9 @@ bool minBlockNode::DoExecute( int nAccessModus, minInterpreterValue & aReturnVal
 
 				// zum Debuggen die ausgefuehrten Nodes anzeigen ! (neu seit 15.11.1999) ggf. mit ifdefs schuetzen
 				SMALL( if( aEnv.IsDebugMode() ) { cout << "execute node: " << hNode->GetClassName().c_str() << ": " << hNode->GetInfo() << endl; } )
+
+				// in debugger mode --> update current line number !
+				aCurrentCallStackItem->SetCurrentLine( hNode->GetLineNumber() );
 
 				// Block ausfuehren
 				bOk = hNode->Execute( /*nAccessModus*/0, aReturnValOut, aEnv );		// TODO: muss hier ggf. mit einer lokalen Variablen gearbeitet werden ?
