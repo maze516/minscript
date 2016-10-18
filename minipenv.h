@@ -487,6 +487,8 @@ public:
 	void SetCurrentLine( int nCurrentLineNo )							{ m_nCurrentLineNumber = nCurrentLineNo; }
 	int  GetCurrentLine() const											{ return m_nCurrentLineNumber; }
 
+	int  GetLine() const												{ return m_nLineNumber; }
+
 	void DumpVariables( ostream & stream );
 
 private:
@@ -660,7 +662,8 @@ private:
 	bool IsAtBreakpoint( int iLineNo ) const;
 	list<int> GetBreakpointLines() const;
 	vector<string> GetCallStackForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
-	minCallStackItem::VariableContainerT GetVairablesForDebugger( const CallStackContainerT & aCallStack ) const;
+	minCallStackItem::VariableContainerT GetVairablesForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
+	int GetLineNoOfCallStackItem( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel, int & iLevelDown, int & iLevelUp ) const;
 
 	CallStackContainerT		m_aCallStack;
 	FunctionContainerT		m_aFunctionContainer;
