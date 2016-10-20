@@ -60,7 +60,7 @@ extern void DumpScript(const string & sScript, int nLineCodeOfAddedCode, int nCu
 
 #undef _old_name_search			// fuer binaere Suche, neu seit 14.2.2003
 
-#undef _DEBUGGING_DEBUGGER
+#define _DEBUGGING_DEBUGGER
 
 //*************************************************************************
 
@@ -1662,13 +1662,15 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 	return ret;
 }
 
-int minInterpreterEnvironment::GetLineNoOfCallStackItem(const CallStackContainerT & aCallStack, int iSelectedCallStackLevel, int & iLevelDown, int & iLevelUp ) const
+pair<int,int> minInterpreterEnvironment::GetLineNoOfCallStackItem(const CallStackContainerT & aCallStack, int iSelectedCallStackLevel, int & iLevelDown, int & iLevelUp ) const
 {
 	bool bStart = false;
 	bool bSelected = false;
 
 	int n = m_aCallStack.size();
 	int iLastRealCallstackLevel = -1;
+	int iLineNo = -1;
+	int iLastLineNo = -1;
 	CallStackContainerT::const_reverse_iterator iter = aCallStack.rbegin();
 
 // TODO: diese loop gibt es zweimal !!!
@@ -1677,7 +1679,14 @@ int minInterpreterEnvironment::GetLineNoOfCallStackItem(const CallStackContainer
 		string sInfo = (*iter)->GetInfoString();
 
 // operation 1)
-		int no = (*iter)->GetLine();
+		//int no = (*iter)->GetLine();
+		
+		// get line number of first block for real stack item
+		if (iLineNo<0 && sInfo.length() >= 5 && sInfo.substr(0, 5) == "block")
+		{
+			iLineNo = (*iter)->GetCurrentLine();
+		}
+		
 
 		if (!bStart)
 		{
@@ -1694,13 +1703,15 @@ int minInterpreterEnvironment::GetLineNoOfCallStackItem(const CallStackContainer
 			{
 // operation 2)
 				bStart = false;
+				iLastLineNo = iLineNo;
+				iLineNo = -1;
 			}
 			else
 			{
 // operation 3)
 				iLevelDown = n;
 				iLevelUp = iLastRealCallstackLevel;
-				return no;
+				return pair<int,int>(iLineNo, iLastLineNo);
 			}
 
 			iLastRealCallstackLevel = n;
@@ -1710,7 +1721,7 @@ int minInterpreterEnvironment::GetLineNoOfCallStackItem(const CallStackContainer
 		++iter;
 	}
 
-	return -1;
+	return pair<int,int>(-1,-1);
 }
 
 minCallStackItem::VariableContainerT minInterpreterEnvironment::GetVairablesForDebugger(const CallStackContainerT & aCallStack, int iSelectedCallStackLevel) const
@@ -1816,9 +1827,17 @@ inline std::string trim(const std::string &s)
 // see: http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
 static string trim(string& str)
 {
-	size_t first = str.find_first_not_of(' ');
-	size_t last = str.find_last_not_of(' ');
-	return str.substr(first, (last - first + 1));
+	if( str.length()>0 )
+	{
+		size_t first = str.find_first_not_of(' ');
+		size_t last = str.find_last_not_of(' ');
+		if( first==/*SIZE_MAX*/(size_t)-1 && first==last )
+		{
+			return string();
+		}
+		return str.substr(first, (last - first + 1));
+	}
+	return string();
 }
 
 bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
@@ -1930,7 +1949,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 	// get real call stack level from helper call stack level
 	int iSelectedCallStackLevel = m_aCallStack.size();
 	int iLevelDown, iLevelUp;
-	nCurrentLineNo = GetLineNoOfCallStackItem(m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp);
+	/*nCurrentLineNo =*/ GetLineNoOfCallStackItem(m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp);
 	iSelectedCallStackLevel = iLevelDown;
 
     bool bContinueDbgLoop = true;
@@ -2012,7 +2031,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			{
 				// jump only real call stack items and ignore the virtual call stack items "blocks" !
 				iSelectedCallStackLevel--;
-				nCurrentLineNo = GetLineNoOfCallStackItem( m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp );
+				pair<int,int> result = GetLineNoOfCallStackItem( m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp );
+				nCurrentLineNo = result.first;
 				iSelectedCallStackLevel = iLevelDown;
 			}
 			else
@@ -2027,8 +2047,9 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			{
 				// jump only real call stack items and ignore the virtual call stack items "blocks" !
 				iSelectedCallStackLevel++;
-				nCurrentLineNo = GetLineNoOfCallStackItem( m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp );
-				if( iLevelUp < 0 )
+				pair<int, int> result = GetLineNoOfCallStackItem(m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp);
+				nCurrentLineNo = result.second;
+				if (iLevelUp < 0)
 				{
 					bCanNotMove = true;
 					iSelectedCallStackLevel--;
@@ -2101,7 +2122,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				++iter;
 			}
 		}
-		else if( sInput.length()>1 && sInput[0]=='b' )
+		else if( sInput.length()>1 && sInput[0]=='b' && sInput[1]==' ' )
 		{
 // TODO --> DbgInfo an minInterpreterNode setzen, Struktur mit lineNo, FileName --> Diese Debug Infos ggf. auch in anderem Container verwalten?
 // TODO --> pruefe ob es einen Interpreter-Knoten fuer diese Zeilennummer ueberhaupt gibt --> falls nein --> ablehen und Fehlermeldung
@@ -2181,6 +2202,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			cout << "  p        : reset program execution" << endl;
 			cout << "  b lineno : set breakpoint at line" << endl;
 // TODO 
+			// b lineno;filename 
+			// b lineno filename
 			cout << "  t lineno : toggle breakpoint at line" << endl;
 			cout << "  e lineno : erase breakpoint at line" << endl;
 			cout << "  eb no    : erase breakpoint no" << endl;

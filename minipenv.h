@@ -663,7 +663,7 @@ private:
 	list<int> GetBreakpointLines() const;
 	vector<string> GetCallStackForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
 	minCallStackItem::VariableContainerT GetVairablesForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
-	int GetLineNoOfCallStackItem( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel, int & iLevelDown, int & iLevelUp ) const;
+	pair<int, int> GetLineNoOfCallStackItem(const CallStackContainerT & aCallStack, int iSelectedCallStackLevel, int & iLevelDown, int & iLevelUp) const;
 
 	CallStackContainerT		m_aCallStack;
 	FunctionContainerT		m_aFunctionContainer;
