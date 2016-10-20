@@ -50,6 +50,7 @@
 
 #include <stdio.h>				// fuer: sprintf()
 #include <stdlib.h>				// fuer: atof, atol
+#include <locale>
 
 
 const char * g_sClassMethodSeparator = "#";		// war mal "_"
@@ -1802,6 +1803,24 @@ minCallStackItem::VariableContainerT minInterpreterEnvironment::GetVairablesForD
 	return aVariables;
 }
 
+/*
+// see: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+inline std::string trim(const std::string &s)
+{
+	string::const_iterator wsfront = std::find_if_not(s.begin(), s.end(), [](int c){return std::isspace(c, std::locale::classic()); });
+	string::const_iterator wsback = std::find_if_not(s.rbegin(), s.rend(), [](int c){return std::isspace(c, std::locale::classic()); }).base();
+	return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
+}
+*/
+
+// see: http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
+static string trim(string& str)
+{
+	size_t first = str.find_first_not_of(' ');
+	size_t last = str.find_last_not_of(' ');
+	return str.substr(first, (last - first + 1));
+}
+
 bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
 	int nCurrentLineNo = pCurrentNode->GetLineNumber();
@@ -1920,6 +1939,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         cout << endl << "(mdb) > ";
         string sInput;
 		getline( cin, sInput );
+		sInput = trim(sInput);
         //cin >> sInput;
         if( sInput=="n" )   // step next ast
         {
@@ -1992,7 +2012,6 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			{
 				// jump only real call stack items and ignore the virtual call stack items "blocks" !
 				iSelectedCallStackLevel--;
-				int iLevelUp, iLevelDown;
 				nCurrentLineNo = GetLineNoOfCallStackItem( m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp );
 				iSelectedCallStackLevel = iLevelDown;
 			}
@@ -2008,7 +2027,6 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			{
 				// jump only real call stack items and ignore the virtual call stack items "blocks" !
 				iSelectedCallStackLevel++;
-				int iLevelUp, iLevelDown;
 				nCurrentLineNo = GetLineNoOfCallStackItem( m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp );
 				if( iLevelUp < 0 )
 				{
@@ -2101,8 +2119,34 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				cout << "Warning: breakpoint not set !" << endl;
 			}
 		}
-// TODO show list of all breakpoints ...
-		else if( sInput == "clear" )
+		else if (sInput == "list")
+		{
+			int i = 1;
+			BreakpointContainerT::const_iterator iter = m_aBreakpointContainer.begin();
+// TODO enabled behandeln 
+			cout << "  No LineNo            FileName Condition" << endl;
+			cout << "-------------------------------------------" << endl;
+			while (iter != m_aBreakpointContainer.end())
+			{
+				minBreakpointInfo info = *iter;
+
+				int old = cout.width(4);
+				cout << std::right;
+				cout << i;
+				cout.width(old);
+				cout << " ";
+				cout.width(6);
+				cout << info.iLineNo;
+				cout.width(20);
+				cout << " " << info.sFileName;
+				cout.width(old);
+				cout << " " << info.sCondition << endl;
+
+				++iter;
+				++i;
+			}
+		}
+		else if (sInput == "clear")
 		{
 			int iSize = m_aBreakpointContainer.size();
 			m_aBreakpointContainer.clear();
@@ -2136,6 +2180,12 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			cout << "  c        : run/continue" << endl;
 			cout << "  p        : reset program execution" << endl;
 			cout << "  b lineno : set breakpoint at line" << endl;
+// TODO 
+			cout << "  t lineno : toggle breakpoint at line" << endl;
+			cout << "  e lineno : erase breakpoint at line" << endl;
+			cout << "  eb no    : erase breakpoint no" << endl;
+// TODO done
+			cout << "  list     : show all breakpoints" << endl;
 			cout << "  clear    : clear all breakpoins" << endl;
 			cout << "  w        : show call stack" << endl;
 			cout << "  u        : one step up the call stack" << endl;

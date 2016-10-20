@@ -61,7 +61,8 @@
 #if defined( _MSC_VER )
 #define PUTENV _putenv
 #else
-#define PUTENV putenv
+#define PUTENV putenv		// mingw32 -std=C++-11 --> _wputenv
+//#define PUTENV _wputenv		// mingw32 -std=C++-11 --> _wputenv
 #endif
 
 //*************************************************************************
@@ -703,6 +704,7 @@ bool SplitPath( const char * sPath, string & sDrive, string & sDir, string & sFi
 	char sNameBuf[512];
 	char sExtBuf[512];
 #if !(defined( __linux__ ) || defined( __APPLE__ ))
+	// TODO gulp working mingw32
 	_splitpath( /*(CHAR_CAST)*/sPath, sDriveBuf, sDirBuf, sNameBuf, sExtBuf );
 #else
 	// Simuliere _splitpath fuer Linux...
