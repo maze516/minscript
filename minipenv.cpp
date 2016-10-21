@@ -50,8 +50,8 @@
 
 #include <stdio.h>				// fuer: sprintf()
 #include <stdlib.h>				// fuer: atof, atol
-#include <locale>
-
+//#include <locale>
+#include <sstream>
 
 const char * g_sClassMethodSeparator = "#";		// war mal "_"
 const char * g_sFunctionCallStart =	"?";
@@ -1825,7 +1825,7 @@ inline std::string trim(const std::string &s)
 */
 
 // see: http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
-static string trim(string& str)
+static string trim(const string& str)
 {
 	if( str.length()>0 )
 	{
@@ -1838,6 +1838,67 @@ static string trim(string& str)
 		return str.substr(first, (last - first + 1));
 	}
 	return string();
+}
+
+//// see: https://www.safaribooksonline.com/library/view/c-cookbook/0596007612/ch04s07.html
+//void split( const string & s, char c, vector<string> & v )
+//{
+//	string::size_type i = 0;
+//	string::size_type j = s.find(c);
+//
+//	while (j != string::npos) {
+//		v.push_back(s.substr(i, j - i));
+//		i = ++j;
+//		j = s.find(c, j);
+//
+//		if (j == string::npos)
+//			v.push_back(s.substr(i, s.length()));
+//	}
+//}
+//
+//// see: http://stackoverflow.com/questions/236129/split-a-string-in-c
+//void splitx( const string & s, char delim, vector<string> & elems ) 
+//{
+//	stringstream ss;
+//	ss.str(s);
+//	string item;
+//	while (getline(ss, item, delim)) 
+//	{
+//		elems.push_back(item);
+//	}
+//}
+//
+//vector<string> split(const string &s, char delim)
+//{
+//	vector<string> elems;
+//	split(s, delim, elems);
+//	return elems;
+//}
+
+// see: http://stackoverflow.com/questions/236129/split-a-string-in-c
+void tokenize( const string & str, vector<string> & tokens, const string& delimiters = " ", bool trimEmpty = false )
+{
+	string::size_type pos, lastPos = 0, length = str.length();
+
+	while( lastPos < length + 1 )
+	{
+		pos = str.find_first_of(delimiters, lastPos);
+		if( pos == std::string::npos )
+		{
+			pos = length;
+		}
+
+		if( pos != lastPos || !trimEmpty )
+		{
+			string s = trim(string(vector<string>::value_type(str.data() + lastPos, (vector<string>::size_type)pos - lastPos)));
+			if( s.length()>0 )
+			{
+				tokens.push_back(s);
+			}
+		}
+
+		lastPos = pos + 1;
+	}
 }
 
 bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
@@ -2126,14 +2187,51 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		{
 // TODO --> DbgInfo an minInterpreterNode setzen, Struktur mit lineNo, FileName --> Diese Debug Infos ggf. auch in anderem Container verwalten?
 // TODO --> pruefe ob es einen Interpreter-Knoten fuer diese Zeilennummer ueberhaupt gibt --> falls nein --> ablehen und Fehlermeldung
-			string sLineNo = sInput.substr(1);
+			vector<string> tokens;
+			tokenize( sInput, tokens, " " );
+
+			int iBreakOnLine = -1;	// not defined
+			if( tokens.size()>1 )
+			{
+				iBreakOnLine = atoi(tokens[1].c_str());
+			}
+
+			string sCondition;
+			if (tokens.size()>2)
+			{
+				sCondition = tokens[2];
+			}
+
+			string sFileName;
+			if( tokens.size()>3 )
+			{
+				sFileName = tokens[3];
+			}
+
 			minBreakpointInfo aBreakpoint;
-			int iBreakOnLine = atoi(sLineNo.c_str());
 			if (iBreakOnLine > 0)
 			{
 				aBreakpoint.iLineNo = iBreakOnLine;
+				aBreakpoint.sFileName = sFileName;
+				aBreakpoint.sCondition = sCondition;
+// TODO: check if breakpoint for line already exists --> overwrite !
+// TODO: behandlung von breakpoints in files realisieren
+// TODO: behandlung von conditions in breakpoints realisieren
 				m_aBreakpointContainer.push_back(aBreakpoint);
-				cout << "set breakpoint at line " << sLineNo << " number total breakpoints=" << m_aBreakpointContainer.size() << endl;
+				cout << "set breakpoint at line " << iBreakOnLine << " in file: ";
+				if( sFileName.length()>0 )
+				{
+					cout << sFileName;
+				}
+				else
+				{
+					cout << "<mainscript>";
+				}
+				if( sCondition.size() )
+				{
+					cout << " with condition: " << sCondition << endl;
+				}
+				//cout << " number total breakpoints=" << m_aBreakpointContainer.size() << endl;
 			}
 			else
 			{
@@ -2151,7 +2249,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			{
 				minBreakpointInfo info = *iter;
 
-				int old = cout.width(4);
+				streamsize old = cout.width(4);
 				cout << std::right;
 				cout << i;
 				cout.width(old);
@@ -2159,7 +2257,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				cout.width(6);
 				cout << info.iLineNo;
 				cout.width(20);
-				cout << " " << info.sFileName;
+				cout << info.sFileName;
 				cout.width(old);
 				cout << " " << info.sCondition << endl;
 
@@ -2180,18 +2278,19 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
         else if( sInput=="s" )
         {
+// TODO: dump von anderen script files: s header.ic
 			DumpScript( m_sSourceCode, m_nLineCountOfAddedCode, nCurrentLineNo, GetBreakpointLines() );
         }
 		else if (sInput == "v")
 		{
 			DumpVersion(cout);
 		}
-		else if (sInput == "q")
+		else if (sInput == "q" || sInput == "quit" )
         {
             cout << "exit debugging..." << endl;
             exit(-1);
         }
-        else if( sInput=="h" )
+        else if( sInput == "h" || sInput == "help" )
         {
             cout << "show help:" << endl;
             cout << "  n        : next AST step" << endl;
@@ -2200,7 +2299,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			cout << "  r        : step out (return from function)" << endl;
 			cout << "  c        : run/continue" << endl;
 			cout << "  p        : reset program execution" << endl;
-			cout << "  b lineno : set breakpoint at line" << endl;
+			cout << "  b lineno [cond [filename]] : set breakpoint at line" << endl;
 // TODO 
 			// b lineno;filename 
 			// b lineno filename
