@@ -9,7 +9,7 @@ CCOPT = -fexceptions -c
 #-I/usr/X11R6/include -I/home/root/lesstif-0.75a/include
 #STDLIBS =  -lm -lgcc -lg++ -lpthread -ldl
 #STDLIBS =  -lm -lgcc -lg++ -ldl
-STDLIBS =  -L $$MY_LIBS -lm -lstdc++ -lgnustl_static 
+STDLIBS =  -lm -lstdc++ -lgnustl_static -L $$MY_LIBS 
 #-L/usr/X11/lib -L/home/root/lesstif-0.75a/lib -lXm -lX11 -lXt -lICE -lSM -lXext
 # -lncurses
 EXEOPT =
