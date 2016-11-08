@@ -60,7 +60,7 @@ extern void DumpScript(const string & sScript, int nLineCodeOfAddedCode, int nCu
 
 #undef _old_name_search			// fuer binaere Suche, neu seit 14.2.2003
 
-#define _DEBUGGING_DEBUGGER
+#undef _DEBUGGING_DEBUGGER
 
 //*************************************************************************
 
@@ -1255,7 +1255,7 @@ string minCallStackItem::GetInfoString() const
 {
 	string sResult = GetItemName();
 	char sBuffer[c_iMaxBuffer];
-
+/*
 	if( GetUserName().length()>0 )
 	{
 		sprintf( sBuffer, "0x%lx", (unsigned long int)this );
@@ -1270,7 +1270,7 @@ string minCallStackItem::GetInfoString() const
 	if( m_nCurrentLineNumber>0 )
 	{
 		sprintf(sBuffer, "%d", m_nCurrentLineNumber);
-		sResult += " current_line=";
+		sResult += " lineno=";
 		sResult += sBuffer;
 	}
 	sResult += ": ";
@@ -1286,7 +1286,7 @@ string minCallStackItem::GetInfoString() const
 			sResult += "; ";
 		}
 	}
-
+*/
 	return sResult;
 }
 
@@ -1604,12 +1604,23 @@ static bool IsRealCallStackItem( const string & sInfo )
 	return sInfo.length() > 0 && (sInfo[0] == '?' || sInfo.substr(0, 6) == "__main");
 }
 
+static string FillWithSpacesToLength(const string & s, int iLength, bool bFillRight)
+{
+	if (s.length()<iLength)
+	{
+		return s + string(iLength - s.length(), ' ');
+	}
+	return s;
+}
+
 vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const
 {
 	vector<string> ret;
 
+	char sBuffer[c_iMaxBuffer];
 	int nCurrentLine = -1;
 	int i = 1;
+	int iMarkerPos = -1;
 	bool markPos = false;
 
 	int n = m_aCallStack.size();
@@ -1626,25 +1637,33 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 		{
 			nCurrentLine = (*iter)->GetCurrentLine();
 		}
-		if( IsRealCallStackItem( sInfo ) )
+		if (IsRealCallStackItem(sInfo))
 		{
-			char sBuffer[c_iMaxBuffer];
+			sInfo = FillWithSpacesToLength(sInfo, 40, true);
 
 			sprintf(sBuffer, "%d", nCurrentLine);
-			sInfo += " current_line=";
-			sInfo += sBuffer;
+			string sLineNo(" lineno=");
+			sLineNo += sBuffer;
+			sLineNo = FillWithSpacesToLength(sLineNo, 15, true);
+			sInfo += sLineNo;
+
+			sInfo += " module=";
+			sInfo += "?";
 
 			//sprintf(sBuffer, "%d ", i);
 			//sInfo = sBuffer + sInfo;
 
+			sInfo = string("name=") + sInfo;
+
 			if (markPos)
 			{
-				sInfo = "-> " + sInfo;
+				//sInfo = "-> " + sInfo;
+				iMarkerPos = i;
 				markPos = false;
 			}
 			else
 			{
-				sInfo = "   " + sInfo;
+				//sInfo = "   " + sInfo;
 			}
 
 			nCurrentLine = -1;
@@ -1658,6 +1677,23 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 	}
 
 	reverse(ret.begin(), ret.end());
+
+	for (int j = 0; j < ret.size(); j++)
+	{
+		sprintf(sBuffer, "%d ", j+1);
+		ret[j] = sBuffer + ret[j];
+
+		if (j==i-iMarkerPos-1)
+		{
+			ret[j] = "-->" + ret[j];
+		}
+		else
+		{
+			ret[j] = "   " + ret[j];
+		}
+	}
+
+	//ret[i - iMarkerPos - 1] = "--> " + ret[i - iMarkerPos - 1];
 
 	return ret;
 }
@@ -1945,7 +1981,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 	{
 		if (m_nLastBreakpointLineNo != nCurrentLineNo)
 		{
-			cout << "Hit breakpoint !" << endl;
+			//cout << "Hit breakpoint !" << endl;
 			m_nLastBreakpointLineNo = nCurrentLineNo;
 		}
 		else
@@ -2016,14 +2052,14 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
     bool bContinueDbgLoop = true;
     while( bContinueDbgLoop )
     {
-        cout << endl << "(mdb) > ";
+        cout << /*endl <<*/ "(mdb) > ";
         string sInput;
 		getline( cin, sInput );
 		sInput = trim(sInput);
         //cin >> sInput;
         if( sInput=="n" )   // step next ast
         {
-            cout << "next AST step" << endl;
+            //cout << "next AST step" << endl;
 
 			ResetDebuggerExecutionFlags();
 
@@ -2031,7 +2067,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
         else if( sInput=="o" )   // step next line
         {
-            cout << "step over next line" << endl;
+            //cout << "step over next line" << endl;
 
 // ((TODO --> alle nodes fuer eine Zeile ausfuehren... --> zeilennummer merken und solange ausfuehren bis eine andere zeilennummer kommt !
 // TODO --> block item in callstack notwendig?
@@ -2045,7 +2081,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
         else if( sInput=="i" )   // step into next line
         {
-            cout << "step into next line" << endl;
+            //cout << "step into next line" << endl;
 
 			ResetDebuggerExecutionFlags();
 			m_bStepIntoNextLine = true;
@@ -2057,7 +2093,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
 		else if( sInput == "r" )   // step out
 		{
-			cout << "step out" << endl;
+			//cout << "step out" << endl;
 
 			ResetDebuggerExecutionFlags();
 			m_bStepOut = true;
@@ -2069,7 +2105,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
 		else if( sInput == "c" )
         {
-            cout << "run..." << endl;
+            //cout << "run..." << endl;
 
 			ResetDebuggerExecutionFlags();
 			m_bRunDbg = true;
@@ -2078,7 +2114,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
 		else if (sInput == "p")
 		{
-			cout << "reset execution..." << endl;
+			//cout << "reset execution..." << endl;
 
 			ResetDebuggerExecutionFlags();
 			m_bRunDbg = true;
@@ -2154,11 +2190,11 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
             }
 
 #endif
-			cout << "show stack:"  << endl;
-			cout << "-----------" << endl;
+			//cout << "show stack:"  << endl;
+			//cout << "-----------" << endl;
 
 			vector<string> aDbgCallStack = GetCallStackForDebugger(m_aCallStack, iSelectedCallStackLevel);
-			for (int n = aDbgCallStack.size() - 1; n>=0; --n)
+			for (int n = 0; n<aDbgCallStack.size(); n++)
 			{
 				cout << aDbgCallStack[n] << endl;
 			}
@@ -2172,14 +2208,19 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			aCurrentCallStackItem->DumpVariables(cout);
 
 #endif
-			cout << "show local variables:" << endl;
-			cout << "---------------------" << endl;
+			//cout << "show local variables:" << endl;
+			//cout << "---------------------" << endl;
 
 			minCallStackItem::VariableContainerT temp = GetVairablesForDebugger(m_aCallStack, iSelectedCallStackLevel);
 			minCallStackItem::VariableContainerT::iterator iter = temp.begin();
 			while (iter != temp.end())
 			{
-                cout << (*iter).GetName() << "\t" << (*iter).GetValue()->GetString(true) << "\t" << (*iter).GetValue()->GetTypeString() << endl;
+// TODO --> formatieren !!! wie bei fuel
+				//setw
+				//streamsize old = cout.width(4);
+				//cout << std::right;
+
+                cout << (*iter).GetName() << " --> " << (*iter).GetValue()->GetString(true) << " : " << (*iter).GetValue()->GetTypeString() << endl;
 				++iter;
 			}
 		}
@@ -2232,6 +2273,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 					cout << " with condition: " << sCondition << endl;
 				}
 				//cout << " number total breakpoints=" << m_aBreakpointContainer.size() << endl;
+				cout << endl;
 			}
 			else
 			{

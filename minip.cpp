@@ -257,7 +257,10 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 				m_aEnvironment.SetDbgMode( m_bDbg );
 				if (m_aEnvironment.IsDbgMode())
 				{
-					cout << endl << "starting debugging..." << endl << endl;
+					cout << endl;
+					DumpVersion(cout);
+					cout << endl;
+					cout << "Starting debugging. Type \"help\" for informations" << endl << endl;
 				}
 				unsigned long nStartTime = minGetCurrentTickCount();
 				try 
@@ -1240,7 +1243,7 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 	{		
 		if (!onlyCurrentLine || iLineNo == nCurrentLineNo)
 		{
-			if (std::find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
+			if (!onlyCurrentLine && std::find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
 			{
 				cout << "B";
 			}
@@ -1250,13 +1253,21 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 			}
 			if( iLineNo == nCurrentLineNo )
 			{
-				cout << "-> ";
+				cout << "--> ";
 			}
 			else
 			{
-				cout << "   ";
+				cout << "    ";
 			}
-			cout << iLineNo << " " << *iter << endl;
+			cout << iLineNo << " " << *iter;
+			if (onlyCurrentLine && iLineNo == nCurrentLineNo)
+			{
+				cout << " line=" << iLineNo;
+				cout << " start=" << -1;
+				cout << " stop=" << -1;
+				cout << " module=" << "?";
+			}
+			cout << endl;
 		}
 		iLineNo++;
 		iter++;
