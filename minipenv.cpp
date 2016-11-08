@@ -425,7 +425,7 @@ string minInterpreterValue::GetString( bool bDebugOutput )	const
 {
 	if( IsReference() )
 	{
-		return m_aValue.m_pToReferenceValue->GetString();
+		return m_aValue.m_pToReferenceValue->GetString( bDebugOutput );
 	}
 	else if( m_aType.IsString() )
 	{
@@ -928,7 +928,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
                         string sVariables;
                         if( bDebugOutput && m_aValue.m_phObjValue!=0 )
                         {
-                            sVariables = (*(m_aValue.m_phObjValue))->GetInfoString();
+                            sVariables = (*(m_aValue.m_phObjValue))->GetInfoString(true);
                         }
 						char sBuffer[c_iMaxBuffer];
                         sprintf( sBuffer, "object 0x%lx %s", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0), sVariables.c_str() );
@@ -956,7 +956,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
                         string sVariables;
                         if( bDebugOutput && m_aValue.m_phObjValue!=0 )
                         {
-                            sVariables = (*(m_aValue.m_phObjValue))->GetInfoString();
+                            sVariables = (*(m_aValue.m_phObjValue))->GetInfoString(true);
                         }
                         char sBuffer[c_iMaxBuffer];
                         sprintf( sBuffer, "Array 0x%lx %s", (unsigned long int)(m_aValue.m_phObjValue ? (*(m_aValue.m_phObjValue)).GetPtr() : 0), sVariables.c_str() );
@@ -1251,9 +1251,11 @@ void minCallStackItem::DumpVariables(ostream & stream)
 	}
 }
 
-string minCallStackItem::GetInfoString() const
+string minCallStackItem::GetInfoString(bool bShowContent) const
 {
 	string sResult = GetItemName();
+
+// TODO gulp working --> wie sollen die Member Daten ausgegeben werden? Diese Methode beeinflusst callstack und local anzeige !!!
 	char sBuffer[c_iMaxBuffer];
 /*
 	if( GetUserName().length()>0 )
@@ -1274,19 +1276,27 @@ string minCallStackItem::GetInfoString() const
 		sResult += sBuffer;
 	}
 	sResult += ": ";
-
-	VariableContainerT::const_iterator aIter = m_aVariableContainer.begin();
-	while( aIter != m_aVariableContainer.end() )
-	{
-		const minInterpreterVariable & aVar = *aIter;
-		sResult += aVar.GetInfoString();
-		++aIter;
-		if( aIter != m_aVariableContainer.end() )
-		{
-			sResult += "; ";
-		}
-	}
 */
+	if (bShowContent)
+	{
+		sResult += " ";
+		sResult += "{ ";
+
+		VariableContainerT::const_iterator aIter = m_aVariableContainer.begin();
+		while (aIter != m_aVariableContainer.end())
+		{
+			const minInterpreterVariable & aVar = *aIter;
+			sResult += aVar.GetInfoString();
+			++aIter;
+			if (aIter != m_aVariableContainer.end())
+			{
+				sResult += "; ";
+			}
+		}
+
+		sResult += " }";
+	}
+
 	return sResult;
 }
 
@@ -1606,7 +1616,7 @@ static bool IsRealCallStackItem( const string & sInfo )
 
 static string FillWithSpacesToLength(const string & s, int iLength, bool bFillRight)
 {
-	if (s.length()<iLength)
+	if ((int)s.length()<iLength)
 	{
 		return s + string(iLength - s.length(), ' ');
 	}
@@ -1678,7 +1688,7 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 
 	reverse(ret.begin(), ret.end());
 
-	for (int j = 0; j < ret.size(); j++)
+	for (size_t j = 0; j < ret.size(); j++)
 	{
 		sprintf(sBuffer, "%d ", j+1);
 		ret[j] = sBuffer + ret[j];
@@ -2065,7 +2075,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-        else if( sInput=="o" )   // step next line
+		else if (sInput == "v" || sInput == "over")   // step next line
         {
             //cout << "step over next line" << endl;
 
@@ -2079,7 +2089,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-        else if( sInput=="i" )   // step into next line
+		else if (sInput == "s" || sInput == "step")   // step into next line
         {
             //cout << "step into next line" << endl;
 
@@ -2091,7 +2101,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-		else if( sInput == "r" )   // step out
+		else if (sInput == "o" || sInput == "out")   // step out
 		{
 			//cout << "step out" << endl;
 
@@ -2103,7 +2113,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-		else if( sInput == "c" )
+		else if (sInput == "r" || sInput == "run")
         {
             //cout << "run..." << endl;
 
@@ -2112,7 +2122,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-		else if (sInput == "p")
+		else if (sInput == "restart")
 		{
 			//cout << "reset execution..." << endl;
 
@@ -2122,7 +2132,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			bContinueDbgLoop = false;
 		}
-		else if( sInput == "d" )
+		else if (sInput == "d" || sInput == "down")
 		{
 			if( iSelectedCallStackLevel > 1 )
 			{
@@ -2137,7 +2147,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				cout << "Warning: can not move callstack down!" << endl;
 			}
 		}
-		else if( sInput == "u" )
+		else if (sInput == "u" || sInput == "up")
 		{
 			bool bCanNotMove = false;
 			if( iSelectedCallStackLevel < (int)m_aCallStack.size() )
@@ -2165,7 +2175,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				cout << "Warning: can not move callstack up!" << endl;
 			}
 		}
-		else if( sInput == "w" )
+		else if (sInput == "k" || sInput == "stack")
         {
 #ifdef _DEBUGGING_DEBUGGER
 			cout << "show stack size=" << GetCallStackSize() << endl;
@@ -2194,12 +2204,12 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			//cout << "-----------" << endl;
 
 			vector<string> aDbgCallStack = GetCallStackForDebugger(m_aCallStack, iSelectedCallStackLevel);
-			for (int n = 0; n<aDbgCallStack.size(); n++)
+			for (size_t n = 0; n<aDbgCallStack.size(); n++)
 			{
 				cout << aDbgCallStack[n] << endl;
 			}
         }
-		else if( sInput=="l" )
+		else if (sInput == "l" || sInput == "locals")
 		{
 #ifdef _DEBUGGING_DEBUGGER
 			//minHandle<minCallStackItem> aCurrentCallStackItem = GetActCallStackItem();
@@ -2215,12 +2225,16 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			minCallStackItem::VariableContainerT::iterator iter = temp.begin();
 			while (iter != temp.end())
 			{
-// TODO --> formatieren !!! wie bei fuel
-				//setw
-				//streamsize old = cout.width(4);
-				//cout << std::right;
-
-                cout << (*iter).GetName() << " --> " << (*iter).GetValue()->GetString(true) << " : " << (*iter).GetValue()->GetTypeString() << endl;
+				streamsize old = cout.width(20);
+				cout << (*iter).GetName();
+				cout.width(old);
+				cout << " --> ";
+				cout << left;
+				old = cout.width(40);
+				cout << (*iter).GetValue()->GetString(true);
+				cout.width(old);
+				cout << right;
+				cout << " : " << (*iter).GetValue()->GetTypeString() << endl;
 				++iter;
 			}
 		}
@@ -2280,7 +2294,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				cout << "Warning: breakpoint not set !" << endl;
 			}
 		}
-		else if (sInput == "list")
+		else if (sInput == "t" || sInput == "list")
 		{
 			int i = 1;
 			BreakpointContainerT::const_iterator iter = m_aBreakpointContainer.begin();
@@ -2292,7 +2306,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 				minBreakpointInfo info = *iter;
 
 				streamsize old = cout.width(4);
-				cout << std::right;
+				cout << right;
 				cout << i;
 				cout.width(old);
 				cout << " ";
@@ -2309,61 +2323,72 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
 		else if (sInput == "clear")
 		{
-			int iSize = m_aBreakpointContainer.size();
-			m_aBreakpointContainer.clear();
-			cout << "Cleared " << iSize << " breakpoints" << endl;
+			cout << "Really delete all breakpoints? (y/n)" << endl;
+			string sUserInput;
+			while (!(sUserInput == "y" || sUserInput == "n"))
+			{
+				getline(cin, sUserInput);
+			}
+			if (sUserInput=="y")
+			{
+				int iSize = m_aBreakpointContainer.size();
+				m_aBreakpointContainer.clear();
+				//cout << "Cleared " << iSize << " breakpoints" << endl;
+			}
 		}
 		else if (sInput == "a")
 		{
 			pCurrentNode->Dump( cout );
 			//DumpParser(cout);
 		}
-        else if( sInput=="s" )
+		else if (sInput == "c" || sInput == "code")
         {
 // TODO: dump von anderen script files: s header.ic
 			DumpScript( m_sSourceCode, m_nLineCountOfAddedCode, nCurrentLineNo, GetBreakpointLines() );
         }
-		else if (sInput == "v")
+		else if (sInput == "version")
 		{
 			DumpVersion(cout);
 		}
-		else if (sInput == "q" || sInput == "quit" )
+		else if (sInput == "e" || sInput == "exit" )
         {
             cout << "exit debugging..." << endl;
             exit(-1);
         }
         else if( sInput == "h" || sInput == "help" )
         {
-            cout << "show help:" << endl;
-            cout << "  n        : next AST step" << endl;
-            cout << "  o        : step over next line" << endl;
-            cout << "  i        : step into next line" << endl;
-			cout << "  r        : step out (return from function)" << endl;
-			cout << "  c        : run/continue" << endl;
-			cout << "  p        : reset program execution" << endl;
-			cout << "  b lineno [cond [filename]] : set breakpoint at line" << endl;
+			cout << endl;
+            cout << "help for debugger:" << endl << endl;
+			cout << "  (h)elp                     : show help" << endl;
+			cout << "  version                    : show interpreter version" << endl;
+			cout << "  (c)ode                     : show source code" << endl;
+			cout << "  stac(k)                    : show call stack" << endl;
+			cout << "  (u)p                       : one step up the call stack" << endl;
+			cout << "  (d)own                     : one step down the call stack" << endl;
+			cout << "  (r)un                      : run/continue" << endl;
+			cout << "  (s)tep                     : step into next line" << endl;
+			cout << "  o(v)er                     : step over next line" << endl;
+			cout << "  (o)ut                      : step out (return from function)" << endl;
+			cout << "  b lineno [cond [filename]] : set breakpoint at line" << endl;		
 // TODO 
 			// b lineno;filename 
 			// b lineno filename
-			cout << "  t lineno : toggle breakpoint at line" << endl;
-			cout << "  e lineno : erase breakpoint at line" << endl;
-			cout << "  eb no    : erase breakpoint no" << endl;
+//			cout << "  clear [no]                 : clears a breakpoint with no or all beakpoints" << endl;
+			cout << "  clear                      : clear all breakpoins" << endl;
+//			cout << "  t                          : toggle breakpoint at line" << endl;
+//			cout << "  e lineno                   : erase breakpoint at line" << endl;
 // TODO done
-			cout << "  list     : show all breakpoints" << endl;
-			cout << "  clear    : clear all breakpoins" << endl;
-			cout << "  w        : show call stack" << endl;
-			cout << "  u        : one step up the call stack" << endl;
-			cout << "  d        : one step down the call stack" << endl;
-			cout << "  l        : show local variables" << endl;
-            cout << "  s        : show source code" << endl;
-			cout << "  a        : show AST" << endl;
-			cout << "  h        : show help" << endl;
-			cout << "  v        : show interpreter version" << endl;
-            cout << "  q        : quit debugging" << endl;
+			cout << "  lis(t)                     : show all breakpoints" << endl;
+			cout << "  restart                    : reset/restart program execution" << endl;
+			cout << "  (l)ocals                   : show local variables" << endl;
+			cout << "  a                          : show AST" << endl;
+			cout << "  n                          : next AST step" << endl;
+			cout << "  (e)xit                     : exit debugging" << endl;
+			cout << endl;
         }
         else
         {
-            cout << "Unknwown input: " << sInput << endl;
+            cout << "Unknown input: " << sInput << endl;
         }
     }
 

@@ -473,7 +473,7 @@ public:
 
 	// liefert einen String zurueck, der Infos ueber den Stack-Eintrag enthaelt,
 	// z.B. Name der Funktion und alle lokalen Variablen
-	string	GetInfoString() const;
+	string	GetInfoString( bool bShowContent = false ) const;
 
 	int		GetSizeofValue() const;
 

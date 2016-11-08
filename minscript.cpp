@@ -376,7 +376,33 @@ static void ShowCompileOptionsForDll( ostream & aStream )
 void DumpVersion(ostream & out)
 {
 	out << "minscript, version " << _MINSCRIPT_VERSION << " from " << __DATE__ /*<< endl*/;
-	out << ", (c) by Michael Neuroth, 1999-2016" << endl;
+    out << ", compiled with ";
+    // for compiler detection see: http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
+#ifdef __GNUC__
+    out << "GCC v" << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__; 
+#if defined(__i386__)
+    // IA-32
+    out << ", 32Bit";
+#elif defined(__x86_64__)
+    // AMD64
+    out << ", 64Bit";
+#else
+# error Unsupported architecture
+#endif
+#endif
+#ifdef _MSC_VER
+    out << "Microsoft C++ v" << _MSC_VER; // << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__; 
+#if defined(_WIN64)
+    // AMD64
+    out << ", 64Bit";
+#elif defined(_WIN32)
+    // IA-32
+    out << ", 32Bit";
+#else
+# error Unsupported architecture
+#endif
+#endif
+    out << ", (c) by Michael Neuroth, 1999-2016" << endl;
 }
 
 static string GetCallArguments( string & sArgumentsForCall, const minVariableDeclarationList & aArgsList )

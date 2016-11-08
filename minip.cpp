@@ -1243,6 +1243,10 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 	{		
 		if (!onlyCurrentLine || iLineNo == nCurrentLineNo)
 		{
+			streamsize old = cout.width(4);
+			cout << iLineNo;
+			cout.width(old);
+			cout << " ";
 			if (!onlyCurrentLine && std::find(lstBreakpointLines.begin(), lstBreakpointLines.end(), iLineNo) != lstBreakpointLines.end())
 			{
 				cout << "B";
@@ -1259,7 +1263,7 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 			{
 				cout << "    ";
 			}
-			cout << iLineNo << " " << *iter;
+			cout << *iter;
 			if (onlyCurrentLine && iLineNo == nCurrentLineNo)
 			{
 				cout << " line=" << iLineNo;
