@@ -673,6 +673,7 @@ private:
 	int						m_nLineCountOfAddedCode;
     int                     m_nCurrentLineNo;
     int                     m_nCurrentCallStackLevel;
+	int						m_nCurrentDebuggerCallStackLevel;
 	int						m_nLastBreakpointLineNo;
 	int						m_nLastErrorCode;
 	string					m_sLastErrorMsg;

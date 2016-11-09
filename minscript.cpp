@@ -1282,7 +1282,8 @@ int main( int argc, char *argv[] )
 			}
 			if( ReadScript( (*aIter).c_str(), sScriptTemp ) )
 			{
-                sScript += sScriptTemp;
+                // encode script name as comment into source code
+				sScript += string("/*ScriptName=") + (*aIter).c_str() + "*/ " + sScriptTemp;
             }
 			else
 			{

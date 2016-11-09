@@ -1234,6 +1234,22 @@ vector<string> split(const string & str, const string & delimiters)
 	return v;
 }
 
+static string GetFileNameFromScript( const vector<string> & lines )
+{	
+	const string sTag = "/*ScriptName=";
+	vector<string>::const_iterator iter = lines.begin();
+	while (iter != lines.end())
+	{
+		int pos = (*iter).find( sTag );
+		if (pos!=-1)
+		{
+			return (*iter).substr(pos + sTag.length(), (*iter).find("*/") - pos - sTag.length());
+		}
+		++iter;
+	}
+	return "?";
+}
+
 void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines, bool onlyCurrentLine )
 {
 	vector<string> lines = split(sScript, string("\n"));
@@ -1269,12 +1285,12 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 				cout << " line=" << iLineNo;
 				cout << " start=" << -1;
 				cout << " stop=" << -1;
-				cout << " module=" << "?";
+				cout << " module=" << GetFileNameFromScript(lines);
 			}
 			cout << endl;
 		}
-		iLineNo++;
-		iter++;
+		++iLineNo;
+		++iter;
 	}
 }
 
