@@ -386,6 +386,8 @@ void DumpVersion(ostream & out)
 #elif defined(__x86_64__)
     // AMD64
     out << ", 64Bit";
+#elif defined(__arm__)
+    out << ", 32Bit";
 #else
 # error Unsupported architecture
 #endif
