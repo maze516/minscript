@@ -94,7 +94,7 @@ endif
 # $(LINKOPT) $(ADDOPT) $(INCLUDES) $(DEBUG)
 #$(EXEOUTOPT) $(OUTDIR)$(MININTERPRETEREXE)$(EXEEXT) \
 
-$(info $(EXEEXT) $(OBJEXT) $(MY_INCLUDES) xxx)
+#$(info $(EXEEXT) $(OBJEXT) $(MY_INCLUDES))
 
 minipfullmscexe:
 $(OUTDIR)$(MININTERPRETERMSCEXE)$(EXEEXT): $(OUTDIR)minscript$(OBJEXT) $(OUTDIR)mintokenizer$(OBJEXT) $(OUTDIR)minpreproc$(OBJEXT) \
