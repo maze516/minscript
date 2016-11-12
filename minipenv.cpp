@@ -1258,7 +1258,7 @@ string minCallStackItem::GetInfoString(bool bShowContent) const
 	string sResult = GetItemName();
 
 // TODO gulp working --> wie sollen die Member Daten ausgegeben werden? Diese Methode beeinflusst callstack und local anzeige !!!
-	char sBuffer[c_iMaxBuffer];
+//	char sBuffer[c_iMaxBuffer];
 /*
 	if( GetUserName().length()>0 )
 	{
@@ -1925,31 +1925,31 @@ static string trim(const string& str)
 //	return elems;
 //}
 
-// see: http://stackoverflow.com/questions/236129/split-a-string-in-c
-void tokenize( const string & str, vector<string> & tokens, const string& delimiters = " ", bool trimEmpty = false )
-{
-	string::size_type pos, lastPos = 0, length = str.length();
-
-	while( lastPos < length + 1 )
-	{
-		pos = str.find_first_of(delimiters, lastPos);
-		if( pos == std::string::npos )
-		{
-			pos = length;
-		}
-
-		if( pos != lastPos || !trimEmpty )
-		{
-			string s = trim(string(vector<string>::value_type(str.data() + lastPos, (vector<string>::size_type)pos - lastPos)));
-			if( s.length()>0 )
-			{
-				tokens.push_back(s);
-			}
-		}
-
-		lastPos = pos + 1;
-	}
-}
+//// see: http://stackoverflow.com/questions/236129/split-a-string-in-c
+//void tokenize( const string & str, vector<string> & tokens, const string& delimiters = " ", bool trimEmpty = false )
+//{
+//	string::size_type pos, lastPos = 0, length = str.length();
+//
+//	while( lastPos < length + 1 )
+//	{
+//		pos = str.find_first_of(delimiters, lastPos);
+//		if( pos == std::string::npos )
+//		{
+//			pos = length;
+//		}
+//
+//		if( pos != lastPos || !trimEmpty )
+//		{
+//			string s = trim(string(vector<string>::value_type(str.data() + lastPos, (vector<string>::size_type)pos - lastPos)));
+//			if( s.length()>0 )
+//			{
+//				tokens.push_back(s);
+//			}
+//		}
+//
+//		lastPos = pos + 1;
+//	}
+//}
 
 bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 {
@@ -2252,25 +2252,39 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		{
 // TODO --> DbgInfo an minInterpreterNode setzen, Struktur mit lineNo, FileName --> Diese Debug Infos ggf. auch in anderem Container verwalten?
 // TODO --> pruefe ob es einen Interpreter-Knoten fuer diese Zeilennummer ueberhaupt gibt --> falls nein --> ablehen und Fehlermeldung
-			vector<string> tokens;
-			tokenize( sInput, tokens, " " );
+			string::size_type iSeparatorPos = sInput.find_last_of(':');
+			string sFileName;
+			string sLineNo;
+			string sCondition;
+			string sRest;
+
+			if (iSeparatorPos != string::npos)
+			{
+				// process something like: b c:\path\filename.ic:42 --> found : before 42
+				sFileName = trim(sInput.substr(2, iSeparatorPos - 2));
+				sRest = sInput.substr(iSeparatorPos + 1);
+			}
+			else
+			{
+				// process something like: b 42 [cond]
+				sRest = sInput.substr(2);
+			}
+
+			string::size_type iSpacePos = sRest.find_first_of(' ');
+			if (iSpacePos != string::npos)
+			{
+				sLineNo = trim(sRest.substr(0, iSpacePos));
+				sCondition = trim(sRest.substr(iSpacePos + 1));
+			}
+			else
+			{
+				sLineNo = trim(sRest);
+			}
 
 			int iBreakOnLine = -1;	// not defined
-			if( tokens.size()>1 )
+			if (sLineNo.length() > 0)
 			{
-				iBreakOnLine = atoi(tokens[1].c_str());
-			}
-
-			string sCondition;
-			if (tokens.size()>2)
-			{
-				sCondition = tokens[2];
-			}
-
-			string sFileName;
-			if( tokens.size()>3 )
-			{
-				sFileName = tokens[3];
+				iBreakOnLine = atoi(sLineNo.c_str());
 			}
 
 			minBreakpointInfo aBreakpoint;
@@ -2379,7 +2393,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			cout << "  (s)tep                     : step into next line" << endl;
 			cout << "  o(v)er                     : step over next line" << endl;
 			cout << "  (o)ut                      : step out (return from function)" << endl;
-			cout << "  b lineno [cond [filename]] : set breakpoint at line" << endl;		
+			cout << "  b [filename:]lineno [cond] : set breakpoint at line" << endl;		
 // TODO 
 			// b lineno;filename 
 			// b lineno filename
