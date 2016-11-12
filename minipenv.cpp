@@ -57,6 +57,8 @@ const char * g_sClassMethodSeparator = "#";		// war mal "_"
 const char * g_sFunctionCallStart =	"?";
 
 extern void DumpScript(const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines, bool onlyCurrentLine = false);
+extern string GetFileNameFromScript( const vector<string> & lines );
+extern vector<string> split( const string & str, const string & delimiters );
 
 #undef _old_name_search			// fuer binaere Suche, neu seit 14.2.2003
 
@@ -1624,7 +1626,7 @@ static string FillWithSpacesToLength(const string & s, int iLength, bool bFillRi
 	return s;
 }
 
-vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const
+vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const string & sSourceCode, const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const
 {
 	vector<string> ret;
 
@@ -1634,6 +1636,7 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 	int iMarkerPos = -1;
 	bool markPos = false;
 
+	vector<string> lines = split(sSourceCode, string("\n"));
 	int n = m_aCallStack.size();
 	CallStackContainerT::const_reverse_iterator iter = aCallStack.rbegin();
 	while (iter != m_aCallStack.rend())
@@ -1659,8 +1662,8 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const CallSta
 			sInfo += sLineNo;
 
 			sInfo += " module=";
-			sInfo += "?";
-
+			sInfo += GetFileNameFromScript(lines);
+            
 			//sprintf(sBuffer, "%d ", i);
 			//sInfo = sBuffer + sInfo;
 
@@ -2013,7 +2016,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         return true;
     }
 
-	int iCurrentDbgCallStack = GetCallStackForDebugger(m_aCallStack, -1).size();
+	int iCurrentDbgCallStack = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, -1).size();
 
     // process step over next line
 	if (m_bStepToNextLine && !bIsAtBreakpoint && !HasError() && 
@@ -2090,7 +2093,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
             m_nCurrentLineNo = nCurrentLineNo;
             m_nCurrentCallStackLevel = m_aCallStack.size();
-			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_aCallStack, iSelectedCallStackLevel).size();
+			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel).size();
 
 			bContinueDbgLoop = false;
 		}
@@ -2103,7 +2106,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
             m_nCurrentLineNo = nCurrentLineNo;
             m_nCurrentCallStackLevel = m_aCallStack.size();
-			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_aCallStack, iSelectedCallStackLevel).size();
+			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel).size();
 
 			bContinueDbgLoop = false;
 		}
@@ -2116,7 +2119,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 
 			m_nCurrentLineNo = nCurrentLineNo;
 			m_nCurrentCallStackLevel = m_aCallStack.size();
-			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_aCallStack, iSelectedCallStackLevel).size();
+			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel).size();
 
 			bContinueDbgLoop = false;
 		}
@@ -2210,7 +2213,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			//cout << "show stack:"  << endl;
 			//cout << "-----------" << endl;
 
-			vector<string> aDbgCallStack = GetCallStackForDebugger(m_aCallStack, iSelectedCallStackLevel);
+			vector<string> aDbgCallStack = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel);
 			for (size_t n = 0; n<aDbgCallStack.size(); n++)
 			{
 				cout << aDbgCallStack[n] << endl;

@@ -1234,7 +1234,7 @@ vector<string> split(const string & str, const string & delimiters)
 	return v;
 }
 
-static string GetFileNameFromScript( const vector<string> & lines )
+string GetFileNameFromScript( const vector<string> & lines )
 {	
 	const string sTag = "/*ScriptName=";
 	vector<string>::const_iterator iter = lines.begin();

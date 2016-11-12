@@ -661,7 +661,7 @@ private:
 	bool IsAtBreakpoint( minInterpreterNode * pCurrentNode ) const;
 	bool IsAtBreakpoint( int iLineNo ) const;
 	list<int> GetBreakpointLines() const;
-	vector<string> GetCallStackForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
+	vector<string> GetCallStackForDebugger( const string & sSourceCode, const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
 	minCallStackItem::VariableContainerT GetVairablesForDebugger( const CallStackContainerT & aCallStack, int iSelectedCallStackLevel ) const;
 	pair<int, int> GetLineNoOfCallStackItem(const CallStackContainerT & aCallStack, int iSelectedCallStackLevel, int & iLevelDown, int & iLevelUp) const;
 
