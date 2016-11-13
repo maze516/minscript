@@ -2022,7 +2022,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 	if (m_bStepToNextLine && !bIsAtBreakpoint && !HasError() && 
 		/* special handling for first step over in program, jump into first meta block */!(m_aCallStack.size() == 2 && m_nCurrentCallStackLevel == 1) &&
         ( nCurrentLineNo==m_nCurrentLineNo || nCurrentLineNo==/*ignore*/0 ||
-		(m_nCurrentDebuggerCallStackLevel>0 && iCurrentDbgCallStack>(CallStackContainerT::size_type)m_nCurrentDebuggerCallStackLevel)
+		(m_nCurrentDebuggerCallStackLevel>0 && iCurrentDbgCallStack>m_nCurrentDebuggerCallStackLevel)
           /*(m_nCurrentCallStackLevel>0 && m_aCallStack.size()>(CallStackContainerT::size_type)m_nCurrentCallStackLevel)*/ ) )
     {
         //cout << "cont. over " << m_nCurrentCallStackLevel << " " << m_aCallStack.size() << " brkpnt=" << bIsAtBreakpoint << endl;
