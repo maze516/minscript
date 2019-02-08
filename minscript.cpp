@@ -55,13 +55,14 @@
 #include <stdio.h>			// fuer: sprintf()
 #include <stdlib.h>
 
-#define _MINSCRIPT_VERSION	"1.3.0"			
+#define _MINSCRIPT_VERSION	"1.3.1"			
 
 // version history:
 // 1.2.1		17. february 2003	// first public release 
 // 1.2.2		 4. january  2004 
 // 1.2.3		20. april    2014   // first android release
 // 1.3.0					 2016   // bugfixes, added builtin debugger modus
+// 1.3.1					 2019   // added: string_find_pos 
 
 #define _REGISTER_FCN_NAME	"minRegisterNativeFunctions"
 
@@ -404,7 +405,7 @@ void DumpVersion(ostream & out)
 # error Unsupported architecture
 #endif
 #endif
-    out << ", (c) by Michael Neuroth, 1999-2016" << endl;
+    out << ", (c) by Michael Neuroth, 1999-2019" << endl;
 }
 
 static string GetCallArguments( string & sArgumentsForCall, const minVariableDeclarationList & aArgsList )

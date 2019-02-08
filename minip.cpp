@@ -593,6 +593,13 @@ int string_find( const char * sString, const char * sSearchText )
 	return (int)s.find( sSearchText );
 }
 
+int string_find_pos(const char * sString, const char * sSearchText, int pos)
+{
+	string s(sString);
+
+	return (int)s.find(sSearchText, pos);
+}
+
 string string_substr( const char * s, int iStartPos, int iLength )
 {
 	return string( s ).substr( iStartPos, iLength );
@@ -873,6 +880,7 @@ bool minScriptInterpreter::RegisterNativeFcn( minNativeFcnWrapperBaseAdapter * p
 	char string_at( string s, int iPos )
 	string string_setchar( string s, int iPos, char ch )
 	int string_find( string s, string sSearch )
+	int string_find_pos( string s, string sSearch, int pos )
 	string string_substr( string s, int iStartPos, int iLength )
 	string string_insert( string s, int iPos, string sInsert )
 	string string_erase( string s, int iPos, int iLength )
@@ -1013,6 +1021,8 @@ void minScriptInterpreter::InitRuntimeEnvironment()
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper2<int, const char *, const char *>( string_find, "int string_find( string s, string sSearch );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
+	pFcn = new NativeFcnWrapper3<int, const char *, const char *, int>(string_find_pos, "int string_find_pos( string s, string sSearch, int pos );");
+	m_aEnvironment.AddNativeFunction(pFcn);
 	pFcn = new NativeFcnWrapper3<string, const char *, int, int>( string_substr, "string string_substr( string s, int iStartPos, int iLength );" );
 	m_aEnvironment.AddNativeFunction( pFcn );
 	pFcn = new NativeFcnWrapper3<string, const char *, int, const char *>( string_insert, "string string_insert( string s, int iPos, string sInsert );" );
