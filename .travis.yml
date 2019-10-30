@@ -1,0 +1,38 @@
+# Multi language build script for csharp and c++
+
+matrix:
+  include:
+    - os: linux
+      language: cpp
+      compiler: clang
+      name: Linux clang
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-precise-3.8
+          packages:
+          - clang-3.8
+      script:
+      - ls -lrt
+      - make -j 4 -f makefile.unx -e linux=1 release=1
+      - ls -lrt
+    
+    - os: linux
+      language: cpp
+      compiler: gcc
+      name: Linux gcc
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-6
+      script:
+      - ls -lrt
+      - make -j 4 -f makefile.unx -e linux=1 release=1
+      - ls -lrt
+  
+install:
+- "[ $CXX = g++ ] && export CXX=g++-6 || true"
+- "[ $CXX = clang++ ] && export CXX=clang++-3.8 || true"
