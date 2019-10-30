@@ -17,6 +17,7 @@ matrix:
       - ls -lrt
       - make -j 4 -f makefile.unx -e linux=1 release=1
       - ls -lrt
+      - ./minscript -v
     
     - os: linux
       language: cpp
@@ -32,6 +33,7 @@ matrix:
       - ls -lrt
       - make -j 4 -f makefile.unx -e linux=1 release=1
       - ls -lrt
+      - ./minscript -v
   
 install:
 - "[ $CXX = g++ ] && export CXX=g++-6 || true"
