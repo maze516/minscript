@@ -379,19 +379,26 @@ void DumpVersion(ostream & out)
 	out << "minscript, version " << _MINSCRIPT_VERSION << " from " << __DATE__ /*<< endl*/;
     out << ", compiled with ";
     // for compiler detection see: http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
-#ifdef __GNUC__
+	// or: https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
+	// of: https://abseil.io/docs/cpp/platforms/macros
+#if defined(__GNUC__) || defined(__clang__)
     out << "GCC v" << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__; 
 #if defined(__i386__)
     // IA-32
-    out << ", 32Bit";
+    out << ", x86 32Bit";
 #elif defined(__x86_64__)
     // AMD64
-    out << ", 64Bit";
+    out << ", x86 64Bit";
 #elif defined(__arm__)
-    out << ", 32Bit";
+    out << ", arm 32Bit";
+#elif defined(__aarch64__)
+	out << ", arm 64Bit";
 #else
 # error Unsupported architecture
 #endif
+#endif
+#ifdef __EMSCRIPTEN__
+	out << ", EMSCRIPTEN";
 #endif
 #ifdef _MSC_VER
     out << "Microsoft C++ v" << _MSC_VER; // << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__; 
