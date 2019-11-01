@@ -82,9 +82,6 @@ matrix:
       # build version for arm
       - ls -lrt
       - . ./setup_ndk.sh "i686-linux-android" "i686-linux-android" $MINSCRIPT_VERSION
-      - set
-      - echo $MY_LIBS
-      - export MY_LIBS=.
       - make -f makefile.unx -e android=1 release=1
       - ls -lrt
       - $STRIP minscript
@@ -147,7 +144,7 @@ matrix:
       script:
       - ls -lrt
       - make -j 4 -f makefile.unx -e mac=1 release=1
-      - zip minscrpit_macos.zip minscript
+      - zip minscript_macos.zip minscript
       - ls -lrt
       - ./minscript -v
       - export MINSCRIPT_DEPLOY_ROOT=`pwd`
