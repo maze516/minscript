@@ -1,7 +1,29 @@
 # Multi language build script for csharp and c++
 
 matrix:
-  include:
+  exclude:
+    - os: windows
+      language: cpp
+      compiler: cl
+      name: Windows cl
+      env:
+      - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"      
+      script:
+      - export PATH=$MSBUILD_PATH:$PATH
+      - dir
+      - make -f makefile.gen -e mingw=1 release=1
+      - zip minscript_win.zip minscript.exe
+      - dir 
+      - minscript -v
+      deploy:
+        provider: releases
+        api_key:
+          secure: cvDvNiDXUWMiqiMptmrhLc/x9rdMASY2n3MOFExpvIyZnV/2jun9eNtuPc5eAMV9EM1UQliGBap1Rudj/EOtA4CWQYQRhja7NHx/dmUFt4ciXpO+FclYMpty7vpVeAQAQjbR6w1R62YOjbpV+zVnya8cCjVCdIy65TVjbDwPjiRGoIcBDd43LMizl8soRE9cpKOwkuVzpPhvfYDNlUxHnvtXcTF0h4xW0d6GBUvOGXU8GWM1ULwkxfd4ZLHqyHbV1EDshRQtTiIr2c9SvPDLowQpFQk18wgA6ipAb3aFnxhslbnSaPG+Yk7nU54FFt8bvD0b3FglP/XjCzKL8TdlaO0aKtnnEsAiBPaSXpOj3bN38zt4z0/SuclZT+Ubbp1BS6ajB8uwbdNCWohliZ4zLQmTRl0gM4X6A6VLoQUSz1EYyt4dJaGSYpRu67Vm9xFJ16d9kEqjd7yT9iR0F769XraT4tUd3Zdangj/LCmtzu1sLpuM9lvNiOz2rQf0Mi86ujmGqlXPyEiTiEx5OuhX7A7OAHP6rFIkPnWYi33hKK42NkVjUqnBasbNIdQsKtqMmMN4Bfwcr0sZg4CDsHfOw4DAcW1F17S3Izvdovscp5i7lKr1K4EK3VlXobYN+4hELc4Td3EneGqMZIC8dlUuenHu+jsYh7sZO/27ZbcpHsE=
+        file: minscript_win.zip
+        skip_cleanup: true
+        on:
+          tags: true
+  
     - os: linux
       language: cpp
       compiler: clang
@@ -35,6 +57,86 @@ matrix:
       - ls -lrt
       - ./minscript -v
   
+  include:
+    - os: linux
+      language: android
+      compiler: gcc/cmake
+      name: Android cmake
+      addons:
+        apt:
+          packages:
+          - cmake
+          - cmake-data
+      android:
+        components:
+            - build-tools-26.0.2
+            - android-26
+      before_install:
+        - echo y | sdkmanager "ndk-bundle"
+        - echo y | sdkmanager "cmake;3.6.4111459"
+        - echo y | sdkmanager "lldb;3.1"
+      before_script:
+        - export ANDROID_NDK_HOME=$ANDROID_HOME/ndk-bundle
+        - export MINSCRIPT_VERSION=1.3.1
+      script:
+      # build version for arm
+      - ls -lrt
+      - . ./setup_ndk.sh "i686-linux-android" "i686-linux-android" $MINSCRIPT_VERSION
+      - make -f makefile.unx -e android=1 release=1
+      - ls -lrt
+      - $STRIP minscript
+      - ls -lrt
+      - zip minscript-$MINSCRIPT_VERSION-android-x86.zip minscript
+      - ls -lrt
+      - rm *.o
+      - rm minscript
+      # --------------------------
+      - ls -lrt
+      - . ./setup_ndk.sh "x86_64-linux-android" "x86_64-linux-android"  $MINSCRIPT_VERSION
+      - make -f makefile.unx -e android=1 release=1
+      - ls -lrt
+      - $STRIP minscript
+      - ls -lrt
+      - zip minscript-$MINSCRIPT_VERSION-android-x86_64.zip minscript
+      - ls -lrt
+      - rm *.o
+      - rm minscript
+      # --------------------------
+      - ls -lrt
+      - . ./setup_ndk.sh "armv7a-linux-androideabi" "arm-linux-androideabi"  $MINSCRIPT_VERSION
+      - make -f makefile.unx -e android=1 release=1
+      - ls -lrt
+      - $STRIP minscript
+      - ls -lrt
+      - zip minscript-$MINSCRIPT_VERSION-android-armeabi-v7a.zip minscript
+      - ls -lrt
+      - rm *.o
+      - rm minscript
+      # --------------------------
+      - ls -lrt
+      - . ./setup_ndk.sh "aarch64-linux-android" "aarch64-linux-android"  $MINSCRIPT_VERSION
+      - make -f makefile.unx -e android=1 release=1
+      - ls -lrt
+      - $STRIP minscript
+      - ls -lrt
+      - zip minscript-$MINSCRIPT_VERSION-android-arm64.zip minscript
+      - ls -lrt
+      - rm *.o
+      - rm minscript
+      - export MINSCRIPT_DEPLOY_ROOT=`pwd`
+      deploy:
+        provider: releases
+        api_key:
+          secure: cvDvNiDXUWMiqiMptmrhLc/x9rdMASY2n3MOFExpvIyZnV/2jun9eNtuPc5eAMV9EM1UQliGBap1Rudj/EOtA4CWQYQRhja7NHx/dmUFt4ciXpO+FclYMpty7vpVeAQAQjbR6w1R62YOjbpV+zVnya8cCjVCdIy65TVjbDwPjiRGoIcBDd43LMizl8soRE9cpKOwkuVzpPhvfYDNlUxHnvtXcTF0h4xW0d6GBUvOGXU8GWM1ULwkxfd4ZLHqyHbV1EDshRQtTiIr2c9SvPDLowQpFQk18wgA6ipAb3aFnxhslbnSaPG+Yk7nU54FFt8bvD0b3FglP/XjCzKL8TdlaO0aKtnnEsAiBPaSXpOj3bN38zt4z0/SuclZT+Ubbp1BS6ajB8uwbdNCWohliZ4zLQmTRl0gM4X6A6VLoQUSz1EYyt4dJaGSYpRu67Vm9xFJ16d9kEqjd7yT9iR0F769XraT4tUd3Zdangj/LCmtzu1sLpuM9lvNiOz2rQf0Mi86ujmGqlXPyEiTiEx5OuhX7A7OAHP6rFIkPnWYi33hKK42NkVjUqnBasbNIdQsKtqMmMN4Bfwcr0sZg4CDsHfOw4DAcW1F17S3Izvdovscp5i7lKr1K4EK3VlXobYN+4hELc4Td3EneGqMZIC8dlUuenHu+jsYh7sZO/27ZbcpHsE=
+        file: 
+          - $MINSCRIPT_DEPLOY_ROOT/minscript-$MINSCRIPT_VERSION-android-armeabi-v7a-bin.zip
+          - $MINSCRIPT_DEPLOY_ROOT/minscript-$MINSCRIPT_VERSION-android-arm64-v8a-bin.zip
+          - $MINSCRIPT_DEPLOY_ROOT/minscript-$MINSCRIPT_VERSION-android-x86-bin.zip       
+          - $MINSCRIPT_DEPLOY_ROOT/minscript-$MINSCRIPT_VERSION-android-x86_64-bin.zip       
+        skip_cleanup: true
+        on:
+          tags: true      
+      
     - os: osx
       language: cpp
       compiler: clang
@@ -45,37 +147,16 @@ matrix:
       - zip minscrpit_macos.zip minscript
       - ls -lrt
       - ./minscript -v
+      - export MINSCRIPT_DEPLOY_ROOT=`pwd`
       deploy:
         provider: releases
         api_key:
           secure: cvDvNiDXUWMiqiMptmrhLc/x9rdMASY2n3MOFExpvIyZnV/2jun9eNtuPc5eAMV9EM1UQliGBap1Rudj/EOtA4CWQYQRhja7NHx/dmUFt4ciXpO+FclYMpty7vpVeAQAQjbR6w1R62YOjbpV+zVnya8cCjVCdIy65TVjbDwPjiRGoIcBDd43LMizl8soRE9cpKOwkuVzpPhvfYDNlUxHnvtXcTF0h4xW0d6GBUvOGXU8GWM1ULwkxfd4ZLHqyHbV1EDshRQtTiIr2c9SvPDLowQpFQk18wgA6ipAb3aFnxhslbnSaPG+Yk7nU54FFt8bvD0b3FglP/XjCzKL8TdlaO0aKtnnEsAiBPaSXpOj3bN38zt4z0/SuclZT+Ubbp1BS6ajB8uwbdNCWohliZ4zLQmTRl0gM4X6A6VLoQUSz1EYyt4dJaGSYpRu67Vm9xFJ16d9kEqjd7yT9iR0F769XraT4tUd3Zdangj/LCmtzu1sLpuM9lvNiOz2rQf0Mi86ujmGqlXPyEiTiEx5OuhX7A7OAHP6rFIkPnWYi33hKK42NkVjUqnBasbNIdQsKtqMmMN4Bfwcr0sZg4CDsHfOw4DAcW1F17S3Izvdovscp5i7lKr1K4EK3VlXobYN+4hELc4Td3EneGqMZIC8dlUuenHu+jsYh7sZO/27ZbcpHsE=
-        file: minscript_macos.zip
+        file: MINSCRIPT_DEPLOY_ROOT/minscript_macos.zip
         skip_cleanup: true
         #on:
         #  tags: true
 
-    - os: windows
-      language: cpp
-      compiler: cl
-      name: Windows cl
-      env:
-      - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"      
-      script:
-      - export PATH=$MSBUILD_PATH:$PATH
-      - dir
-      - make -f makefile.gen -e mingw=1 release=1
-      - zip minscript_win.zip minscript.exe
-      - dir 
-      - minscript -v
-      deploy:
-        provider: releases
-        api_key:
-          secure: cvDvNiDXUWMiqiMptmrhLc/x9rdMASY2n3MOFExpvIyZnV/2jun9eNtuPc5eAMV9EM1UQliGBap1Rudj/EOtA4CWQYQRhja7NHx/dmUFt4ciXpO+FclYMpty7vpVeAQAQjbR6w1R62YOjbpV+zVnya8cCjVCdIy65TVjbDwPjiRGoIcBDd43LMizl8soRE9cpKOwkuVzpPhvfYDNlUxHnvtXcTF0h4xW0d6GBUvOGXU8GWM1ULwkxfd4ZLHqyHbV1EDshRQtTiIr2c9SvPDLowQpFQk18wgA6ipAb3aFnxhslbnSaPG+Yk7nU54FFt8bvD0b3FglP/XjCzKL8TdlaO0aKtnnEsAiBPaSXpOj3bN38zt4z0/SuclZT+Ubbp1BS6ajB8uwbdNCWohliZ4zLQmTRl0gM4X6A6VLoQUSz1EYyt4dJaGSYpRu67Vm9xFJ16d9kEqjd7yT9iR0F769XraT4tUd3Zdangj/LCmtzu1sLpuM9lvNiOz2rQf0Mi86ujmGqlXPyEiTiEx5OuhX7A7OAHP6rFIkPnWYi33hKK42NkVjUqnBasbNIdQsKtqMmMN4Bfwcr0sZg4CDsHfOw4DAcW1F17S3Izvdovscp5i7lKr1K4EK3VlXobYN+4hELc4Td3EneGqMZIC8dlUuenHu+jsYh7sZO/27ZbcpHsE=
-        file: minscript_win.zip
-        skip_cleanup: true
-        #on:
-        #  tags: true
-  
 install:
 - "[ $CXX = g++ ] && export CXX=g++-6 || true"
 - "[ $CXX = clang++ ] && export CXX=clang++-3.8 || true"
