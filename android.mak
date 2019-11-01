@@ -4,12 +4,12 @@
 #DEFINES = -Dgulp
 DEFINES =
 MYCC = $$CC
-CCOPT = -fexceptions -c 
+CCOPT = -fexceptions -c -fPIC 
 #-fPIC
 #-I/usr/X11R6/include -I/home/root/lesstif-0.75a/include
 #STDLIBS =  -lm -lgcc -lg++ -lpthread -ldl
 #STDLIBS =  -lm -lgcc -lg++ -ldl
-STDLIBS =  -lm -lstdc++ 
+STDLIBS =  -lm -lstdc++ -pie
 #  -lgnustl_static -L $$MY_LIBS 
 #-L/usr/X11/lib -L/home/root/lesstif-0.75a/lib -lXm -lX11 -lXt -lICE -lSM -lXext
 # -lncurses
