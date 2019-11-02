@@ -1,0 +1,53 @@
+
+environment:
+  matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: x64
+    cname: msc
+    qtver: 5.9
+    qtbin: msvc2017_64
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: x86
+    cname: mingw
+    qtver: 5.9
+    qtbin: mingw53_32
+     
+install:
+  - set QTDIR=C:\Qt\%qtver%\%qtbin%\bin
+  - set PATH=%QTDIR%;%PATH%
+  - if %cname%==mingw set PATH=c:\qt\tools\mingw530_32\bin;c:\qt\tools\QtInstallerFramework\3.0\bin;%PATH%
+  - if %cname%==mingw64 set PATH=c:\qt\tools\mingw730_64\bin;c:\qt\tools\QtInstallerFramework\3.0\bin;%PATH%
+  - if %cname%==mingw set make=mingw32-make.exe
+  - if %cname%==mingw64 set make=mingw32-make.exe
+  - if not %cname%==mingw call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
+  - if not %cname%==mingw set make=nmake.exe
+
+build_script:
+  - echo %cname%
+  # *** build C++ with msc ***
+  - if %cname%==msc nmake -f makefile.gen -e msc=1 release=1
+  - if %cname%==msc minscript -v
+  - if %cname%==msc 7z a minscript-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==msc 7z l minscript-win-%cname%-bin.zip
+  - if %cname%==msc appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==msc dir
+  
+  # *** build C++ with mingw ***
+  - if %cname%==mingw mingw32-make -j 4 -f makefile.unx -e mingw=1 release=1
+  - if %cname%==mingw minscript -v
+  - if %cname%==mingw dir
+  - if %cname%==mingw 7z a minscript-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==mingw 7z l minscript-win-%cname%-bin.zip
+  - if %cname%==mingw appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==mingw dir  
+      
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: wDEI4YGtqf1MiuNbtiv/zZ+rfuEmfO/PxfRfZC5gjtFDez3qDk6Vv9+auWwTstyZ
+  artifact: minscript-win-%cname%-bin.zip 
+  draft: false
+  prerelease: false
+  on:
+    APPVEYOR_REPO_TAG: true        
+    
