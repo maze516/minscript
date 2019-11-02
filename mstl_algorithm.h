@@ -4,17 +4,6 @@
  *
  *	copyright            : (C) 1999-2003 by Michael Neuroth
  *
- * ------------------------------------------------------------------------
- *
- *  $Source: /Users/min/Documents/home/cvsroot/minscript/mstl_algorithm.h,v $
- *
- *  $Revision: 1.2 $
- *
- *	$Log: not supported by cvs2svn $
- *	Revision 1.1.1.1  2003/06/22 09:31:22  min
- *	Initial checkin
- *	
- *
  ***************************************************************************/
 /***************************************************************************
  *																		   *
@@ -31,8 +20,7 @@
  * If you want to use this minscript package in commercial software not    *
  * conform with the GPL please contact the author.                         *
  *                                                                         *
- *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
+ *  Homepage: https://github.com/mneuroth/minscript                        *
  *                                                                         *
  ***************************************************************************/
 

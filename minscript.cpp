@@ -2,21 +2,7 @@
  *
  *	project				 : minscript
  *
- *	copyright            : (C) 1999-2003 by Michael Neuroth
- *
- * ------------------------------------------------------------------------
- *
- *  $Source: e:\\home\\cvsroot/minscript/minscript.cpp,v $
- *
- *  $Revision: 1.2 $
- *
- *	$Log: minscript.cpp,v $
- *	Revision 1.2  2004/01/04 15:41:20  min
- *	neue Option --makemakefile, Bugfixes bei Stubfile Erzeugung
- *	
- *	Revision 1.1.1.1  2003/06/22 09:31:22  min
- *	Initial checkin
- *	
+ *	copyright            : (C) 1999-2019 by Michael Neuroth
  *
  ***************************************************************************/
 /***************************************************************************
@@ -34,8 +20,7 @@
  * If you want to use this minscript package in commercial software not    *
  * conform with the GPL please contact the author.                         *
  *                                                                         *
- *  Author:   michael.neuroth@freenet.de                                   *
- *  Homepage: http://www.mneuroth.de/privat/zaurus/minscript.html          *
+ *  Homepage: https://github.com/mneuroth/minscript                        *
  *                                                                         *
  ***************************************************************************/
 
