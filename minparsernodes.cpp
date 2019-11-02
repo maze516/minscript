@@ -2522,7 +2522,7 @@ bool minArrayElementNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 				if( m_pRightNode->Execute( /*nAccessModus*/0, aIndexOut, aEnv ) )
 				{
 					char sBuffer[c_iMaxBuffer];
-					sprintf( sBuffer, "%ld", aIndexOut.GetInt() );
+					sprintf( sBuffer, "%lld", aIndexOut.GetInt() );
 					sTempIndexName = sBuffer;
 				}
 

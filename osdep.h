@@ -72,6 +72,6 @@ int MySystem( const char * sCmd );
 
 // ************************************************************************
 
-long minLoadLibrary( const char * sDllName );
-bool minFreeLibrary( long hDllModule );
-void * minGetProcAddress( long hDllModule, const char * sProcName );
+long long minLoadLibrary( const char * sDllName );
+bool minFreeLibrary( long long hDllModule );
+void * minGetProcAddress( long long hDllModule, const char * sProcName );

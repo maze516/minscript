@@ -217,7 +217,7 @@ class minInterpreterValue;
 union minIpValueImplHelper
 {
 	// direkte Datentypen
-	long									m_lValue;
+	long long								m_lValue;
 	double									m_dValue;
 	string *								m_psValue;				// Eigentuemer
 	minHandle<minCallStackItem>	*			m_phObjValue;			// Eigentuemer
@@ -249,6 +249,7 @@ public:
 #endif
 	minInterpreterValue( int iVal );
 	minInterpreterValue( long lVal );
+	minInterpreterValue( long long lVal);
 	minInterpreterValue( char cVal );
 	minInterpreterValue( const string & sVal );
 	minInterpreterValue( const char * sVal );
@@ -314,7 +315,7 @@ public:
     string		GetString( bool bDebugOutput = false )	const;
 	double		GetDouble() const;
 	bool		GetBool() const;
-	long		GetInt() const;
+	long long	GetInt() const;
 	char		GetChar() const;
 
 	int			GetSizeofValue() const;

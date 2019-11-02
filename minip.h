@@ -226,8 +226,8 @@ public:
 	bool RunPreProcessor( bool bOnlyPreproc, const string & sScriptIn, int nLineCountOfAddedCode, string & sPreProcedScriptOut, const StringListT & aIncludeDirList, minTokenizer::TokenContainerT & aParsedTokens );
 
 	// Methode zum registrieren von weiteren Funktionen am Interpreter
-	bool LoadModule( const string & sDllNameIn, long * phDll );
-	bool UnLoadModule( long hDll );
+	bool LoadModule( const string & sDllNameIn, long long * phDll );
+	bool UnLoadModule( long long hDll );
 
 	// Hilfsmethoden zur automatischen Erzeugung der C++ Stub-Files (Script muss schon geparsed sein !)
 	bool GetAllFunctionPrototypes( minParserItemList & aItemListOut );

@@ -98,10 +98,10 @@ int MySystem( const char * sCmd )
 
 //******************************************************************
 /** Funktion zum Laden von DLLs */
-long minLoadLibrary( const char * sDllName )
+long long minLoadLibrary( const char * sDllName )
 {
 #ifdef _WIN32
-    return (long)LoadLibrary( /*(LPCWSTR)*/sDllName );
+    return (long long)LoadLibrary( /*(LPCWSTR)*/sDllName );
 #endif
 #ifdef __IBMCPP__
 	// 3.2.2000: DLL-Name immer ohne .dll Extention angeben... (Modul-Name !!!)
@@ -113,16 +113,16 @@ long minLoadLibrary( const char * sDllName )
 	HMODULE hModule = 0;
 	APIRET rc = DosLoadModule( 0, 0, /*sDllName*/sNameBuf, &hModule );
 	//cout << "Load Lib " << sDllName << " == " << sNameBuf << " nRet=" << rc << endl;
-	return (long)hModule;
+	return (long long)hModule;
 #endif
 #if defined( __linux__ ) || defined( __APPLE__ )
-	return (long)0; //dlopen( sDllName, RTLD_LAZY );
+	return (long long)0; //dlopen( sDllName, RTLD_LAZY );
 #endif
 }
 
 //******************************************************************
 /** Funktion zum Entladen von DLLs */
-bool minFreeLibrary( long hDllModule )
+bool minFreeLibrary( long long hDllModule )
 {
 #ifdef _WIN32
 	return FreeLibrary( (HMODULE)hDllModule )==TRUE;
@@ -137,7 +137,7 @@ bool minFreeLibrary( long hDllModule )
 
 //******************************************************************
 /** Funktion zum Laden von Funktionen auf DLLs */
-void * minGetProcAddress( long hDllModule, const char * sProcName )
+void * minGetProcAddress( long long hDllModule, const char * sProcName )
 {
 #ifdef _WIN32
 	return (void *)GetProcAddress( (HMODULE)hDllModule, sProcName );

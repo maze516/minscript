@@ -337,13 +337,13 @@ bool minScriptInterpreter::RunPreProcessor( bool bOnlyPreproc, const string & sS
 #endif
 }
 
-bool minScriptInterpreter::LoadModule( const string & sDllNameIn, long * phDll )
+bool minScriptInterpreter::LoadModule( const string & sDllNameIn, long long * phDll )
 {
 	typedef bool (*minRegisterNativeFunctionsT)( minInterpreterEnvironmentInterface * aEnvironment );
 	
 	// DLL laden und Funktion minRegisterNativeFunctions ausfuehren, falls vorhanden
 
-	long hDLL = minLoadLibrary( sDllNameIn.c_str() );
+	long long hDLL = minLoadLibrary( sDllNameIn.c_str() );
 	if( hDLL )
 	{
 		if( phDll )
@@ -369,7 +369,7 @@ bool minScriptInterpreter::LoadModule( const string & sDllNameIn, long * phDll )
 	return false;
 }
 
-bool minScriptInterpreter::UnLoadModule( long hDll )
+bool minScriptInterpreter::UnLoadModule( long long hDll )
 {
 	if( hDll )
 	{
@@ -520,7 +520,7 @@ int LoadInterpreterModule( const char * sDllName )
 {
 	if( g_pActualGlobalInterpreter )
 	{
-		long hDll = 0;
+		long long hDll = 0;
 
 		if( g_pActualGlobalInterpreter->LoadModule( sDllName, &hDll ) )
 		{
@@ -534,7 +534,7 @@ int UnLoadInterpreterModule( int hDll )
 {
 	if( g_pActualGlobalInterpreter )
 	{
-		long hTempDll = (long)hDll;
+		long long hTempDll = (int)hDll;
 
 		if( g_pActualGlobalInterpreter->UnLoadModule( hTempDll ) )
 		{
@@ -642,7 +642,7 @@ string string_replace( const char * s, int iPos, int iLength, const char * sRepl
     return string( s ).replace( iPos, iLength, sReplace );
 }
 
-int my_fgets( string & s, long hFile )
+int my_fgets( string & s, long long hFile )
 {
 	FILE * pFile = (FILE *)hFile;
 
