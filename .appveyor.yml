@@ -42,7 +42,7 @@ build_script:
   - if %cname%==msc minscript -v
   - if %cname%==msc 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
   - if %cname%==msc 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==msc appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==msc appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
   - if %cname%==msc dir
   
   # *** build C++ with msc_x64 ***
@@ -50,7 +50,7 @@ build_script:
   - if %cname%==msc_x64 minscript -v
   - if %cname%==msc_x64 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
   - if %cname%==msc_x64 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==msc_x64 appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==msc_x64 appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
   - if %cname%==msc_x64 dir
 
   # *** build C++ with mingw ***
@@ -59,7 +59,7 @@ build_script:
   - if %cname%==mingw dir
   - if %cname%==mingw 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
   - if %cname%==mingw 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==mingw appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==mingw appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
   - if %cname%==mingw dir  
       
   # *** build C++ with mingw64 ***
@@ -68,7 +68,7 @@ build_script:
   - if %cname%==mingw64 dir
   - if %cname%==mingw64 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
   - if %cname%==mingw64 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==mingw64 appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==mingw64 appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
   - if %cname%==mingw64 dir  
       
 deploy:
