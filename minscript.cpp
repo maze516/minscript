@@ -55,7 +55,7 @@
 #include <stdio.h>			// fuer: sprintf()
 #include <stdlib.h>
 
-#define _MINSCRIPT_VERSION	"1.3.1"			
+#define _MINSCRIPT_VERSION	"1.3.2"			
 
 // version history:
 // 1.2.1		17. february 2003	// first public release 
@@ -63,6 +63,7 @@
 // 1.2.3		20. april    2014   // first android release
 // 1.3.0					 2016   // bugfixes, added builtin debugger modus
 // 1.3.1					 2019   // added: string_find_pos 
+// 1.3.2         2. november 2019   // moved repository to github, setup of automated ci
 
 #define _REGISTER_FCN_NAME	"minRegisterNativeFunctions"
 
