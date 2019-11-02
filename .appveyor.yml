@@ -31,7 +31,8 @@ install:
   - if %cname%==mingw64 set make=mingw32-make.exe
   - if %cname%==msc_x64 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
   - if %cname%==msc call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x86 -host_arch=x64
-  - if not %cname%==mingw set make=nmake.exe
+  - if %cname%==msc_x64 set make=nmake.exe
+  - if %cname%==msc set make=nmake.exe
 
 build_script:
   - echo %cname%
