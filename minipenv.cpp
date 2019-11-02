@@ -1377,7 +1377,7 @@ static bool GetFirstType( string & sNameInOut, string & sTypeOut )
 {
 	if( sNameInOut.length()>0 )
 	{
-		int nSeparatorLen = strlen( g_sManglingSeparator );
+		size_t nSeparatorLen = strlen( g_sManglingSeparator );
 		if( sNameInOut.substr( 0, nSeparatorLen )==g_sManglingSeparator )
 		{
 			sNameInOut = sNameInOut.substr( nSeparatorLen, sNameInOut.length()-nSeparatorLen );
@@ -1504,7 +1504,7 @@ minHandle<minCallStackItem> minInterpreterEnvironment::GetActCallStackItemMinusO
 minHandle<minCallStackItem> minInterpreterEnvironment::GetCallStackItemForLevel( int iLevel )
 {
 	int i = 1;
-	int iMax = m_aCallStack.size();
+	size_t iMax = m_aCallStack.size();
 	if( iLevel>=1 && iLevel<=(int)m_aCallStack.size() )
 	{
 		CallStackContainerT::iterator iter = m_aCallStack.begin();
@@ -1647,7 +1647,7 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const string 
 	bool markPos = false;
 
 	vector<string> lines = split(sSourceCode, string("\n"));
-	int n = m_aCallStack.size();
+	size_t n = m_aCallStack.size();
 	CallStackContainerT::const_reverse_iterator iter = aCallStack.rbegin();
 	while (iter != m_aCallStack.rend())
 	{
@@ -1704,7 +1704,7 @@ vector<string> minInterpreterEnvironment::GetCallStackForDebugger( const string 
 
 	for (size_t j = 0; j < ret.size(); j++)
 	{
-		sprintf(sBuffer, "%d ", j+1);
+		sprintf(sBuffer, "%zd ", j+1);
 		ret[j] = sBuffer + ret[j];
 
 		if (j==i-iMarkerPos-1)
@@ -1727,7 +1727,7 @@ pair<int,int> minInterpreterEnvironment::GetLineNoOfCallStackItem(const CallStac
 	bool bStart = false;
 	bool bSelected = false;
 
-	int n = m_aCallStack.size();
+	size_t n = m_aCallStack.size();
 	int iLastRealCallstackLevel = -1;
 	int iLineNo = -1;
 	int iLastLineNo = -1;
@@ -1769,12 +1769,12 @@ pair<int,int> minInterpreterEnvironment::GetLineNoOfCallStackItem(const CallStac
 			else
 			{
 // operation 3)
-				iLevelDown = n;
+				iLevelDown = (int)n;
 				iLevelUp = iLastRealCallstackLevel;
 				return pair<int,int>(iLineNo, iLastLineNo);
 			}
 
-			iLastRealCallstackLevel = n;
+			iLastRealCallstackLevel = (int)n;
 		}
 
 		--n;
@@ -1836,7 +1836,7 @@ minCallStackItem::VariableContainerT minInterpreterEnvironment::GetVairablesForD
 	bool bStart = false;
 	bool bSelected = false;
 
-	int n = aCallStack.size();
+	size_t n = aCallStack.size();
 	CallStackContainerT::const_reverse_iterator iter = aCallStack.rbegin();
 	while (iter != m_aCallStack.rend())
 	{
@@ -2026,7 +2026,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         return true;
     }
 
-	int iCurrentDbgCallStack = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, -1).size();
+	size_t iCurrentDbgCallStack = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, -1).size();
 
     // process step over next line
 	if (m_bStepToNextLine && !bIsAtBreakpoint && !HasError() && 
@@ -2071,9 +2071,9 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 // TODO --> user input request, alle zustaende zuruecksetzen...
 
 	// get real call stack level from helper call stack level
-	int iSelectedCallStackLevel = m_aCallStack.size();
+	size_t iSelectedCallStackLevel = m_aCallStack.size();
 	int iLevelDown, iLevelUp;
-	/*nCurrentLineNo =*/ GetLineNoOfCallStackItem(m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp);
+	/*nCurrentLineNo =*/ GetLineNoOfCallStackItem(m_aCallStack, (int)iSelectedCallStackLevel, iLevelDown, iLevelUp);
 	iSelectedCallStackLevel = iLevelDown;
 
     bool bContinueDbgLoop = true;
@@ -2102,8 +2102,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			m_bStepToNextLine = true;
 
             m_nCurrentLineNo = nCurrentLineNo;
-            m_nCurrentCallStackLevel = m_aCallStack.size();
-			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel).size();
+            m_nCurrentCallStackLevel = (int)m_aCallStack.size();
+			m_nCurrentDebuggerCallStackLevel = (int)GetCallStackForDebugger(m_sSourceCode, m_aCallStack, (int)iSelectedCallStackLevel).size();
 
 			bContinueDbgLoop = false;
 		}
@@ -2115,8 +2115,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			m_bStepIntoNextLine = true;
 
             m_nCurrentLineNo = nCurrentLineNo;
-            m_nCurrentCallStackLevel = m_aCallStack.size();
-			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel).size();
+            m_nCurrentCallStackLevel = (int)m_aCallStack.size();
+			m_nCurrentDebuggerCallStackLevel = (int)GetCallStackForDebugger(m_sSourceCode, m_aCallStack, (int)iSelectedCallStackLevel).size();
 
 			bContinueDbgLoop = false;
 		}
@@ -2128,8 +2128,8 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			m_bStepOut = true;
 
 			m_nCurrentLineNo = nCurrentLineNo;
-			m_nCurrentCallStackLevel = m_aCallStack.size();
-			m_nCurrentDebuggerCallStackLevel = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel).size();
+			m_nCurrentCallStackLevel = (int)m_aCallStack.size();
+			m_nCurrentDebuggerCallStackLevel = (int)GetCallStackForDebugger(m_sSourceCode, m_aCallStack, (int)iSelectedCallStackLevel).size();
 
 			bContinueDbgLoop = false;
 		}
@@ -2158,7 +2158,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			{
 				// jump only real call stack items and ignore the virtual call stack items "blocks" !
 				iSelectedCallStackLevel--;
-				pair<int,int> result = GetLineNoOfCallStackItem( m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp );
+				pair<int,int> result = GetLineNoOfCallStackItem( m_aCallStack, (int)iSelectedCallStackLevel, iLevelDown, iLevelUp );
 				nCurrentLineNo = result.first;
 				iSelectedCallStackLevel = iLevelDown;
 			}
@@ -2174,7 +2174,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			{
 				// jump only real call stack items and ignore the virtual call stack items "blocks" !
 				iSelectedCallStackLevel++;
-				pair<int, int> result = GetLineNoOfCallStackItem(m_aCallStack, iSelectedCallStackLevel, iLevelDown, iLevelUp);
+				pair<int, int> result = GetLineNoOfCallStackItem(m_aCallStack, (int)iSelectedCallStackLevel, iLevelDown, iLevelUp);
 				nCurrentLineNo = result.second;
 				if (iLevelUp < 0)
 				{
@@ -2223,7 +2223,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			//cout << "show stack:"  << endl;
 			//cout << "-----------" << endl;
 
-			vector<string> aDbgCallStack = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, iSelectedCallStackLevel);
+			vector<string> aDbgCallStack = GetCallStackForDebugger(m_sSourceCode, m_aCallStack, (int)iSelectedCallStackLevel);
 			for (size_t n = 0; n<aDbgCallStack.size(); n++)
 			{
 				cout << aDbgCallStack[n] << endl;
@@ -2241,7 +2241,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			//cout << "show local variables:" << endl;
 			//cout << "---------------------" << endl;
 
-			minCallStackItem::VariableContainerT temp = GetVairablesForDebugger(m_aCallStack, iSelectedCallStackLevel);
+			minCallStackItem::VariableContainerT temp = GetVairablesForDebugger(m_aCallStack, (int)iSelectedCallStackLevel);
 			minCallStackItem::VariableContainerT::iterator iter = temp.begin();
 			while (iter != temp.end())
 			{
@@ -2365,7 +2365,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 			}
 			if (sUserInput=="y")
 			{
-				int iSize = m_aBreakpointContainer.size();
+				size_t iSize = m_aBreakpointContainer.size();
 				m_aBreakpointContainer.clear();
 				//cout << "Cleared " << iSize << " breakpoints" << endl;
 			}

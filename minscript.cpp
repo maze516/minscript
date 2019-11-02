@@ -1165,7 +1165,7 @@ string RunPreproc( bool bOnlyPreproc, const minArgumentsHelper & aArgs, minScrip
 			++aIter;
 		}
 	}
-	nLineCountOfAddedCodeInOut += CountNewLines(sPredefinedSymbols);
+	nLineCountOfAddedCodeInOut += (int)CountNewLines(sPredefinedSymbols);
 	if( aArgs.m_bRunPreprocessor )
 	{
 		string sPreProcessedScript;
@@ -1330,11 +1330,11 @@ int main( int argc, char *argv[] )
 	string sArgCode;
 	char sBuffer[c_iMaxBuffer];
 
-	sprintf( sBuffer, "int argc = %ld;\n", aArgs.m_aArgumentList.size() ); 
+	sprintf( sBuffer, "int argc = %zd;\n", aArgs.m_aArgumentList.size() ); 
 	sArgCode += sBuffer;
 	if( aArgs.m_aArgumentList.size()>0 )
 	{
-		sprintf( sBuffer, "string argv[%ld];\n", aArgs.m_aArgumentList.size() ); 
+		sprintf( sBuffer, "string argv[%zd];\n", aArgs.m_aArgumentList.size() ); 
 		sArgCode += sBuffer;
 
 		int nCount = 0;
@@ -1356,7 +1356,7 @@ int main( int argc, char *argv[] )
 	// nur wenn das Skript auch ausgefuehrt werden soll an dieser Stelle
 	// (mit dem Precode und den Argumenten-Code) den Preprocessor aufrufen
 	string sScrpitWithPredefs;
-	int nLineCountOfAddedCode = CountNewLines(sAddedInfrastructureCode);
+	int nLineCountOfAddedCode = (int)CountNewLines(sAddedInfrastructureCode);
 	if (aArgs.m_bRunPreprocessor && aArgs.m_bRunScript)
 	{
 		sScrpitWithPredefs = RunPreproc( /*bOnlyPreproc*/false, aArgs, aIp, sScript, aParsedTokens, nLineCountOfAddedCode );

@@ -281,7 +281,7 @@ void InitDefaultTokenizer( minTokenizer & m_aTokenizer );
 
 void DumpScript(const string & sScript, int nLineCodeOfAddedCode, int nCurrentLineNo, list<int> lstBreakpointLines, bool onlyCurrentLine = false );
 
-int CountNewLines( const string & s );
+size_t CountNewLines( const string & s );
 
 vector<string> split( const string & str, const string & delimiters );
 

@@ -152,7 +152,7 @@ bool minTokenizer::GetNextToken( minToken & aTokenOut )
 	return true;
 }
 
-extern int CountNewLines(const string & s);
+extern size_t CountNewLines(const string & s);
 
 bool minTokenizer::PeekNextToken( minToken & aTokenOut )
 {
@@ -200,7 +200,7 @@ bool minTokenizer::PeekNextToken( minToken & aTokenOut )
         }
 		else if (aNextToken.IsComment())
 		{
-			m_iLineCount += CountNewLines( aNextToken.GetString() );
+			m_iLineCount += (int)CountNewLines( aNextToken.GetString() );
 		}
         else
         {
@@ -648,7 +648,7 @@ bool minTokenizer::CheckForNumberToken( minToken & aTokenOut )
 
 	// schaue nach ob eine gueltige Zahl kommt und konvertiere diese mit der RT-Lib
 	string	sTemp	= m_sParserString;
-	int		nSum	= 0;
+	size_t	nSum	= 0;
 	bool	bIsInt	= true;
 
 	// erst mal das Vorzeichen probieren

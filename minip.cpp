@@ -1250,7 +1250,7 @@ string GetFileNameFromScript( const vector<string> & lines )
 	vector<string>::const_iterator iter = lines.begin();
 	while (iter != lines.end())
 	{
-		int pos = (*iter).find( sTag );
+		size_t pos = (*iter).find( sTag );
 		if (pos!=-1)
 		{
 			return (*iter).substr(pos + sTag.length(), (*iter).find("*/") - pos - sTag.length());
@@ -1304,7 +1304,7 @@ void DumpScript( const string & sScript, int nLineCodeOfAddedCode, int nCurrentL
 	}
 }
 
-int CountNewLines( const string & s )
+size_t CountNewLines( const string & s )
 {
 	size_t n = std::count(s.begin(), s.end(), '\n');
 	return n;
