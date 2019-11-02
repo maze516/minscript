@@ -40,42 +40,42 @@ build_script:
   # *** build C++ with msc ***
   - if %cname%==msc nmake -f makefile.gen -e msc=1 release=1
   - if %cname%==msc minscript -v
-  - if %cname%==msc 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
-  - if %cname%==msc 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==msc appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
+  - if %cname%==msc 7z a minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==msc 7z l minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
+  - if %cname%==msc appveyor PushArtifact minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
   - if %cname%==msc dir
   
   # *** build C++ with msc_x64 ***
   - if %cname%==msc_x64 nmake -f makefile.gen -e msc=1 release=1
   - if %cname%==msc_x64 minscript -v
-  - if %cname%==msc_x64 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
-  - if %cname%==msc_x64 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==msc_x64 appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
+  - if %cname%==msc_x64 7z a minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==msc_x64 7z l minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
+  - if %cname%==msc_x64 appveyor PushArtifact minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
   - if %cname%==msc_x64 dir
 
   # *** build C++ with mingw ***
   - if %cname%==mingw mingw32-make -j 4 -f makefile.unx -e mingw=1 release=1
   - if %cname%==mingw minscript -v
   - if %cname%==mingw dir
-  - if %cname%==mingw 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
-  - if %cname%==mingw 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==mingw appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
+  - if %cname%==mingw 7z a minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==mingw 7z l minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
+  - if %cname%==mingw appveyor PushArtifact minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
   - if %cname%==mingw dir  
       
   # *** build C++ with mingw64 ***
   - if %cname%==mingw64 mingw32-make -j 4 -f makefile.unx -e mingw=1 release=1
   - if %cname%==mingw64 minscript -v
   - if %cname%==mingw64 dir
-  - if %cname%==mingw64 7z a minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip minscript.exe 
-  - if %cname%==mingw64 7z l minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
-  - if %cname%==mingw64 appveyor PushArtifact minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip
+  - if %cname%==mingw64 7z a minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==mingw64 7z l minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
+  - if %cname%==mingw64 appveyor PushArtifact minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip
   - if %cname%==mingw64 dir  
       
 deploy:
   provider: GitHub
   auth_token:
     secure: wDEI4YGtqf1MiuNbtiv/zZ+rfuEmfO/PxfRfZC5gjtFDez3qDk6Vv9+auWwTstyZ
-  artifact: minscript-win-%MINSCRIPT_VERSION%-%cname%-bin.zip 
+  artifact: minscript-%MINSCRIPT_VERSION%-win-%cname%-bin.zip 
   draft: false
   prerelease: false
   on:
