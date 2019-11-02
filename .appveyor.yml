@@ -7,6 +7,11 @@ environment:
     qtver: 5.9
     qtbin: msvc2017_64
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: x64
+    cname: msc_x64
+    qtver: 5.9
+    qtbin: msvc2017_64
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     platform: x86
     cname: mingw
     qtver: 5.9
@@ -19,18 +24,19 @@ install:
   - if %cname%==mingw64 set PATH=c:\qt\tools\mingw730_64\bin;c:\qt\tools\QtInstallerFramework\3.0\bin;%PATH%
   - if %cname%==mingw set make=mingw32-make.exe
   - if %cname%==mingw64 set make=mingw32-make.exe
-  - if not %cname%==mingw call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
+  - if %cname%==msc_x64 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+  - if %cname%==msc call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x86 -host_arch=x64
   - if not %cname%==mingw set make=nmake.exe
 
 build_script:
   - echo %cname%
   # *** build C++ with msc ***
-  - if %cname%==msc nmake -f makefile.gen -e msc=1 release=1
-  - if %cname%==msc minscript -v
-  - if %cname%==msc 7z a minscript-win-%cname%-bin.zip minscript.exe 
-  - if %cname%==msc 7z l minscript-win-%cname%-bin.zip
-  - if %cname%==msc appveyor PushArtifact minscript-win-%cname%-bin.zip
-  - if %cname%==msc dir
+  - if not %cname%==mingw nmake -f makefile.gen -e msc=1 release=1
+  - if not %cname%==mingw minscript -v
+  - if not %cname%==mingw 7z a minscript-win-%cname%-bin.zip minscript.exe 
+  - if not %cname%==mingw 7z l minscript-win-%cname%-bin.zip
+  - if not %cname%==mingw appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if not %cname%==mingw dir
   
   # *** build C++ with mingw ***
   - if %cname%==mingw mingw32-make -j 4 -f makefile.unx -e mingw=1 release=1
