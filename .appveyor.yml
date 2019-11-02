@@ -37,13 +37,21 @@ install:
 build_script:
   - echo %cname%
   # *** build C++ with msc ***
-  - if not %cname%==mingw nmake -f makefile.gen -e msc=1 release=1
-  - if not %cname%==mingw minscript -v
-  - if not %cname%==mingw 7z a minscript-win-%cname%-bin.zip minscript.exe 
-  - if not %cname%==mingw 7z l minscript-win-%cname%-bin.zip
-  - if not %cname%==mingw appveyor PushArtifact minscript-win-%cname%-bin.zip
-  - if not %cname%==mingw dir
+  - if %cname%==msc nmake -f makefile.gen -e msc=1 release=1
+  - if %cname%==msc minscript -v
+  - if %cname%==msc 7z a minscript-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==msc 7z l minscript-win-%cname%-bin.zip
+  - if %cname%==msc appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==msc dir
   
+  # *** build C++ with msc_x64 ***
+  - if %cname%==msc_x64 nmake -f makefile.gen -e msc=1 release=1
+  - if %cname%==msc_x64 minscript -v
+  - if %cname%==msc_x64 7z a minscript-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==msc_x64 7z l minscript-win-%cname%-bin.zip
+  - if %cname%==msc_x64 appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==msc_x64 dir
+
   # *** build C++ with mingw ***
   - if %cname%==mingw mingw32-make -j 4 -f makefile.unx -e mingw=1 release=1
   - if %cname%==mingw minscript -v
