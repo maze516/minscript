@@ -16,6 +16,11 @@ environment:
     cname: mingw
     qtver: 5.9
     qtbin: mingw53_32
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: x64
+    cname: mingw64
+    qtver: 5.9
+    qtbin: mingw73_64
      
 install:
   - set QTDIR=C:\Qt\%qtver%\%qtbin%\bin
@@ -46,6 +51,15 @@ build_script:
   - if %cname%==mingw 7z l minscript-win-%cname%-bin.zip
   - if %cname%==mingw appveyor PushArtifact minscript-win-%cname%-bin.zip
   - if %cname%==mingw dir  
+      
+  # *** build C++ with mingw64 ***
+  - if %cname%==mingw64 mingw32-make -j 4 -f makefile.unx -e mingw=1 release=1
+  - if %cname%==mingw64 minscript -v
+  - if %cname%==mingw64 dir
+  - if %cname%==mingw64 7z a minscript-win-%cname%-bin.zip minscript.exe 
+  - if %cname%==mingw64 7z l minscript-win-%cname%-bin.zip
+  - if %cname%==mingw64 appveyor PushArtifact minscript-win-%cname%-bin.zip
+  - if %cname%==mingw64 dir  
       
 deploy:
   provider: GitHub
