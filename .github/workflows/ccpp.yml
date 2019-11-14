@@ -3,8 +3,8 @@ name: C/C++ CI
 on: [push]
 
 jobs:
-  build:
-
+  linux_build:
+    
     runs-on: ubuntu-latest
     
     steps:
@@ -12,4 +12,19 @@ jobs:
     - name: make
       run: make -j 4 -f makefile.unx -e linux=1 release=1
     - name: make check
-      run: ls -lrt
+      run: |
+         ls -lrt
+         ./minscript -v
+
+  windows_build:
+    
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: make
+      run: make -j 4 -f makefile.gen -e msc=1 release=1
+    - name: make check
+      run: |
+         ls -lrt
+         ./minscript -v
