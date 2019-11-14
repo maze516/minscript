@@ -28,3 +28,5 @@ jobs:
       run: |
          dir
          ./minscript -v
+         set path
+         cl
