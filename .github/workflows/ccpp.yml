@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: make
-      run: make -j 4 -f makefile.gen -e msc=1 release=1
+      run: make -j 4 -f makefile.unx -e msc=1 release=1
     - name: make check
       run: |
          ls -lrt
