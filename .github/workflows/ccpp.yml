@@ -26,5 +26,5 @@ jobs:
       run: make -j 4 -f makefile.unx -e mingw=1 release=1
     - name: make check
       run: |
-         ls -lrt
+         dir
          ./minscript -v
