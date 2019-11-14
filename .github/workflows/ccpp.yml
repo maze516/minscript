@@ -16,6 +16,19 @@ jobs:
          ls -lrt
          ./minscript -v
 
+  macos_build:
+    
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: make
+      run: make -j 4 -f makefile.unx -e mac=1 release=1
+    - name: make check
+      run: |
+         ls -lrt
+         ./minscript -v
+
   windows_gcc_build:
     
     runs-on: windows-latest
