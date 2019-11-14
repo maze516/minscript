@@ -28,8 +28,6 @@ jobs:
       run: |
          dir
          ./minscript -v
-         rem dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools"
-         rem "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat"
          
   windows_cl_build:
     
