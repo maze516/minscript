@@ -16,7 +16,7 @@ jobs:
          ls -lrt
          ./minscript -v
 
-  windows_build:
+  windows_gcc_build:
     
     runs-on: windows-latest
     
@@ -28,8 +28,22 @@ jobs:
       run: |
          dir
          ./minscript -v
-         dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools"
-         "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat"
-         csc
-         cl
+         rem dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools"
+         rem "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat"
          
+  windows_cl_build:
+    
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: ilammy/msvc-dev-cmd@v1.0.0
+    - name: test make
+      run: |
+        cl
+    - name: make
+      run: nmake -j 4 -f makefile.gen -e msc=1 release=1
+    - name: make check
+      run: |
+         dir
+         ./minscript -v         
