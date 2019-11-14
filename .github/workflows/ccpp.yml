@@ -38,11 +38,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: ilammy/msvc-dev-cmd@v1.0.0
-    - name: test make
-      run: |
-        cl
     - name: make
-      run: nmake -j 4 -f makefile.gen -e msc=1 release=1
+      run: nmake -f makefile.gen -e msc=1 release=1
     - name: make check
       run: |
          dir
