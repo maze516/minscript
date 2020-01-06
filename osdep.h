@@ -42,6 +42,15 @@ int MySystem( const char * sCmd );
 #define _DIRECTORY_SEPARATOR	'/'
 #endif
 
+#ifdef __PIC32MX__
+#define _DIRECTORY_SEPARATOR	'\\'
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
+#define _DIRECTORY_SEPARATOR	'\\'
+#endif
+
+
 // separators for MINSCRIPTPATH environment variable
 #ifdef _WIN32
 #define PATH_SEPARATOR  ";"
@@ -53,6 +62,14 @@ int MySystem( const char * sCmd );
 
 #if defined( __linux__ ) || defined( __APPLE__ )
 #define PATH_SEPARATOR  ":"
+#endif
+
+#ifdef __PIC32MX__
+#define PATH_SEPARATOR  ";"
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
+#define PATH_SEPARATOR  ";"
 #endif
 
 // ************************************************************************

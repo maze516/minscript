@@ -670,10 +670,11 @@ bool minVariableDeclarationNode::DoExecute( int nAccessModus, minInterpreterValu
 				// Argument als lokale Variable anlegen (by Value), verwende Init-Ausdruck falls angegeben (Bugfix 13.12.1999)
 				if( m_pInitExpression )								// Bugfix: 25.12.1999: Variable immer mit richtigen Typ anlegen !
 				{
-					if( !aReturnValOut.CastAndAssign( aTempRet ) )	// und Init-Typ ggf. casten !
+					string sErrorMsg;
+					if( !aReturnValOut.CastAndAssign( aTempRet, sErrorMsg ) )	// und Init-Typ ggf. casten !
 					{
 						//aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast "+(int)aTempRet.GetType()+" in "+(int)aReturnValOut.GetType() );
-						aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast" );
+						aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, sErrorMsg );
                         aEnv.ProcessError( this );
 						return false;
 					}
@@ -1870,7 +1871,8 @@ bool minFunctionCallNode::DoExecute( int nAccessModus, minInterpreterValue & aRe
 
 					// Bugfix 14.2.2003: Typ darf nicht geaendert werden !!!
 					minInterpreterValue * pNewVal = new minInterpreterValue( aType );
-					pNewVal->CastAndAssign( aArgVal.CopyValue() );
+					string sErrorMsg;
+					pNewVal->CastAndAssign( aArgVal.CopyValue(), sErrorMsg );
 
 					if( hArgDecl->IsConst() )
 					{
@@ -2573,10 +2575,11 @@ bool minAssignOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & a
 			minInterpreterValue aLeftExprValueRef;
 			if( m_pLeftNode->Execute( /*nAccessModus*/1, aLeftExprValueRef, aEnv ) )
 			{
-				if( !aLeftExprValueRef.CastAndAssign( aRightVal ) )	// Zuweisung durchfuehren aber Typ erhalten (neu seit 18.12.1999)
+				string sErrorMsg;
+				if( !aLeftExprValueRef.CastAndAssign( aRightVal, sErrorMsg ) )	// Zuweisung durchfuehren aber Typ erhalten (neu seit 18.12.1999)
 				{
 					//aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast "+(int)aRigthVal.GetType()+" in "+(int)pLeftExprValue->GetType() );
-					aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, "can not cast" );
+					aEnv.SetError( ENV_ERROR_CAN_NOT_CAST, sErrorMsg );
                     aEnv.ProcessError( this );
 					return false;
 				}
@@ -2617,7 +2620,8 @@ bool minIncOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aRet
 				// Kopie des Wertes zurueckliefern
 				aReturnValOut = minInterpreterValue( (int)aRightVal.GetInt() );
 			}
-			aRightVal.CastAndAssign( minInterpreterValue( (int)(aRightVal.GetInt() + 1) ) );
+			string sErrorMsg;
+			aRightVal.CastAndAssign( minInterpreterValue( (int)(aRightVal.GetInt() + 1) ), sErrorMsg );
 			// oder ++ii --> erst inkrementieren und dann Wert liefern
 			if( m_pRightNode )
 			{
@@ -2648,7 +2652,8 @@ bool minDecOperatorNode::DoExecute( int nAccessModus, minInterpreterValue & aRet
 			{
 				aReturnValOut = minInterpreterValue( (int)aRightVal.GetInt() );
 			}
-			aRightVal.CastAndAssign( minInterpreterValue( (int)(aRightVal.GetInt() - 1) ) );
+			string sErrorMsg;
+			aRightVal.CastAndAssign( minInterpreterValue( (int)(aRightVal.GetInt() - 1) ), sErrorMsg );
 			if( m_pRightNode )
 			{
 				aReturnValOut = minInterpreterValue( (int)aRightVal.GetInt() );

@@ -54,6 +54,18 @@
 #define SMALL(x)
 #undef USEBIG
 
+#elif defined( __PIC32MX__ )
+
+#define OUTPUT(x)
+#define SMALL(x)
+#undef USEBIG
+
+#elif defined( ARDUINO_ARCH_ESP32 )
+
+#define OUTPUT(x)
+#define SMALL(x)
+#undef USEBIG
+
 #endif
 
 #endif //_PLATFORM_H

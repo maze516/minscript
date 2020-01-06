@@ -79,4 +79,20 @@
 //#define _with_preproc
 #endif
 
+#ifdef __PIC32MX__
+#define MINDLLEXPORT
+#define MINPREDLLEXPORT
+//#define _with_bool
+#define _with_iostreams     // dummy streams !
+//#define _with_preproc
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
+#define MINDLLEXPORT
+#define MINPREDLLEXPORT
+//#define _with_bool
+#define _with_iostreams     // dummy streams !
+//#define _with_preproc
+#endif
+
 #endif

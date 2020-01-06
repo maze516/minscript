@@ -313,7 +313,7 @@ public:
 	bool								DeletePointer();
 
 	// TODO ggf. ist diese Methode nicht mehr notwendig (verwende Zuweisungsoperator = )
-	bool								CastAndAssign( const minInterpreterValue & aObj );
+	bool								CastAndAssign( const minInterpreterValue & aObj, string & sErrorMsg );
 
 // (30.12.1999) BUG unter Windows (linux ist ok !)!!! 
 // Vorausdeklaration wird mit einem NICHT Aufruf des Destruktors quitiert !!! Daher nun als *

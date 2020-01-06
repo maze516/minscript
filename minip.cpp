@@ -110,7 +110,7 @@ void InitDefaultTokenizer( minTokenizer & m_aTokenizer )
 	m_aTokenizer.AddToken( minToken( Operator, "typeof", TYPEOF_ID ) );			// Erweiterung !
 #endif
 
-	m_aTokenizer.AddToken( minToken( Keyword, _VOID, VOID_ID ) );
+	m_aTokenizer.AddToken( minToken( Keyword, __VOID, VOID_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _BOOL, BOOL_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _CHAR, CHAR_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _INT, INT_ID ) );
@@ -119,7 +119,7 @@ void InitDefaultTokenizer( minTokenizer & m_aTokenizer )
 	m_aTokenizer.AddToken( minToken( Keyword, _UNSIGNED, UNSIGNED_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _FLOAT, FLOAT_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _DOUBLE, DOUBLE_ID ) );
-	m_aTokenizer.AddToken( minToken( Keyword, _STRING, STRING_ID ) );
+	m_aTokenizer.AddToken( minToken( Keyword, __STRING, STRING_ID ) );
 
 	m_aTokenizer.AddToken( minToken( Keyword, "class", CLASS_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, "struct", STRUCT_ID ) );
@@ -243,7 +243,7 @@ bool minScriptInterpreter::Run( const string & sScriptWithPredefs, const string 
 				if (m_aEnvironment.IsDbgMode())
 				{
 					cout << endl;
-					DumpVersion(cout);
+					SMALL( DumpVersion(cout); )
 					cout << endl;
 					cout << "Starting debugging. Type \"help\" for informations" << endl << endl;
 				}
@@ -657,7 +657,7 @@ string my_getenv( const char * s )
 	return sRet;
 }
 
-#if defined( __linux__ ) || defined( __APPLE__ )
+#if defined( __linux__ ) || defined( __APPLE__ ) || defined( __PIC32MX__ ) || defined( ARDUINO_ARCH_ESP32 )
 
 static char _GetDirectorySeparator()
 {
@@ -698,7 +698,7 @@ bool SplitPath( const char * sPath, string & sDrive, string & sDir, string & sFi
 	char sDirBuf[512];
 	char sNameBuf[512];
 	char sExtBuf[512];
-#if !(defined( __linux__ ) || defined( __APPLE__ ))
+#if !(defined( __linux__ ) || defined( __APPLE__ ) || defined( __PIC32MX__ ) || defined( ARDUINO_ARCH_ESP32 ))
 	// TODO gulp working mingw32
 	_splitpath( /*(CHAR_CAST)*/sPath, sDriveBuf, sDirBuf, sNameBuf, sExtBuf );
 #else

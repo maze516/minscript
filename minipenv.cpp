@@ -165,7 +165,7 @@ string minInterpreterType::GetTypeStringHelper( bool bManglingName, bool bWithPt
 			sTypeOut += "unknown";
 			break;
 		case String :
-			sTypeOut += _STRING;
+			sTypeOut += __STRING;
 			break;
 		case Double :
 			sTypeOut += _DOUBLE;	// float
@@ -180,7 +180,7 @@ string minInterpreterType::GetTypeStringHelper( bool bManglingName, bool bWithPt
 			sTypeOut += _BOOL;
 			break;
 		case Void :
-			sTypeOut += _VOID;
+			sTypeOut += __VOID;
 			break;
 		case Object :
 			sTypeOut += m_sClassName;	//"object";	// zum Testen
@@ -608,13 +608,13 @@ bool minInterpreterValue::DeletePointer()
 	return false;
 }
 
-bool minInterpreterValue::CastAndAssign( const minInterpreterValue & aObj )
+bool minInterpreterValue::CastAndAssign( const minInterpreterValue & aObj, string & sErrorMsg )
 {
 	try {
 		if( IsReference() )
 		{
 			if( m_aValue.m_pToReferenceValue )
-				return m_aValue.m_pToReferenceValue->CastAndAssign( aObj );
+				return m_aValue.m_pToReferenceValue->CastAndAssign( aObj, sErrorMsg );
 			else
 				return false;
 		}
@@ -649,11 +649,12 @@ bool minInterpreterValue::CastAndAssign( const minInterpreterValue & aObj )
 			Assign( aObj.ConvertTo( m_aType ) );
 		}
 	}
-	catch( minCastError & /*aExc*/ )
+	catch( minCastError & aExc )
 	{
 		// wenigstens einen Dummy zuweisen, damit Daten konsistent bleiben,
 		// bzw. keine haengende Referenz existiert !
 		Assign( minInterpreterValue() );
+		sErrorMsg = aExc.GetMsg();
 		return false;
 	}
 
@@ -941,7 +942,7 @@ minInterpreterValue minInterpreterValue::ConvertTo( const minInterpreterType & a
 					throw minCastError( "can not convert objects into other objects" );
 					//return minInterpreterValue( minInterpreterType( aToType ) );
 				default:
-					throw minCastError( "can not convert into object" );
+					throw minCastError( aToType.GetTypeString() + " can not be convert into an object" );
 			}
 		}
 		if( m_aType.GetType() == Array )
@@ -2357,7 +2358,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
 		}
 		else if (sInput == "a")
 		{
-			pCurrentNode->Dump( cout );
+		    SMALL( pCurrentNode->Dump( cout ); )
 			//DumpParser(cout);
 		}
 		else if (sInput == "c" || sInput == "code")
@@ -2367,7 +2368,7 @@ bool minInterpreterEnvironment::ProcessDbg( minInterpreterNode * pCurrentNode )
         }
 		else if (sInput == "version")
 		{
-			DumpVersion(cout);
+			SMALL( DumpVersion(cout); ) 
 		}
 		else if (sInput == "e" || sInput == "exit" )
         {
@@ -2755,11 +2756,11 @@ void minInterpreterEnvironment::RemoveAllClasses()
 
 minInterpreterType minInterpreterEnvironment::ResolveTypeFromString( const string & sTypeString, int iStackDelta ) const
 {
-	if( sTypeString==_VOID )
+	if( sTypeString==__VOID )
 		return minInterpreterType( Void );
 	else if( sTypeString==_BOOL )
 		return minInterpreterType( Bool );
-	else if( sTypeString==_STRING )
+	else if( sTypeString==__STRING )
 		return minInterpreterType( String );
 	else if( sTypeString==_CHAR || sTypeString==_UCHAR )
 		return minInterpreterType( CharTT );
@@ -2846,11 +2847,11 @@ const char * GetMethodSeparatorStrg()
 /*
 InterpreterValueType GetTypeFromString( const string & aTypeString )
 {
-	if( aTypeString==_VOID )
+	if( aTypeString==__VOID )
 		return Void;
 	else if( aTypeString==_BOOL )
 		return Bool;
-	else if( aTypeString==_STRING )
+	else if( aTypeString==__STRING )
 		return String;
 	else if( aTypeString==_CHAR || aTypeString==_UCHAR )
 		return CharTT;

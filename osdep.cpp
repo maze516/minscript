@@ -78,7 +78,11 @@ int WaitFcn( int nDelay )
 /** Funktion zum aufrufen von externen Programmen */
 int MySystem( const char * sCmd )
 {
+#ifdef USEBIG
 	return system( sCmd );
+#else
+	return -1;  // error, function not available !
+#endif
 }
 
 //******************************************************************

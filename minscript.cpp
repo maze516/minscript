@@ -321,11 +321,9 @@ static void ShowArgumentHelp( ostream & aStream )
 
 static void ShowLicense( ostream & aStream )
 {
-	aStream << endl << "License for minscript: free for non-commercial use." << endl;
-	aStream << "Contact the author if you want to use minscript commercially." << endl << endl;
+	aStream << endl << "License for minscript: GPL (https://www.gnu.org/licenses/old-licenses/gpl-2.0)" << endl;
 	aStream << "WARNING: Use minscript at your own risk ! NO WARRANTY !" << endl << endl;
-	aStream << "Homepage: http://www.mneuroth.de/projects/Minscript.html" << endl;
-	aStream << "Author:   michael.neuroth.de@googlemail.com" << endl << endl;
+	aStream << "Homepage: https://github.com/mneuroth/minscript" << endl;
 }
 
 //*************************************************************************
@@ -1234,7 +1232,7 @@ int main( int argc, char *argv[] )
 	}
 	if( aArgs.m_bShowVersion )
 	{
-		DumpVersion( cout );
+		SMALL( DumpVersion( cout ); )
 		return 0;
 	}
 #ifdef USEBIG
