@@ -165,7 +165,7 @@ string minInterpreterType::GetTypeStringHelper( bool bManglingName, bool bWithPt
 			sTypeOut += "unknown";
 			break;
 		case String :
-			sTypeOut += __STRING;
+			sTypeOut += _STRING_MS;
 			break;
 		case Double :
 			sTypeOut += _DOUBLE;	// float
@@ -180,7 +180,7 @@ string minInterpreterType::GetTypeStringHelper( bool bManglingName, bool bWithPt
 			sTypeOut += _BOOL;
 			break;
 		case Void :
-			sTypeOut += __VOID;
+			sTypeOut += _VOID_MS;
 			break;
 		case Object :
 			sTypeOut += m_sClassName;	//"object";	// zum Testen
@@ -2756,11 +2756,11 @@ void minInterpreterEnvironment::RemoveAllClasses()
 
 minInterpreterType minInterpreterEnvironment::ResolveTypeFromString( const string & sTypeString, int iStackDelta ) const
 {
-	if( sTypeString==__VOID )
+	if( sTypeString==_VOID_MS )
 		return minInterpreterType( Void );
 	else if( sTypeString==_BOOL )
 		return minInterpreterType( Bool );
-	else if( sTypeString==__STRING )
+	else if( sTypeString==_STRING_MS )
 		return minInterpreterType( String );
 	else if( sTypeString==_CHAR || sTypeString==_UCHAR )
 		return minInterpreterType( CharTT );
@@ -2847,11 +2847,11 @@ const char * GetMethodSeparatorStrg()
 /*
 InterpreterValueType GetTypeFromString( const string & aTypeString )
 {
-	if( aTypeString==__VOID )
+	if( aTypeString==_VOID_MS )
 		return Void;
 	else if( aTypeString==_BOOL )
 		return Bool;
-	else if( aTypeString==__STRING )
+	else if( aTypeString==_STRING_MS )
 		return String;
 	else if( aTypeString==_CHAR || aTypeString==_UCHAR )
 		return CharTT;

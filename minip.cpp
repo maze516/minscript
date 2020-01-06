@@ -110,7 +110,7 @@ void InitDefaultTokenizer( minTokenizer & m_aTokenizer )
 	m_aTokenizer.AddToken( minToken( Operator, "typeof", TYPEOF_ID ) );			// Erweiterung !
 #endif
 
-	m_aTokenizer.AddToken( minToken( Keyword, __VOID, VOID_ID ) );
+	m_aTokenizer.AddToken( minToken( Keyword, _VOID_MS, VOID_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _BOOL, BOOL_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _CHAR, CHAR_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _INT, INT_ID ) );
@@ -119,7 +119,7 @@ void InitDefaultTokenizer( minTokenizer & m_aTokenizer )
 	m_aTokenizer.AddToken( minToken( Keyword, _UNSIGNED, UNSIGNED_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _FLOAT, FLOAT_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, _DOUBLE, DOUBLE_ID ) );
-	m_aTokenizer.AddToken( minToken( Keyword, __STRING, STRING_ID ) );
+	m_aTokenizer.AddToken( minToken( Keyword, _STRING_MS, STRING_ID ) );
 
 	m_aTokenizer.AddToken( minToken( Keyword, "class", CLASS_ID ) );
 	m_aTokenizer.AddToken( minToken( Keyword, "struct", STRUCT_ID ) );

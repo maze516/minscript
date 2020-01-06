@@ -150,8 +150,8 @@ const int SIZEOF_ID				= 132;
 const int TEMPLATE_ID			= 133;
 
 // +++ Datentypen Konstanten +++
-#define __VOID				"void"
-#define __STRING			"string"
+#define _VOID_MS			"void"
+#define _STRING_MS			"string"
 #define _BOOL				"bool"
 #define _UNSIGNED			"unsigned"
 #define _CHAR				"char"

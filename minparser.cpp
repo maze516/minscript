@@ -2805,11 +2805,11 @@ InterpreterValueType minParser::GetTypeFromString( const string & aTypeString, c
 		return TemplateType;
 	}
 
-	if( aTypeString==__VOID )
+	if( aTypeString==_VOID_MS )
 		return Void;
 	else if( aTypeString==_BOOL )
 		return Bool;
-	else if( aTypeString==__STRING )
+	else if( aTypeString==_STRING_MS )
 		return String;
 	else if( aTypeString==_CHAR || aTypeString==_UCHAR )
 		return CharTT;
