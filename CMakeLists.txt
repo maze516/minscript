@@ -26,9 +26,9 @@ add_executable(minscript minscript.cpp
 install(TARGETS minscript DESTINATION bin)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Android")
-    add_custom_command(TARGET fuel POST_BUILD
+    add_custom_command(TARGET minscript POST_BUILD
             COMMAND "${ANDROID_TOOLCHAIN_PREFIX}strip" -g -S -d --strip-debug --verbose
-            fuel
-            COMMENT "Strip debug symbols done on final fuel binary.")
+            minscript
+            COMMENT "Strip debug symbols done on final minscript binary.")
 endif()
             
