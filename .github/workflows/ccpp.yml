@@ -25,7 +25,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: make
       run: |
-         cmake CMakeLists.txt
+         cmake CMakeLists.txt -DCMAKE_BUILD_TYPE=Release
          make -j 4
     - name: make check
       run: |
