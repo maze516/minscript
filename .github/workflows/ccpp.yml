@@ -16,6 +16,22 @@ jobs:
          ls -lrt
          ./minscript -v
 
+  linux_cmake_build:
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: make
+      run: |
+         cmake CMakeLists.txt
+         make -j 4
+    - name: make check
+      run: |
+         ls -lrt
+         ./minscript -v
+         ./minscript --profile test.ic
+
   macos_build:
     
     runs-on: macos-latest
