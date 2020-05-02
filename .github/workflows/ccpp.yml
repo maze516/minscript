@@ -15,6 +15,7 @@ jobs:
       run: |
          ls -lrt
          ./minscript -v
+         ./minscript --profile test.ic
 
   linux_cmake_build:
     
@@ -44,6 +45,7 @@ jobs:
       run: |
          ls -lrt
          ./minscript -v
+         ./minscript --profile test.ic
 
   windows_gcc_build:
     
@@ -57,6 +59,7 @@ jobs:
       run: |
          dir
          ./minscript -v
+         ./minscript --profile test.ic
          
   windows_cl_build:
     
@@ -71,3 +74,4 @@ jobs:
       run: |
          dir
          ./minscript -v         
+         ./minscript --profile test.ic
