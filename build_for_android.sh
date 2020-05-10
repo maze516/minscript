@@ -9,7 +9,7 @@ fi
 ANDROID_NDK_HOME=$1
 ANDROID_ABI=$2
 echo *** Build minscript without shared libraries ***
-cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DANDROID_ABI=$ANDROID_ABI CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DANDROID_ABI=$ANDROID_ABI CMakeLists.txt
 make clean
 make -j 4
 zip -u minscript-android-single-$ANDROID_ABI-bin.zip minscript

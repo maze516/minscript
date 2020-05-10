@@ -23,6 +23,8 @@ add_executable(minscript minscript.cpp
     platform.h
     osdep.h)
 
+set_target_properties(minscript PROPERTIES LINK_FLAGS_RELEASE -s)
+
 install(TARGETS minscript DESTINATION bin)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Android")
